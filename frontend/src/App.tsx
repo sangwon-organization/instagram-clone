@@ -1,10 +1,13 @@
 import React from 'react';
+import GlobalStyle from './styles/GlobalStyles';
+import AppRouter from './AppRouter';
 
 function App() {
   return (
-    <div className="App">
-      인스타그램 클론
-    </div>
+    <>
+      <GlobalStyle />
+      <AppRouter />
+    </>
   );
 }
 
