@@ -16,6 +16,8 @@ const StoryBoxContainer = styled.section`
   justify-content: center;
   align-items: center;
   position: relative;
+  margin-top: 28px;
+  margin-bottom: 4px;
 `;
 
 const StoryBoxWrapper = styled.ul`

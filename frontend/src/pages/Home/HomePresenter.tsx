@@ -17,11 +17,19 @@ const MainContainer = styled.div`
 
 const MainWrapper = styled.main`
   width: 848px;
-  height: 1000px;
+  height: fit-content;
   border: 1px solid red;
   display: flex;
-  justify-content: center;
-  align-items: center;
+  justify-content: space-between;
+  align-items: flex-start;
+`;
+
+const StoryAndFeedSection = styled.section`
+  width: 470px;
+  height: fit-content;
+  display: flex;
+  flex-direction: column;
+  gap: 14px 0;
 `;
 
 const HomePresenter = () => {
@@ -30,8 +38,11 @@ const HomePresenter = () => {
       <NavigationBar />
       <MainContainer>
         <MainWrapper>
-          <StoryBox />
-          <FeedCard />
+          <StoryAndFeedSection>
+            <StoryBox />
+            <FeedCard />
+            <FeedCard />
+          </StoryAndFeedSection>
           <HomeAside />
         </MainWrapper>
       </MainContainer>
