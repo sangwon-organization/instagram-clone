@@ -8,9 +8,11 @@ const SearchBarTooltipContainer = styled.div<{ showTooltip: boolean }>`
   height: 362px;
   border: 1px solid red;
   position: absolute;
+  background: #fff;
   top: 60px;
   left: 220px;
   overflow-y: auto;
+  z-index: 500;
   &:after {
     border-color: white transparent;
     border-style: solid;
