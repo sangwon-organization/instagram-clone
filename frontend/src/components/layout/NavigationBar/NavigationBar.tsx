@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import instagramLogo from '../../../assets/image/instagram-logo.png';
+import userAvatar from '../../../assets/image/userAvatar.png';
 import { FiSearch, FiPlusSquare, FiHeart } from 'react-icons/fi';
 import { MdCancel, MdHomeFilled } from 'react-icons/md';
 import { ImCompass2 } from 'react-icons/im';
@@ -77,10 +78,9 @@ const SearchIcon = styled(FiSearch)<{ searchBarClicked: boolean }>`
   display: ${({ searchBarClicked }) => (searchBarClicked ? 'none' : 'block')};
 `;
 
-const UserImage = styled.div`
+const UserImage = styled.img`
   width: 30px;
   height: 30px;
-  background: #8e8e8e;
   border-radius: 50%;
 `;
 
@@ -158,7 +158,7 @@ const NavigationBar = () => {
           <PlusSquareIcon />
           <CompassIcon />
           <HeartIcon />
-          <UserImage />
+          <UserImage src={userAvatar} alt="유저아바타" />
         </MenuWrapper>
       </NavigationBarWrapper>
     </NavigationBarContainer>

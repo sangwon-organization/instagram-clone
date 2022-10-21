@@ -18,7 +18,7 @@ const MainContainer = styled.div`
 const MainWrapper = styled.main`
   width: 848px;
   height: fit-content;
-  border: 1px solid red;
+  /* border: 1px solid red; */
   display: flex;
   justify-content: space-between;
   align-items: flex-start;

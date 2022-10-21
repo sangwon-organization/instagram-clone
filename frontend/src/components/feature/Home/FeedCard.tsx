@@ -179,7 +179,7 @@ const AddCommentBox = styled.form`
   padding: 10px;
   textarea {
     width: 375px;
-    height: fit-content;
+    height: 20px;
     border: none;
     resize: none;
     outline: none;
