@@ -16,6 +16,8 @@ const NavigationBarContainer = styled.nav`
   display: flex;
   justify-content: center;
   align-items: center;
+  position: fixed;
+  z-index: 10000;
 `;
 
 const NavigationBarWrapper = styled.div`
@@ -88,30 +90,45 @@ const HomeIcon = styled(MdHomeFilled)`
   width: 30px;
   height: 30px;
   cursor: pointer;
+  &:active {
+    color: #8e8e8e;
+  }
 `;
 
 const LocationIcon = styled(TbLocation)`
   width: 30px;
   height: 30px;
   cursor: pointer;
+  &:active {
+    color: #8e8e8e;
+  }
 `;
 
 const PlusSquareIcon = styled(FiPlusSquare)`
   width: 30px;
   height: 30px;
   cursor: pointer;
+  &:active {
+    color: #8e8e8e;
+  }
 `;
 
 const CompassIcon = styled(ImCompass2)`
   width: 30px;
   height: 30px;
   cursor: pointer;
+  &:active {
+    color: #8e8e8e;
+  }
 `;
 
 const HeartIcon = styled(FiHeart)`
   width: 30px;
   height: 30px;
   cursor: pointer;
+  &:active {
+    color: #8e8e8e;
+  }
 `;
 
 const CancelButton = styled(MdCancel)<{ searchBarClicked: boolean }>`

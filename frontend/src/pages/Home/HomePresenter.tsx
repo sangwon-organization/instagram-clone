@@ -13,6 +13,7 @@ const MainContainer = styled.div`
   justify-content: center;
   align-items: center;
   background: #fafafa;
+  padding-top: 60px;
 `;
 
 const MainWrapper = styled.main`
