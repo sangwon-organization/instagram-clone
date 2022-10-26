@@ -1,12 +1,16 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import styled from 'styled-components';
 import instagramLogo from '../../../assets/image/instagram-logo.png';
 import userAvatar from '../../../assets/image/userAvatar.png';
 import { FiSearch, FiPlusSquare, FiHeart } from 'react-icons/fi';
-import { MdCancel, MdHomeFilled } from 'react-icons/md';
+import { MdCancel } from 'react-icons/md';
 import { ImCompass2 } from 'react-icons/im';
 import { TbLocation } from 'react-icons/tb';
 import SearchBarTooltip from './SearchBarTooltip';
+import { useNavigate } from 'react-router-dom';
+import HomeIcon from './HomeIcon';
+import AvatarDropdown from './AvatarDropdown';
+import useOutsideClick from '../../../hooks/useOutsideClick';
 
 const NavigationBarContainer = styled.nav`
   width: 100%;
@@ -36,6 +40,7 @@ const LogoWrapper = styled.div`
     width: 100px;
     height: 30px;
   }
+  cursor: pointer;
   /* border: 1px solid red; */
 `;
 
@@ -68,6 +73,7 @@ const MenuWrapper = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: relative;
 `;
 
 const SearchIcon = styled(FiSearch)<{ searchBarClicked: boolean }>`
@@ -80,19 +86,14 @@ const SearchIcon = styled(FiSearch)<{ searchBarClicked: boolean }>`
   display: ${({ searchBarClicked }) => (searchBarClicked ? 'none' : 'block')};
 `;
 
-const UserImage = styled.img`
-  width: 30px;
-  height: 30px;
+const UserImage = styled.img<{ showDropdown: boolean }>`
+  width: 29px;
+  height: 29px;
   border-radius: 50%;
-`;
-
-const HomeIcon = styled(MdHomeFilled)`
-  width: 30px;
-  height: 30px;
   cursor: pointer;
-  &:active {
-    color: #8e8e8e;
-  }
+  padding: 1px;
+  border: 1px solid
+    ${({ showDropdown }) => (showDropdown ? '#6f6f6f' : 'transparent')};
 `;
 
 const LocationIcon = styled(TbLocation)`
@@ -145,11 +146,14 @@ const CancelButton = styled(MdCancel)<{ searchBarClicked: boolean }>`
 const NavigationBar = () => {
   const [showTooltip, setShowTooltip] = useState(false);
   const [searchBarClicked, setSearchBarClicked] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  const navigate = useNavigate();
 
   return (
     <NavigationBarContainer>
       <NavigationBarWrapper>
-        <LogoWrapper>
+        <LogoWrapper onClick={() => navigate('/home')}>
           <img src={instagramLogo} alt="인스타그램로고" />
         </LogoWrapper>
         <SearchBarWrapper searchBarClicked={searchBarClicked}>
@@ -157,26 +161,35 @@ const NavigationBar = () => {
           <input
             type="text"
             placeholder="Search"
-            onFocus={() => {
+            onClick={() => {
               setShowTooltip(true);
               setSearchBarClicked(true);
-            }}
-            onBlur={() => {
-              setShowTooltip(false);
-              setSearchBarClicked(false);
             }}
           />
           <CancelButton searchBarClicked={searchBarClicked} />
         </SearchBarWrapper>
-        <SearchBarTooltip showTooltip={showTooltip} />
+        <SearchBarTooltip
+          showTooltip={showTooltip}
+          setShowTooltip={setShowTooltip}
+          setSearchBarClicked={setSearchBarClicked}
+        />
         <MenuWrapper>
           <HomeIcon />
           <LocationIcon />
           <PlusSquareIcon />
           <CompassIcon />
           <HeartIcon />
-          <UserImage src={userAvatar} alt="유저아바타" />
+          <UserImage
+            src={userAvatar}
+            alt="유저아바타"
+            onClick={() => setShowDropdown(true)}
+            showDropdown={showDropdown}
+          />
         </MenuWrapper>
+        <AvatarDropdown
+          showDropdown={showDropdown}
+          setShowDropdown={setShowDropdown}
+        />
       </NavigationBarWrapper>
     </NavigationBarContainer>
   );
