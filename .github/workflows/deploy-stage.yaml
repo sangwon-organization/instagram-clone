@@ -6,12 +6,19 @@ on:
       - main
   pull_request:
     branches: 
-      - main
+      - '*'
+    paths:
+      - frontend/**
 
 jobs:
       deploy:
         name: Build, Deploy to S3 bucket
         runs-on: ubuntu-latest
+
+        defaults:
+          run:
+            working-directory: ./frontend
+
     
         strategy:
           matrix:
@@ -25,11 +32,11 @@ jobs:
             with:
               node-version: ${{ matrix.node-version }}
     
-          - name: Npm install
-            run: npm install
+          - name: Install node packages
+            run: yarn install
     
           - name: Build
-            run: npm run build
+            run: yarn build
     
           - name: Transfer to S3 for serving static
             uses: jakejarvis/s3-sync-action@master
