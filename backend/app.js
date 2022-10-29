@@ -8,7 +8,7 @@ const userRouter = require('./routes/user')
 const postRouter = require('./routes/post')
 const { ValidationError } = require('sequelize')
 const { notFoundConverter, errorConverter, errorHandler } = require('./middlewares/error')
-const ApiError = require('./utils/ApiError')
+const ApiError = require('./utils/apiError')
 const httpStatus = require('http-status')
 
 app.set('port', process.env.PORT || 3000)
