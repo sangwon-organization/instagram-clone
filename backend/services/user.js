@@ -1,10 +1,12 @@
 const httpStatus = require('http-status')
 const { User } = require('../models')
 const ApiError = require('../utils/apiError')
-const encryption = require('../utils/encryption')
+const { decryptAES256, encryptSHA256 } = require('../utils/encryption')
 const regex = require('../utils/regex')
 
 const createUser = async (body) => {
+  body.password = decryptAES256(body.password)
+
   if (await !regex.isValidEmail(body.email)) {
     throw new ApiError(httpStatus.BAD_REQUEST, '이메일 형식이 맞지 않습니다. 다시 입력해 주세요.')
   }
@@ -20,7 +22,8 @@ const createUser = async (body) => {
       '유효하지 않은 비밀번호입니다. 다시 입력해 주세요. (길이 최소 8자 이상 15자 이하, 대문자, 소문자, 숫자, 특수문자(@,$,!,%,*,?,&) 각각 1개 이상 필수 입력)'
     )
   }
-  body.password = encryption.encryptSHA256(body.password)
+
+  body.password = encryptSHA256(body.password)
   return User.create(body)
 }
 
