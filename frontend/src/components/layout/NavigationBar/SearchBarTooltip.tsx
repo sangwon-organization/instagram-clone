@@ -1,15 +1,19 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import styled from 'styled-components';
 import { IoClose } from 'react-icons/io5';
 import userAvatar from '../../../assets/image/userAvatar.png';
+import useOutsideClick from '../../../hooks/useOutsideClick';
 
-const SearchBarTooltipContainer = styled.div<{ showTooltip: boolean }>`
+const SearchBarTooltipContainer = styled.div<{
+  showTooltip: boolean;
+  ref: any;
+}>`
   display: ${({ showTooltip }) => (showTooltip ? 'block' : 'none')};
   width: 374px;
   height: 362px;
   /* border: 1px solid red; */
   border-radius: 5px;
-  filter: drop-shadow(-10px 20px 20px rgba(0, 0, 0, 0.3));
+  filter: drop-shadow(0px 0px 10px rgba(0, 0, 0, 0.1));
   position: absolute;
   background: #fff;
   top: 60px;
@@ -21,9 +25,9 @@ const SearchBarTooltipContainer = styled.div<{ showTooltip: boolean }>`
     border-width: 0 6px 8px 6.5px;
     content: '';
     display: block;
-    right: 150px;
     position: absolute;
     top: -8px;
+    right: 150px;
     width: 1px;
     z-index: 1;
   }
@@ -141,9 +145,25 @@ const CloseIcon = styled(IoClose)`
   color: rgb(142, 142, 142);
 `;
 
-const SearchBarTooltip = ({ showTooltip }: any) => {
+interface SearchBarTooltipProps {
+  showTooltip: boolean;
+  setShowTooltip: Function;
+  setSearchBarClicked: Function;
+}
+
+const SearchBarTooltip = ({
+  showTooltip,
+  setShowTooltip,
+  setSearchBarClicked,
+}: SearchBarTooltipProps) => {
+  const outsideRef = useRef();
+
+  useOutsideClick(outsideRef, () => {
+    setShowTooltip(false);
+    setSearchBarClicked(false);
+  });
   return (
-    <SearchBarTooltipContainer showTooltip={showTooltip}>
+    <SearchBarTooltipContainer showTooltip={showTooltip} ref={outsideRef}>
       <SearchBarTooltipWrapper>
         <TooltipHeader>
           <p>Recent</p>
