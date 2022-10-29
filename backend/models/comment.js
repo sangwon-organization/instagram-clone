@@ -1,27 +1,31 @@
 const Sequelize = require('sequelize')
 
-module.exports = class Post extends Sequelize.Model {
+module.exports = class Comment extends Sequelize.Model {
   static init(sequelize) {
     return super.init(
       {
-        postId: {
+        commentId: {
           type: Sequelize.INTEGER,
           autoIncrement: true,
           primaryKey: true,
         },
-        content: {
-          type: Sequelize.TEXT,
+        parentCommentId: {
+          type: Sequelize.INTEGER,
           allowNull: true,
         },
         createdAt: {
           type: Sequelize.DATE,
-          allowNull: false,
+          allowNull: true,
           defaultValue: Sequelize.NOW,
         },
         updatedAt: {
           type: Sequelize.DATE,
-          allowNull: false,
+          allowNull: true,
           defaultValue: Sequelize.NOW,
+        },
+        postId: {
+          type: Sequelize.INTEGER,
+          allowNull: true,
         },
         userId: {
           type: Sequelize.INTEGER,
@@ -32,8 +36,8 @@ module.exports = class Post extends Sequelize.Model {
         sequelize,
         timestamps: false,
         underscored: true,
-        modelName: 'Post',
-        tableName: 'tb_post',
+        modelName: 'Comment',
+        tableName: 'tb_comment',
         paranoid: false,
         charset: 'utf8',
         collate: 'utf8_general_ci',
@@ -41,8 +45,8 @@ module.exports = class Post extends Sequelize.Model {
     )
   }
   static associate(db) {
-    db.Post.belongsTo(db.User, { foreignKey: 'userId', targetKey: 'userId' })
-    db.Post.hasMany(db.PostLike, { foreignKey: 'postId', sourceKey: 'postId' })
-    db.Post.hasMany(db.Comment, { foreignKey: 'postId', sourceKey: 'postId' })
+    db.Comment.belongsTo(db.User, { foreignKey: 'userId', targetKey: 'userId' })
+    db.Comment.belongsTo(db.Post, { foreignKey: 'postId', targetKey: 'postId' })
+    db.Comment.hasMany(db.CommentLike, { foreignKey: 'commentId', sourceKey: 'commentId' })
   }
 }

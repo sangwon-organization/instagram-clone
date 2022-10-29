@@ -14,7 +14,7 @@ const httpStatus = require('http-status')
 app.set('port', process.env.PORT || 3000)
 
 sequelize
-  .sync({ force: false })
+  .sync({ force: true })
   .then(() => {
     console.log('success db connection')
   })

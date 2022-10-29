@@ -11,7 +11,7 @@ module.exports = class User extends Sequelize.Model {
         },
         email: {
           type: Sequelize.STRING(100),
-          allowNull: false,
+          allowNull: true,
           unique: true,
         },
         password: {
@@ -22,16 +22,32 @@ module.exports = class User extends Sequelize.Model {
           type: Sequelize.STRING(20),
           allowNull: true,
         },
-        nickname: {
+        username: {
           type: Sequelize.STRING(20),
           allowNull: true,
         },
-        createAt: {
+        phone: {
+          type: Sequelize.STRING(20),
+          allowNull: true,
+        },
+        gender: {
+          type: Sequelize.CHAR(1),
+          allowNull: true,
+        },
+        bio: {
+          type: Sequelize.TEXT,
+          allowNull: true,
+        },
+        profileImage: {
+          type: Sequelize.TEXT,
+          allowNull: true,
+        },
+        createdAt: {
           type: Sequelize.DATE,
           allowNull: true,
           defaultValue: Sequelize.NOW,
         },
-        updateAt: {
+        updatedAt: {
           type: Sequelize.DATE,
           allowNull: true,
           defaultValue: Sequelize.NOW,
@@ -51,5 +67,10 @@ module.exports = class User extends Sequelize.Model {
   }
   static associate(db) {
     db.User.hasMany(db.Post, { foreignKey: 'userId', sourceKey: 'userId' })
+    db.User.hasMany(db.UserFollow, { foreignKey: 'fromUserId', sourceKey: 'userId' })
+    db.User.hasMany(db.UserFollow, { foreignKey: 'toUserId', sourceKey: 'userId' })
+    db.User.hasMany(db.PostLike, { foreignKey: 'userId', sourceKey: 'userId' })
+    db.User.hasMany(db.Comment, { foreignKey: 'userId', sourceKey: 'userId' })
+    db.User.hasMany(db.CommentLike, { foreignKey: 'userId', sourceKey: 'userId' })
   }
 }
