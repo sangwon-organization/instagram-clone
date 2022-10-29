@@ -1,32 +1,26 @@
-const httpStatus = require('http-status')
 const { User } = require('../models')
-const ApiError = require('../utils/apiError')
-const { decryptAES256, encryptSHA256 } = require('../utils/encryption')
-const regex = require('../utils/regex')
 
 const createUser = async (body) => {
-  body.password = decryptAES256(body.password)
+  return await User.create(body)
+}
 
-  if (await !regex.isValidEmail(body.email)) {
-    throw new ApiError(httpStatus.BAD_REQUEST, '이메일 형식이 맞지 않습니다. 다시 입력해 주세요.')
-  }
-  if (await User.isEmailExist(body.email)) {
-    throw new ApiError(httpStatus.BAD_REQUEST, '이미 등록된 이메일입니다. 다시 입력해 주세요.')
-  }
-  if (await User.isUsernameExist(body.username)) {
-    throw new ApiError(httpStatus.BAD_REQUEST, '이미 등록된 닉네임입니다. 다시 입력해 주세요.')
-  }
-  if (await !regex.isValidPassword(body.password)) {
-    throw new ApiError(
-      httpStatus.BAD_REQUEST,
-      '유효하지 않은 비밀번호입니다. 다시 입력해 주세요. (길이 최소 8자 이상 15자 이하, 대문자, 소문자, 숫자, 특수문자(@,$,!,%,*,?,&) 각각 1개 이상 필수 입력)'
-    )
-  }
+const findUser = async (email, password) => {
+  return await User.findOne({ where: { email: email, password: password } })
+}
 
-  body.password = encryptSHA256(body.password)
-  return User.create(body)
+const isEmailExist = async (emalii) => {
+  let emailCount = await User.count({ where: { email: `${emalii}` } })
+  return emailCount ? true : false
+}
+
+const isUsernameExist = async (username) => {
+  let usernameCount = await User.count({ where: { username: `${username}` } })
+  return usernameCount ? true : false
 }
 
 module.exports = {
   createUser,
+  findUser,
+  isEmailExist,
+  isUsernameExist,
 }
