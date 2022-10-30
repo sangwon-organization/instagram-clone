@@ -1,17 +1,16 @@
 const Sequelize = require('sequelize')
 
-module.exports = class Post extends Sequelize.Model {
+module.exports = class PostImage extends Sequelize.Model {
   static init(sequelize) {
     return super.init(
       {
         postId: {
           type: Sequelize.INTEGER,
-          autoIncrement: true,
           primaryKey: true,
         },
-        content: {
-          type: Sequelize.TEXT,
-          allowNull: true,
+        imageId: {
+          type: Sequelize.INTEGER,
+          primaryKey: true,
         },
         createdAt: {
           type: Sequelize.DATE,
@@ -23,17 +22,13 @@ module.exports = class Post extends Sequelize.Model {
           allowNull: false,
           defaultValue: Sequelize.NOW,
         },
-        userId: {
-          type: Sequelize.INTEGER,
-          allowNull: true,
-        },
       },
       {
         sequelize,
         timestamps: false,
         underscored: true,
-        modelName: 'Post',
-        tableName: 'tb_post',
+        modelName: 'PostImage',
+        tableName: 'tb_post_image',
         paranoid: false,
         charset: 'utf8',
         collate: 'utf8_general_ci',
@@ -41,9 +36,7 @@ module.exports = class Post extends Sequelize.Model {
     )
   }
   static associate(db) {
-    db.Post.belongsTo(db.User, { foreignKey: 'userId', targetKey: 'userId' })
-    db.Post.hasMany(db.PostLike, { foreignKey: 'postId', sourceKey: 'postId' })
-    db.Post.hasMany(db.Comment, { foreignKey: 'postId', sourceKey: 'postId' })
-    db.Post.hasMany(db.PostImage, { foreignKey: 'postId', sourceKey: 'postId' })
+    db.PostImage.belongsTo(db.Post, { foreignKey: 'postId', targetKey: 'postId' })
+    db.PostImage.belongsTo(db.Image, { foreignKey: 'imageId', targetKey: 'imageId' })
   }
 }

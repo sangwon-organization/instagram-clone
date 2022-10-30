@@ -164,3 +164,6 @@ dist
 
 # config
 config/
+
+# images
+images/

@@ -7,9 +7,11 @@ const regex = require('../utils/regex')
 const userSerivce = require('../services/user')
 const { Token } = require('../models')
 
+const secret = 'test1234'
+
 const signup = async (body) => {
   body.password = decryptAES256(body.password)
-
+  console.log(body.password)
   if (await !regex.isValidEmail(body.email)) {
     throw new ApiError(httpStatus.BAD_REQUEST, '이메일 형식이 맞지 않습니다. 다시 입력해 주세요.')
   }
@@ -81,8 +83,15 @@ const saveToken = async (token, userId, expires, type, blacklisted = false) => {
   return tokenDoc
 }
 
+const verifyToken = async (token) => {
+  token = token.split('Bearer ').length > 1 ? token.split('Bearer ')[1] : token
+  const payload = jwt.verify(token, secret)
+  return payload
+}
+
 module.exports = {
   signup,
   signin,
   generateAuthTokens,
+  verifyToken,
 }

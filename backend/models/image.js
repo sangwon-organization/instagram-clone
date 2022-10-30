@@ -1,16 +1,16 @@
 const Sequelize = require('sequelize')
 
-module.exports = class Post extends Sequelize.Model {
+module.exports = class Image extends Sequelize.Model {
   static init(sequelize) {
     return super.init(
       {
-        postId: {
+        imageId: {
           type: Sequelize.INTEGER,
           autoIncrement: true,
           primaryKey: true,
         },
-        content: {
-          type: Sequelize.TEXT,
+        imagePath: {
+          type: Sequelize.STRING(255),
           allowNull: true,
         },
         createdAt: {
@@ -23,17 +23,13 @@ module.exports = class Post extends Sequelize.Model {
           allowNull: false,
           defaultValue: Sequelize.NOW,
         },
-        userId: {
-          type: Sequelize.INTEGER,
-          allowNull: true,
-        },
       },
       {
         sequelize,
         timestamps: false,
         underscored: true,
-        modelName: 'Post',
-        tableName: 'tb_post',
+        modelName: 'Image',
+        tableName: 'tb_image',
         paranoid: false,
         charset: 'utf8',
         collate: 'utf8_general_ci',
@@ -41,9 +37,6 @@ module.exports = class Post extends Sequelize.Model {
     )
   }
   static associate(db) {
-    db.Post.belongsTo(db.User, { foreignKey: 'userId', targetKey: 'userId' })
-    db.Post.hasMany(db.PostLike, { foreignKey: 'postId', sourceKey: 'postId' })
-    db.Post.hasMany(db.Comment, { foreignKey: 'postId', sourceKey: 'postId' })
-    db.Post.hasMany(db.PostImage, { foreignKey: 'postId', sourceKey: 'postId' })
+    db.Image.hasMany(db.PostImage, { foreignKey: 'imageId', sourceKey: 'imageId' })
   }
 }
