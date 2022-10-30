@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import userAvatar from '../../../assets/image/userAvatar.png';
 import userImage from '../../../assets/image/userImage.png';
+import userImage2 from '../../../assets/image/userImage2.png';
+import userImage3 from '../../../assets/image/userImage3.png';
 import { BsHeart } from 'react-icons/bs';
 import { BsHeartFill } from 'react-icons/bs';
 import { RiChat3Line } from 'react-icons/ri';
@@ -9,10 +11,14 @@ import { TbLocation } from 'react-icons/tb';
 import { BiBookmark } from 'react-icons/bi';
 import { HiOutlineEmojiHappy } from 'react-icons/hi';
 import { GoKebabHorizontal } from 'react-icons/go';
+import {
+  IoIosArrowDropleftCircle,
+  IoIosArrowDroprightCircle,
+} from 'react-icons/io';
 
 const FeedCardContainer = styled.div`
   width: 470px;
-  height: 855px;
+  height: fit-content;
   border: 1px solid #dbdbdb;
   border-radius: 10px;
   display: flex;
@@ -46,13 +52,21 @@ const UserInfo = styled.div`
 
 const ImageBoxWrapper = styled.div`
   width: 100%;
-  height: 587.5px;
-  background-image: url('../../../assets/image/userImage.png');
+  height: fit-content;
+  display: flex;
+  /* overflow: hidden; */
+  /* background-image: url('../../../assets/image/userImage.png');
   background-position: center;
   background-size: contain;
-  background-repeat: no-repeat;
-  background: grey;
+  background-repeat: no-repeat; */
   position: relative;
+  img {
+    width: 100%;
+    height: fit-content;
+    object-fit: cover;
+    background: black;
+    flex: none;
+  }
 `;
 
 const CommentBoxWrapper = styled.div`
@@ -317,6 +331,30 @@ const BigLikedIcon = styled(BsHeartFill)<{ likeButtonClicked: boolean }>`
     }
   }
 `;
+
+const LeftArrowIcon = styled(IoIosArrowDropleftCircle)`
+  width: 30px;
+  height: 30px;
+  color: #fff;
+  position: absolute;
+  z-index: 200;
+  top: 50%;
+  left: 15px;
+  opacity: 0.6;
+  cursor: pointer;
+`;
+const RightArrowIcon = styled(IoIosArrowDroprightCircle)`
+  width: 30px;
+  height: 30px;
+  color: #fff;
+  position: absolute;
+  z-index: 200;
+  top: 50%;
+  right: 15px;
+  opacity: 0.6;
+  cursor: pointer;
+`;
+
 const FeedCard = () => {
   const [likeButtonClicked, setLikeButtonClicked] = useState(false);
 
@@ -337,6 +375,11 @@ const FeedCard = () => {
         <KebabMenuIcon />
       </UserInformationWrapper>
       <ImageBoxWrapper onDoubleClick={() => setLikeButtonClicked(true)}>
+        <LeftArrowIcon />
+        <img src={userImage} alt="유저이미지" />
+        <img src={userImage2} alt="유저이미지" />
+        <img src={userImage3} alt="유저이미지" />
+        <RightArrowIcon />
         <BigLikedIcon likeButtonClicked={likeButtonClicked} />
       </ImageBoxWrapper>
       <CommentBoxWrapper>
