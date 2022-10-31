@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import userAvatar from '../../../assets/image/userAvatar.png';
 import userImage from '../../../assets/image/userImage.png';
@@ -67,6 +67,13 @@ const ImageBoxWrapper = styled.div`
     background: black;
     flex: none;
   }
+`;
+
+const ImageWrapper = styled.div`
+  width: 100%;
+  height: 100%;
+  display: flex;
+  overflow: hidden;
 `;
 
 const CommentBoxWrapper = styled.div`
@@ -355,14 +362,35 @@ const RightArrowIcon = styled(IoIosArrowDroprightCircle)`
   cursor: pointer;
 `;
 
+const TOTAL_SLIDES = 2;
 const FeedCard = () => {
   const [likeButtonClicked, setLikeButtonClicked] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const slideRef = useRef(null);
 
-  // const likeDoubleClicked = () => {
-  //   setTimeout(() => {
-  //     heart.classList.remove('animate-like');
-  //   }, 800);
-  // }
+  const NextSlide = () => {
+    if (currentSlide >= TOTAL_SLIDES) {
+      setCurrentSlide(0);
+      // return;
+    } else {
+      setCurrentSlide(currentSlide + 1);
+    }
+  };
+
+  const PrevSlide = () => {
+    if (currentSlide === 0) {
+      setCurrentSlide(TOTAL_SLIDES);
+      // return;
+    } else {
+      setCurrentSlide(currentSlide - 1);
+    }
+  };
+
+  useEffect(() => {
+    slideRef.current.style.transition = 'all 0.5s ease-in-out';
+    slideRef.current.style.transform = `translateX(-${currentSlide}00%)`;
+  }, [currentSlide]);
+
   return (
     <FeedCardContainer>
       <UserInformationWrapper>
@@ -374,12 +402,16 @@ const FeedCard = () => {
         </UserInfo>
         <KebabMenuIcon />
       </UserInformationWrapper>
-      <ImageBoxWrapper onDoubleClick={() => setLikeButtonClicked(true)}>
-        <LeftArrowIcon />
-        <img src={userImage} alt="유저이미지" />
-        <img src={userImage2} alt="유저이미지" />
-        <img src={userImage3} alt="유저이미지" />
-        <RightArrowIcon />
+      <ImageBoxWrapper
+        ref={slideRef}
+        onDoubleClick={() => setLikeButtonClicked(true)}>
+        <LeftArrowIcon onClick={PrevSlide} />
+        <ImageWrapper>
+          <img src={userImage} alt="유저이미지" />
+          <img src={userImage2} alt="유저이미지" />
+          <img src={userImage3} alt="유저이미지" />
+        </ImageWrapper>
+        <RightArrowIcon onClick={NextSlide} />
         <BigLikedIcon likeButtonClicked={likeButtonClicked} />
       </ImageBoxWrapper>
       <CommentBoxWrapper>
