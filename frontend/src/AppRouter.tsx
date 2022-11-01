@@ -7,8 +7,7 @@ import Profile from './pages/Profile';
 
 const LoggedOutRoutes = () => (
   <Routes>
-    <Route path="*" element={<Login />} />
-    <Route path="/" element={<Login />} />
+    <Route path="/login" element={<Login />} />
     <Route path="/home" element={<Home />} />
     <Route path="/profile" element={<Profile />} />
   </Routes>
