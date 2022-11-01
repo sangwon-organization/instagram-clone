@@ -1,9 +1,11 @@
 name: Deploy
 
 on:
-  pull_request:
+   pull_request:
     branches: 
-      - 'dltkddnjs:main'
+      - '*'
+    paths:
+      - frontend/**
 
 jobs:
       deploy:
