@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import userAvatar from '../../../assets/image/userAvatar.png';
 import userImage from '../../../assets/image/userImage.png';
@@ -10,6 +10,7 @@ import { RiChat3Line } from 'react-icons/ri';
 import { TbLocation } from 'react-icons/tb';
 import { BiBookmark } from 'react-icons/bi';
 import { HiOutlineEmojiHappy } from 'react-icons/hi';
+import { FaCircle } from 'react-icons/fa';
 import { GoKebabHorizontal } from 'react-icons/go';
 import {
   IoIosArrowDropleftCircle,
@@ -54,12 +55,19 @@ const ImageBoxWrapper = styled.div`
   width: 100%;
   height: fit-content;
   display: flex;
-  /* overflow: hidden; */
+  overflow: hidden;
   /* background-image: url('../../../assets/image/userImage.png');
   background-position: center;
   background-size: contain;
   background-repeat: no-repeat; */
   position: relative;
+`;
+
+const ImageWrapper = styled.div`
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
   img {
     width: 100%;
     height: fit-content;
@@ -67,13 +75,6 @@ const ImageBoxWrapper = styled.div`
     background: black;
     flex: none;
   }
-`;
-
-const ImageWrapper = styled.div`
-  width: 100%;
-  height: 100%;
-  display: flex;
-  overflow: hidden;
 `;
 
 const CommentBoxWrapper = styled.div`
@@ -109,6 +110,7 @@ const IconBox = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 0 10px;
+  /* border: 1px solid red; */
 `;
 
 const LeftIconBox = styled.div`
@@ -339,7 +341,9 @@ const BigLikedIcon = styled(BsHeartFill)<{ likeButtonClicked: boolean }>`
   }
 `;
 
-const LeftArrowIcon = styled(IoIosArrowDropleftCircle)`
+const LeftArrowIcon = styled(IoIosArrowDropleftCircle)<{
+  currentslide: number;
+}>`
   width: 30px;
   height: 30px;
   color: #fff;
@@ -349,8 +353,12 @@ const LeftArrowIcon = styled(IoIosArrowDropleftCircle)`
   left: 15px;
   opacity: 0.6;
   cursor: pointer;
+  ${({ currentslide }) => currentslide === 0 && 'display: none'};
 `;
-const RightArrowIcon = styled(IoIosArrowDroprightCircle)`
+
+const RightArrowIcon = styled(IoIosArrowDroprightCircle)<{
+  currentslide: number;
+}>`
   width: 30px;
   height: 30px;
   color: #fff;
@@ -360,6 +368,24 @@ const RightArrowIcon = styled(IoIosArrowDroprightCircle)`
   right: 15px;
   opacity: 0.6;
   cursor: pointer;
+  ${({ currentslide }) => currentslide === TOTAL_SLIDES && 'display: none'};
+`;
+
+const MeatballIconBox = styled.div`
+  width: fit-content;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0 3px;
+  padding: 0 10px;
+  margin-right: 80px;
+`;
+
+const MeatballIcon = styled(FaCircle)`
+  width: 6px;
+  height: 6px;
+  color: #8e8e8e;
 `;
 
 const TOTAL_SLIDES = 2;
@@ -367,11 +393,13 @@ const FeedCard = () => {
   const [likeButtonClicked, setLikeButtonClicked] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const slideRef = useRef(null);
+  const circleRef = useRef(null);
 
   const NextSlide = () => {
     if (currentSlide >= TOTAL_SLIDES) {
-      setCurrentSlide(0);
-      // return;
+      // setCurrentSlide(0);
+      return;
+      // rightArrowRef.current.style.display = 'none';
     } else {
       setCurrentSlide(currentSlide + 1);
     }
@@ -379,17 +407,37 @@ const FeedCard = () => {
 
   const PrevSlide = () => {
     if (currentSlide === 0) {
-      setCurrentSlide(TOTAL_SLIDES);
-      // return;
+      // setCurrentSlide(TOTAL_SLIDES);
+      return;
+      // leftArrowRef.current.style.display = 'none';
     } else {
       setCurrentSlide(currentSlide - 1);
     }
   };
 
+  const MeatballSlide = useCallback(() => {
+    if (currentSlide === 0) {
+      circleRef.current.children[0].style.color = '#0095f6';
+      circleRef.current.children[1].style.color = '#8e8e8e';
+      circleRef.current.children[2].style.color = '#8e8e8e';
+    }
+    if (currentSlide === 1) {
+      circleRef.current.children[1].style.color = '#0095f6';
+      circleRef.current.children[0].style.color = '#8e8e8e';
+      circleRef.current.children[2].style.color = '#8e8e8e';
+    }
+    if (currentSlide === 2) {
+      circleRef.current.children[2].style.color = '#0095f6';
+      circleRef.current.children[0].style.color = '#8e8e8e';
+      circleRef.current.children[1].style.color = '#8e8e8e';
+    }
+  }, [currentSlide]);
+
   useEffect(() => {
+    MeatballSlide();
     slideRef.current.style.transition = 'all 0.5s ease-in-out';
     slideRef.current.style.transform = `translateX(-${currentSlide}00%)`;
-  }, [currentSlide]);
+  }, [currentSlide, MeatballSlide]);
 
   return (
     <FeedCardContainer>
@@ -402,16 +450,14 @@ const FeedCard = () => {
         </UserInfo>
         <KebabMenuIcon />
       </UserInformationWrapper>
-      <ImageBoxWrapper
-        ref={slideRef}
-        onDoubleClick={() => setLikeButtonClicked(true)}>
-        <LeftArrowIcon onClick={PrevSlide} />
-        <ImageWrapper>
+      <ImageBoxWrapper onDoubleClick={() => setLikeButtonClicked(true)}>
+        <LeftArrowIcon currentslide={currentSlide} onClick={PrevSlide} />
+        <ImageWrapper ref={slideRef}>
           <img src={userImage} alt="유저이미지" />
           <img src={userImage2} alt="유저이미지" />
           <img src={userImage3} alt="유저이미지" />
         </ImageWrapper>
-        <RightArrowIcon onClick={NextSlide} />
+        <RightArrowIcon currentslide={currentSlide} onClick={NextSlide} />
         <BigLikedIcon likeButtonClicked={likeButtonClicked} />
       </ImageBoxWrapper>
       <CommentBoxWrapper>
@@ -434,6 +480,11 @@ const FeedCard = () => {
             <ChatIcon />
             <LocationIcon />
           </LeftIconBox>
+          <MeatballIconBox ref={circleRef}>
+            <MeatballIcon />
+            <MeatballIcon />
+            <MeatballIcon />
+          </MeatballIconBox>
           <BookmarkIcon />
         </IconBox>
         <LikedMemberBox>5,960 likes</LikedMemberBox>
