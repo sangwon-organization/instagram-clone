@@ -28,8 +28,9 @@ jobs:
           - name: Build
             run: CI='' yarn build
     
-          - name: Transfer to S3 for serving static
-            uses: jakejarvis/s3-sync-action@master
+          - name: S3 Sync
+  uses: jakejarvis/s3-sync-action@v0.5.1
+
             with:
               args: --acl public-read --follow-symlinks --delete
             env:
