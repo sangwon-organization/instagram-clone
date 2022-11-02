@@ -19,7 +19,7 @@ const LoginPresenter = () => {
   const selector = useSelector((state: any) => state.login.isLogin);
   return (
     <>
-      <LoginWrapper>{selector ? <SignUp /> : <Login />}</LoginWrapper>
+      <LoginWrapper>{selector ? <Login /> : <SignUp />}</LoginWrapper>
       <Footer />
     </>
   );

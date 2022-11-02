@@ -37,9 +37,9 @@ const LoginSignUpMiddleBox = ({ question, linkText }: MiddleBoxProps) => {
 
   const toggleComponent = (e: any) => {
     if (e.target.textContent === ' Log in') {
-      dispatch(signupComponent());
-    } else if (e.target.textContent === ' Sign up') {
       dispatch(loginComponent());
+    } else if (e.target.textContent === ' Sign up') {
+      dispatch(signupComponent());
     }
   };
   return (
