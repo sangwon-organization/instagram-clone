@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import styled from 'styled-components';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -61,37 +61,39 @@ const LoginButton = styled.button<{ disabled: boolean }>`
   margin-top: 7.8px;
 `;
 
-const InputBox = styled.div<{ keyPress: boolean; Clicked: boolean }>`
+const InputBox = styled.div<{ keyPress: boolean; clicked: boolean }>`
   position: relative;
   width: 262px;
   height: 37.1px;
   border-radius: 2.9px;
-  border: solid 1px ${({ Clicked }) => (Clicked ? '#a2a1a1' : '#dbdbdb')};
+  border: solid 1px ${({ clicked }) => (clicked ? '#a2a1a1' : '#dbdbdb')};
   background-color: #fafafa;
   input {
     position: absolute;
-    width: 262px;
-    top: ${({ keyPress }) => (keyPress ? '10px' : '0')};
-    height: ${({ keyPress }) => (keyPress ? '30px' : '37.1px')};
-    /* border: 1px solid red; */
+    width: 100%;
+    height: 100%;
+    top: ${({ keyPress }) => (keyPress ? '0px' : '-3px')};
+    /* height: ${({ keyPress }) => (keyPress ? '30px' : '37.1px')}; */
     border: none;
     background: transparent;
-    font-size: ${({ keyPress }) => (keyPress ? '8px' : '14px')};
+    font-size: ${({ keyPress }) => (keyPress ? '8px' : '12px')};
     /* &:focus {
     border-color: #a2a1a1;
   } */
+    z-index: 100;
+    padding-top: 10px;
   }
   span {
     position: absolute;
-    top: ${({ keyPress }) => (keyPress ? '-5px' : '-2px')};
-    font-size: ${({ keyPress }) => (keyPress ? '8px' : '14px')};
+    top: ${({ keyPress }) => (keyPress ? '-5px' : '0')};
+    font-size: ${({ keyPress }) => (keyPress ? '8px' : '12px')};
     font-weight: normal;
     font-stretch: normal;
     font-style: normal;
     line-height: 3;
     letter-spacing: normal;
     text-align: left;
-    padding-left: 7.8px;
+    padding-left: 10px;
     color: #8e8e8e;
     transition: all linear 0.2s;
   }
@@ -230,11 +232,8 @@ const Login = () => {
   const [passwordKeyPress, setPasswordKeyPress] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [passwordShowAndHide, setPasswordShowAndHide] = useState(false);
-  const [inputBoxClicked, setInputBoxClicked] = useState(false);
-
-  const ToggleInputBoxClicked = () => {
-    setInputBoxClicked((prev) => !prev);
-  };
+  const [emailInputBoxClicked, setEmailInputBoxClicked] = useState(false);
+  const [passwordInputBoxClicked, setPasswordInputBoxClicked] = useState(false);
 
   const userNameInputKeyPress = (e: any) => {
     if (e.target.value === '') {
@@ -272,28 +271,29 @@ const Login = () => {
     formState: { isValid, errors },
   } = useForm<FormValues>({ mode: 'onChange', resolver: yupResolver(schema) });
 
-  useEffect(() => {
-    console.log(isValid);
-  }, [isValid]);
   return (
     <LoginContainer>
       <TopBox>
         <img src={instagramLogo} alt="인스타그램로고" />
         <LoginForm onSubmit={handleSubmit(onSubmit, onError)}>
-          <InputBox keyPress={usernameKeyPress} Clicked={inputBoxClicked}>
+          <InputBox keyPress={usernameKeyPress} clicked={emailInputBoxClicked}>
             <input
               type="text"
-              onClick={() => ToggleInputBoxClicked()}
-              onKeyDown={(e) => userNameInputKeyPress(e)}
+              onFocusCapture={() => setEmailInputBoxClicked(true)}
+              onBlurCapture={() => setEmailInputBoxClicked(false)}
+              onKeyUp={(e) => userNameInputKeyPress(e)}
               {...register('usernameInput', { required: true })}
             />
-            <span>username</span>
+            <span>Phone number, username, or email</span>
           </InputBox>
-          <InputBox keyPress={passwordKeyPress} Clicked={inputBoxClicked}>
+          <InputBox
+            keyPress={passwordKeyPress}
+            clicked={passwordInputBoxClicked}>
             <input
               type={passwordShowAndHide ? 'text' : 'password'}
-              onFocus={() => ToggleInputBoxClicked()}
-              onKeyDown={(e) => passwordInputKeyPress(e)}
+              onFocusCapture={() => setPasswordInputBoxClicked(true)}
+              onBlurCapture={() => setPasswordInputBoxClicked(false)}
+              onKeyUp={(e) => passwordInputKeyPress(e)}
               {...register('passwordInput', { required: true })}
             />
             <span>Password</span>
