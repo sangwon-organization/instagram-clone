@@ -82,6 +82,7 @@ const InputBox = styled.div<{ keyPress: boolean; clicked: boolean }>`
   } */
     z-index: 100;
     padding-top: 10px;
+    transition: all linear 0.1s;
   }
   span {
     position: absolute;
@@ -95,7 +96,7 @@ const InputBox = styled.div<{ keyPress: boolean; clicked: boolean }>`
     text-align: left;
     padding-left: 10px;
     color: #8e8e8e;
-    transition: all linear 0.2s;
+    transition: all linear 0.1s;
   }
 `;
 
@@ -107,6 +108,7 @@ const ShowHideText = styled.button`
   font-weight: 600;
   border: none;
   background: transparent;
+  z-index: 200;
   &:active {
     color: grey;
   }
