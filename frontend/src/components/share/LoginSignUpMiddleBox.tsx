@@ -1,5 +1,7 @@
 import React from 'react';
+import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
+import { loginComponent, signupComponent } from '../../redux/slices/loginSlice';
 
 const Container = styled.div`
   width: 100%;
@@ -31,10 +33,20 @@ interface MiddleBoxProps {
 }
 
 const LoginSignUpMiddleBox = ({ question, linkText }: MiddleBoxProps) => {
+  const dispatch = useDispatch();
+
+  const toggleComponent = (e: any) => {
+    if (e.target.textContent === ' Log in') {
+      dispatch(signupComponent());
+    } else if (e.target.textContent === ' Sign up') {
+      dispatch(loginComponent());
+    }
+  };
   return (
     <Container>
       <p>
-        {question} <span>{linkText}</span>
+        {question}
+        <span onClick={(e) => toggleComponent(e)}> {linkText}</span>
       </p>
     </Container>
   );
