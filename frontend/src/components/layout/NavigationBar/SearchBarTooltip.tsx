@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import styled from 'styled-components';
 import { IoClose } from 'react-icons/io5';
 import userAvatar from '../../../assets/image/userAvatar.png';
@@ -36,7 +36,7 @@ const SearchBarTooltipContainer = styled.div<{
 const SearchBarTooltipWrapper = styled.div`
   width: 374px;
   height: 362px;
-  overflow-y: scroll;
+  overflow-y: auto;
   &::-webkit-scrollbar-thumb {
     background: rgba(147, 147, 147, 0.7);
     border-radius: 10px;
@@ -145,6 +145,19 @@ const CloseIcon = styled(IoClose)`
   color: rgb(142, 142, 142);
 `;
 
+const EmptyRecentSearch = styled.div`
+  width: 100%;
+  height: 300px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  p {
+    font-size: 14px;
+    font-weight: 600;
+    color: #8e8e8e;
+  }
+`;
+
 interface SearchBarTooltipProps {
   showTooltip: boolean;
   setShowTooltip: Function;
@@ -157,6 +170,7 @@ const SearchBarTooltip = ({
   setSearchBarClicked,
 }: SearchBarTooltipProps) => {
   const outsideRef = useRef();
+  const [recentSearch, setRecentSearch] = useState(false);
 
   useOutsideClick(outsideRef, () => {
     setShowTooltip(false);
@@ -169,67 +183,74 @@ const SearchBarTooltip = ({
           <p>Recent</p>
           <button>Clear all</button>
         </TooltipHeader>
-        <RecentSearchItem>
-          <UserAvatar>
-            <img src={userAvatar} alt="유저아바타" />
-          </UserAvatar>
-          <UserInfo>
-            <p>username</p>
-            <p>userDescription</p>
-          </UserInfo>
-          <CloseIcon />
-        </RecentSearchItem>
-        <RecentSearchItem>
-          <UserAvatar>
-            <img src={userAvatar} alt="유저아바타" />
-          </UserAvatar>
-          <UserInfo>
-            <p>username</p>
-            <p>userDescription</p>
-          </UserInfo>
-          <CloseIcon />
-        </RecentSearchItem>
-        <RecentSearchItem>
-          <UserAvatar>
-            <img src={userAvatar} alt="유저아바타" />
-          </UserAvatar>
-          <UserInfo>
-            <p>username</p>
-            <p>userDescription</p>
-          </UserInfo>
-          <CloseIcon />
-        </RecentSearchItem>
-        <RecentSearchItem>
-          <UserAvatar>
-            <img src={userAvatar} alt="유저아바타" />
-          </UserAvatar>
-          <UserInfo>
-            <p>username</p>
-            <p>userDescription</p>
-          </UserInfo>
-          <CloseIcon />
-        </RecentSearchItem>
-        <RecentSearchItem>
-          <UserAvatar>
-            <img src={userAvatar} alt="유저아바타" />
-          </UserAvatar>
-          <UserInfo>
-            <p>username</p>
-            <p>userDescription</p>
-          </UserInfo>
-          <CloseIcon />
-        </RecentSearchItem>
-
-        <RecentSearchItem>
-          <UserAvatar>
-            <img src={userAvatar} alt="유저아바타" />
-          </UserAvatar>
-          <UserInfo>
-            <p>username</p>
-            <p>userDescription</p>
-          </UserInfo>
-          <CloseIcon />
-        </RecentSearchItem>
+        {recentSearch ? (
+          <>
+            <RecentSearchItem>
+              <UserAvatar>
+                <img src={userAvatar} alt="유저아바타" />
+              </UserAvatar>
+              <UserInfo>
+                <p>username</p>
+                <p>userDescription</p>
+              </UserInfo>
+              <CloseIcon />
+            </RecentSearchItem>
+            <RecentSearchItem>
+              <UserAvatar>
+                <img src={userAvatar} alt="유저아바타" />
+              </UserAvatar>
+              <UserInfo>
+                <p>username</p>
+                <p>userDescription</p>
+              </UserInfo>
+              <CloseIcon />
+            </RecentSearchItem>
+            <RecentSearchItem>
+              <UserAvatar>
+                <img src={userAvatar} alt="유저아바타" />
+              </UserAvatar>
+              <UserInfo>
+                <p>username</p>
+                <p>userDescription</p>
+              </UserInfo>
+              <CloseIcon />
+            </RecentSearchItem>
+            <RecentSearchItem>
+              <UserAvatar>
+                <img src={userAvatar} alt="유저아바타" />
+              </UserAvatar>
+              <UserInfo>
+                <p>username</p>
+                <p>userDescription</p>
+              </UserInfo>
+              <CloseIcon />
+            </RecentSearchItem>
+            <RecentSearchItem>
+              <UserAvatar>
+                <img src={userAvatar} alt="유저아바타" />
+              </UserAvatar>
+              <UserInfo>
+                <p>username</p>
+                <p>userDescription</p>
+              </UserInfo>
+              <CloseIcon />
+            </RecentSearchItem>
+            <RecentSearchItem>
+              <UserAvatar>
+                <img src={userAvatar} alt="유저아바타" />
+              </UserAvatar>
+              <UserInfo>
+                <p>username</p>
+                <p>userDescription</p>
+              </UserInfo>
+              <CloseIcon />
+            </RecentSearchItem>
+          </>
+        ) : (
+          <EmptyRecentSearch>
+            <p>No recent searches.</p>
+          </EmptyRecentSearch>
+        )}
       </SearchBarTooltipWrapper>
     </SearchBarTooltipContainer>
   );
