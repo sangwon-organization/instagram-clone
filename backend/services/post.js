@@ -16,7 +16,7 @@ const createPost = async (fields, files) => {
     const imagePath = 'C:/node_workspace/instagram-clone/backend/images/'
     const imageExt = file.originalFilename.split('.')[1]
     const originalImageName = file.originalFilename.split('.')[0]
-    const imageName = uuidv4() + '.' + imageExt
+    const imageName = uuidv4()
     const dimensions = sizeOf(oldFilePath)
     const imageSize = file.size
     const imageWidth = dimensions.width
@@ -42,13 +42,13 @@ const createPost = async (fields, files) => {
 
 const updatePost = async (fields, files) => {
   // 1. Image 레코드 조회
-  const images = await Image.findAll({ where: { imageId: fields.deleteImageId } })
+  const images = await Image.findAll({ where: { imageId: fields.deleteImageIds } })
 
   // 2. Image 레코드 삭제
-  Image.destroy({ where: { imageId: fields.deleteImageId } })
+  Image.destroy({ where: { imageId: fields.deleteImageIds } })
 
   // 3. PostImage 레코드 삭제
-  PostImage.destroy({ where: { postId: fields.postId, imageId: fields.deleteImageId } })
+  PostImage.destroy({ where: { postId: fields.postId, imageId: fields.deleteImageIds } })
 
   // 4. 이미지 파일 삭제
   const deleteImagePromises = images.map(async (image, index) => {
@@ -78,7 +78,7 @@ const updatePost = async (fields, files) => {
     const imagePath = 'C:/node_workspace/instagram-clone/backend/images/'
     const imageExt = file.originalFilename.split('.')[1]
     const originalImageName = file.originalFilename.split('.')[0]
-    const imageName = uuidv4() + '.' + imageExt
+    const imageName = uuidv4()
     const dimensions = sizeOf(oldFilePath)
     const imageSize = file.size
     const imageWidth = dimensions.width
