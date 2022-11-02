@@ -14,12 +14,12 @@ module.exports = class Comment extends Sequelize.Model {
           allowNull: true,
         },
         createdAt: {
-          type: Sequelize.DATE,
+          type: Sequelize.DATE(3),
           allowNull: true,
           defaultValue: Sequelize.NOW,
         },
         updatedAt: {
-          type: Sequelize.DATE,
+          type: Sequelize.DATE(3),
           allowNull: true,
           defaultValue: Sequelize.NOW,
         },

@@ -1,3 +1,4 @@
+const { SequelizeScopeError } = require('sequelize')
 const Sequelize = require('sequelize')
 
 module.exports = class Image extends Sequelize.Model {
@@ -9,17 +10,41 @@ module.exports = class Image extends Sequelize.Model {
           autoIncrement: true,
           primaryKey: true,
         },
+        imageName: {
+          type: Sequelize.STRING(255),
+          allowNull: true,
+        },
         imagePath: {
           type: Sequelize.STRING(255),
           allowNull: true,
         },
+        originalImageName: {
+          type: Sequelize.STRING(255),
+          allowNull: true,
+        },
+        imageSize: {
+          type: Sequelize.INTEGER,
+          allowNull: true,
+        },
+        imageWidth: {
+          type: Sequelize.INTEGER,
+          allowNull: true,
+        },
+        imageHeight: {
+          type: Sequelize.INTEGER,
+          allowNull: true,
+        },
+        imageExt: {
+          type: Sequelize.STRING,
+          allowNull: true,
+        },
         createdAt: {
-          type: Sequelize.DATE,
+          type: Sequelize.DATE(3),
           allowNull: false,
           defaultValue: Sequelize.NOW,
         },
         updatedAt: {
-          type: Sequelize.DATE,
+          type: Sequelize.DATE(3),
           allowNull: false,
           defaultValue: Sequelize.NOW,
         },

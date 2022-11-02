@@ -14,12 +14,12 @@ module.exports = class Post extends Sequelize.Model {
           allowNull: true,
         },
         createdAt: {
-          type: Sequelize.DATE,
+          type: Sequelize.DATE(3),
           allowNull: false,
           defaultValue: Sequelize.NOW,
         },
         updatedAt: {
-          type: Sequelize.DATE,
+          type: Sequelize.DATE(3),
           allowNull: false,
           defaultValue: Sequelize.NOW,
         },
@@ -37,6 +37,7 @@ module.exports = class Post extends Sequelize.Model {
         paranoid: false,
         charset: 'utf8',
         collate: 'utf8_general_ci',
+        updatedAt: 'updateTimestamp',
       }
     )
   }

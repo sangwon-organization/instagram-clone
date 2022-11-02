@@ -13,12 +13,12 @@ module.exports = class PostImage extends Sequelize.Model {
           primaryKey: true,
         },
         createdAt: {
-          type: Sequelize.DATE,
+          type: Sequelize.DATE(3),
           allowNull: false,
           defaultValue: Sequelize.NOW,
         },
         updatedAt: {
-          type: Sequelize.DATE,
+          type: Sequelize.DATE(3),
           allowNull: false,
           defaultValue: Sequelize.NOW,
         },
