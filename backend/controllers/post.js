@@ -70,13 +70,18 @@ const getPost = catchAsync(async (req, res) => {
   })
   await Promise.all(promises)
   const result = { postId: post.postId, content: post.content, createdAt: post.createdAt, postImages: postImages }
-  console.log('result:', result)
 
   res.status(httpStatus.OK).send(Object.assign({ code: 0, message: 'success' }, result))
+})
+
+const deletePost = catchAsync(async (req, res) => {
+  await postService.deletePost(req.params.postId)
+  res.status(httpStatus.OK).send(Object.assign({ code: 0, message: 'success' }))
 })
 
 module.exports = {
   createPost,
   updatePost,
   getPost,
+  deletePost,
 }

@@ -22,7 +22,7 @@ const createPost = async (fields, files) => {
     const imageWidth = dimensions.width
     const imageHeight = dimensions.height
 
-    fs.rename(oldFilePath, imagePath + imageName, async (err) => {
+    fs.rename(oldFilePath, imagePath + imageName + '.' + imageExt, async (err) => {
       if (err) {
         throw err
       }
@@ -84,7 +84,7 @@ const updatePost = async (fields, files) => {
     const imageWidth = dimensions.width
     const imageHeight = dimensions.height
 
-    fs.rename(oldFilePath, imagePath + imageName, async (err) => {
+    fs.rename(oldFilePath, imagePath + imageName + '.' + imageExt, async (err) => {
       if (err) {
         throw err
       }
@@ -122,8 +122,61 @@ const getPost = async (postId) => {
   })
 }
 
+const deletePost = async (postId) => {
+  let postImages = await PostImage.findAll(
+    {
+      attributes: ['postId'],
+      include: [
+        {
+          model: Image,
+          attributes: ['imageId', 'imageName', 'imagePath', 'imageExt'],
+        },
+      ],
+    },
+    {
+      where: {
+        postId: postId,
+      },
+    }
+  )
+
+  let imageIds = []
+  let imagePaths = []
+  let getImageIdPromises = postImages.map(async (postImage) => {
+    imageIds.push(postImage.Image.imageId)
+    imagePaths.push(postImage.Image.imagePath + postImage.Image.imageName + '.' + postImage.Image.imageExt)
+  })
+  await Promise.all(getImageIdPromises)
+  console.log(imageIds)
+  console.log(imagePaths)
+
+  await PostImage.destroy({
+    where: {
+      postId: postId,
+    },
+  })
+
+  await Image.destroy({
+    where: {
+      imageId: imageIds,
+    },
+  })
+
+  await Post.destroy({
+    where: {
+      postId: postId,
+    },
+  })
+
+  let deleteImagePromises = imagePaths.map(async (imagePath) => {
+    fs.unlinkSync(imagePath)
+  })
+  await Promise.all(deleteImagePromises)
+}
+
 module.exports = {
   createPost,
   updatePost,
   getPost,
+  deletePost,
 }
