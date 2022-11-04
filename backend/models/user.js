@@ -26,10 +26,6 @@ module.exports = class User extends Sequelize.Model {
           type: Sequelize.STRING(20),
           allowNull: true,
         },
-        gender: {
-          type: Sequelize.CHAR(1),
-          allowNull: true,
-        },
         bio: {
           type: Sequelize.TEXT,
           allowNull: true,
@@ -39,12 +35,12 @@ module.exports = class User extends Sequelize.Model {
           allowNull: true,
         },
         createdAt: {
-          type: Sequelize.DATE,
+          type: Sequelize.DATE(3),
           allowNull: true,
           defaultValue: Sequelize.NOW,
         },
         updatedAt: {
-          type: Sequelize.DATE,
+          type: Sequelize.DATE(3),
           allowNull: true,
           defaultValue: Sequelize.NOW,
         },
@@ -68,15 +64,6 @@ module.exports = class User extends Sequelize.Model {
     db.User.hasMany(db.PostLike, { foreignKey: 'userId', sourceKey: 'userId' })
     db.User.hasMany(db.Comment, { foreignKey: 'userId', sourceKey: 'userId' })
     db.User.hasMany(db.CommentLike, { foreignKey: 'userId', sourceKey: 'userId' })
-  }
-
-  static async isEmailExist(emalii) {
-    let emailCount = await User.count({ where: { email: `${emalii}` } })
-    return emailCount ? true : false
-  }
-
-  static async isUsernameExist(username) {
-    let usernameCount = await User.count({ where: { username: `${username}` } })
-    return usernameCount ? true : false
+    db.User.hasMany(db.Token, { foreignKey: 'userId', sourceKey: 'userId' })
   }
 }

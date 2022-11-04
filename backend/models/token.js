@@ -1,16 +1,29 @@
 const Sequelize = require('sequelize')
 
-module.exports = class Post extends Sequelize.Model {
+module.exports = class Token extends Sequelize.Model {
   static init(sequelize) {
     return super.init(
       {
-        postId: {
+        tokenId: {
           type: Sequelize.INTEGER,
           autoIncrement: true,
           primaryKey: true,
         },
-        content: {
-          type: Sequelize.TEXT,
+        token: {
+          type: Sequelize.STRING(255),
+          allowNull: false,
+          unique: true,
+        },
+        type: {
+          type: Sequelize.STRING,
+          allowNull: true,
+        },
+        expiredAt: {
+          type: Sequelize.DATE(3),
+          allowNull: true,
+        },
+        blacklisted: {
+          type: Sequelize.BOOLEAN,
           allowNull: true,
         },
         createdAt: {
@@ -25,26 +38,22 @@ module.exports = class Post extends Sequelize.Model {
         },
         userId: {
           type: Sequelize.INTEGER,
-          allowNull: true,
+          allowNull: false,
         },
       },
       {
         sequelize,
         timestamps: false,
         underscored: true,
-        modelName: 'Post',
-        tableName: 'tb_post',
+        modelName: 'Token',
+        tableName: 'tb_token',
         paranoid: false,
         charset: 'utf8',
         collate: 'utf8_general_ci',
-        updatedAt: 'updateTimestamp',
       }
     )
   }
   static associate(db) {
     db.Post.belongsTo(db.User, { foreignKey: 'userId', targetKey: 'userId' })
-    db.Post.hasMany(db.PostLike, { foreignKey: 'postId', sourceKey: 'postId' })
-    db.Post.hasMany(db.Comment, { foreignKey: 'postId', sourceKey: 'postId' })
-    db.Post.hasMany(db.PostImage, { foreignKey: 'postId', sourceKey: 'postId' })
   }
 }

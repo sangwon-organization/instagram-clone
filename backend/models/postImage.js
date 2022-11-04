@@ -1,6 +1,6 @@
 const Sequelize = require('sequelize')
 
-module.exports = class PostLike extends Sequelize.Model {
+module.exports = class PostImage extends Sequelize.Model {
   static init(sequelize) {
     return super.init(
       {
@@ -8,18 +8,18 @@ module.exports = class PostLike extends Sequelize.Model {
           type: Sequelize.INTEGER,
           primaryKey: true,
         },
-        userId: {
+        imageId: {
           type: Sequelize.INTEGER,
           primaryKey: true,
         },
         createdAt: {
           type: Sequelize.DATE(3),
-          allowNull: true,
+          allowNull: false,
           defaultValue: Sequelize.NOW,
         },
         updatedAt: {
           type: Sequelize.DATE(3),
-          allowNull: true,
+          allowNull: false,
           defaultValue: Sequelize.NOW,
         },
       },
@@ -27,8 +27,8 @@ module.exports = class PostLike extends Sequelize.Model {
         sequelize,
         timestamps: false,
         underscored: true,
-        modelName: 'PostLike',
-        tableName: 'tb_post_like',
+        modelName: 'PostImage',
+        tableName: 'tb_post_image',
         paranoid: false,
         charset: 'utf8',
         collate: 'utf8_general_ci',
@@ -36,7 +36,7 @@ module.exports = class PostLike extends Sequelize.Model {
     )
   }
   static associate(db) {
-    db.PostLike.belongsTo(db.User, { foreignKey: 'userId', targetKey: 'userId' })
-    db.PostLike.belongsTo(db.Post, { foreignKey: 'postId', targetKey: 'postId' })
+    db.PostImage.belongsTo(db.Post, { foreignKey: 'postId', targetKey: 'postId' })
+    db.PostImage.belongsTo(db.Image, { foreignKey: 'imageId', targetKey: 'imageId' })
   }
 }
