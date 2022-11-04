@@ -26,10 +26,6 @@ module.exports = class User extends Sequelize.Model {
           type: Sequelize.STRING(20),
           allowNull: true,
         },
-        gender: {
-          type: Sequelize.CHAR(1),
-          allowNull: true,
-        },
         bio: {
           type: Sequelize.TEXT,
           allowNull: true,
