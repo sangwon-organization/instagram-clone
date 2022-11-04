@@ -212,7 +212,7 @@ const HomeAside = () => {
           <li>Locations</li>
           <li>Language</li>
         </FooterItems>
-        <Copyright>© 2022 INSTAGRAM FROM META</Copyright>
+        <Copyright>© 2022 CLONESTAGRAM</Copyright>
       </AsideFooter>
     </HomeAsideContainer>
   );

@@ -1,27 +1,28 @@
-import React from 'react'
-import styled from 'styled-components'
-import Login from '../../components/feature/Login/Login'
-import Footer from '../../components/layout/footer/Footer'
+import React from 'react';
+import styled from 'styled-components';
+import Login from '../../components/feature/Login/Login';
+import SignUp from '../../components/feature/SignUp/SignUp';
+import Footer from '../../components/layout/footer/Footer';
+import { useSelector } from 'react-redux';
 
 const LoginWrapper = styled.div`
-width: 100%;
-height: 829px;
+  width: 100%;
+  height: 829px;
   display: flex;
-  flex-direction:column ;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   background: #fafafa;
 `;
 
 const LoginPresenter = () => {
+  const selector = useSelector((state: any) => state.login.isLogin);
   return (
     <>
-      <LoginWrapper>
-        <Login />
-      </LoginWrapper>
+      <LoginWrapper>{selector ? <Login /> : <SignUp />}</LoginWrapper>
       <Footer />
     </>
-  )
-}
+  );
+};
 
-export default LoginPresenter
+export default LoginPresenter;

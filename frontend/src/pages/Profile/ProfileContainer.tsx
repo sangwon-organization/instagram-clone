@@ -11,7 +11,7 @@ const ProfileContainer = () => {
         description="314k Followers, 612 Following, 470 Posts - See Instagram photos and videos
         from username (@usernickname)"
         keywords="클론코딩, 인스타그램"
-        url="https://d317rrnl7xcgph.cloudfront.net/profile"
+        url="https://instagram-clone-sangwon.com/profile"
         imgsrc={thumbnail}
       />
       <ProfilePresenter />
