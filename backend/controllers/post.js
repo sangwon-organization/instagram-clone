@@ -4,7 +4,6 @@ const authService = require('../services/auth')
 const ApiError = require('../utils/ApiError')
 const postService = require('../services/post')
 const formidable = require('formidable')
-const { PostImage } = require('../models')
 
 const createPost = catchAsync(async (req, res) => {
   let token = req.headers['authorization']

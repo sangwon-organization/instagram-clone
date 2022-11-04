@@ -10,24 +10,10 @@ const { Token } = require('../models')
 const secret = 'test1234'
 
 const signup = async (body) => {
+  await userSerivce.checkEmail(body.email)
+  await userSerivce.checkUsername(body.username)
   body.password = decryptAES256(body.password)
-  console.log(body.password)
-  if (await !regex.isValidEmail(body.email)) {
-    throw new ApiError(httpStatus.BAD_REQUEST, '이메일 형식이 맞지 않습니다. 다시 입력해 주세요.')
-  }
-  if (await userSerivce.isEmailExist(body.email)) {
-    throw new ApiError(httpStatus.BAD_REQUEST, '이미 등록된 이메일입니다. 다시 입력해 주세요.')
-  }
-  if (await userSerivce.isUsernameExist(body.username)) {
-    throw new ApiError(httpStatus.BAD_REQUEST, '이미 등록된 닉네임입니다. 다시 입력해 주세요.')
-  }
-  if (await !regex.isValidPassword(body.password)) {
-    throw new ApiError(
-      httpStatus.BAD_REQUEST,
-      '유효하지 않은 비밀번호입니다. 다시 입력해 주세요. (길이 최소 8자 이상 15자 이하, 대문자, 소문자, 숫자, 특수문자(@,$,!,%,*,?,&) 각각 1개 이상 필수 입력)'
-    )
-  }
-
+  await userSerivce.checkPassword(body.password)
   body.password = encryptSHA256(body.password)
   return userSerivce.createUser(body)
 }
@@ -44,9 +30,9 @@ const signin = async (body) => {
 
 const generateAuthTokens = async (user) => {
   const accessTokenExpires = moment().add(60, 'minutes')
-  const accessToken = generateToken(user.userId, accessTokenExpires, 'access')
+  const accessToken = generateToken(user.userId, user.email, accessTokenExpires, 'access')
   const refreshTokenExpires = moment().add(60, 'days')
-  const refreshToken = generateToken(user.userId, refreshTokenExpires, 'refresh')
+  const refreshToken = generateToken(user.userId, user.email, refreshTokenExpires, 'refresh')
 
   await saveToken(refreshToken, user.userId, refreshTokenExpires, 'refresh')
 
@@ -62,14 +48,20 @@ const generateAuthTokens = async (user) => {
   }
 }
 
-const generateToken = (userId, expires, type, secret = 'test1234') => {
+const generateToken = (userId, email, expires, type, secret = 'test1234') => {
   const payload = {
     sub: userId,
+    email: email,
     iat: moment().unix(),
     exp: expires.unix(),
     type,
   }
   return jwt.sign(payload, secret)
+}
+
+const getPayload = (token) => {
+  let decoded = jwt.decode(token)
+  return decoded.payload
 }
 
 const saveToken = async (token, userId, expires, type, blacklisted = false) => {
@@ -94,4 +86,5 @@ module.exports = {
   signin,
   generateAuthTokens,
   verifyToken,
+  getPayload,
 }
