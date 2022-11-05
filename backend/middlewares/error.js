@@ -1,5 +1,5 @@
 const httpStatus = require('http-status')
-const ApiError = require('../utils/apiError')
+const ApiError = require('../utils/ApiError')
 
 const notFoundConverter = (req, res, next) => {
   const statusCode = httpStatus.NOT_FOUND

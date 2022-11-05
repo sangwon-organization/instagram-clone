@@ -1,6 +1,6 @@
 const { User } = require('../models')
 const regex = require('../utils/regex')
-const ApiError = require('../utils/apiError')
+const ApiError = require('../utils/ApiError')
 const httpStatus = require('http-status')
 const { decryptAES256, encryptSHA256 } = require('../utils/encryption')
 

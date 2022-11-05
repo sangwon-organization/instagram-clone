@@ -1,7 +1,7 @@
 const httpStatus = require('http-status')
 const moment = require('moment')
 const jwt = require('jsonwebtoken')
-const ApiError = require('../utils/apiError')
+const ApiError = require('../utils/ApiError')
 const { decryptAES256, encryptSHA256 } = require('../utils/encryption')
 const regex = require('../utils/regex')
 const userSerivce = require('../services/user')
