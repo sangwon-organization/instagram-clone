@@ -1,15 +1,16 @@
-import React, { useCallback, useState } from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import instagramLogo from '../../../assets/image/instagram-logo.png';
 import LoginSignUpBottomBox from '../../share/LoginSignUpBottomBox';
 import LoginSignUpMiddleBox from '../../share/LoginSignUpMiddleBox';
+import instagramLogo from '../../../assets/image/instagram-logo.png';
+import { AiFillFacebook } from 'react-icons/ai';
 
-const LoginContainer = styled.div`
-  width: 342.2px;
-  height: 568px;
+const SignUpContainer = styled.div`
+  width: 347px;
+  height: 768px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -17,7 +18,7 @@ const LoginContainer = styled.div`
 
 const TopBox = styled.div`
   width: 100%;
-  height: 387.1px;
+  height: 575px;
   border-radius: 1px;
   border: solid 1px #dbdbdb;
   background-color: #fff;
@@ -31,34 +32,66 @@ const TopBox = styled.div`
     height: 49.9px;
     margin-top: 45.9px;
   }
+
+  p {
+    color: #8e8e8e;
+    font-size: 17px;
+    font-weight: 700;
+    width: 262px;
+  }
 `;
 
-const LoginForm = styled.form`
+const FacebookLoginButton = styled.button`
+  width: 262px;
+  height: 33px;
+  border: none;
+  background: #0095f6;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+`;
+
+const FacebookLogo = styled(AiFillFacebook)`
+  color: #fff;
+  width: 20px;
+  height: 20px;
+  margin-right: 5px;
+`;
+
+const OrBox = styled.div`
+  width: 262px;
+  height: 14.7px;
+  p {
+    font-size: 12.7px;
+    font-weight: 600;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: 1.15;
+    letter-spacing: normal;
+    color: #8e8e8e;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0 17px;
+    &::before,
+    &::after {
+      content: '';
+      display: inline-block;
+      width: 103.9px;
+      height: 1px;
+      background: #dbdbdb;
+    }
+  }
+`;
+const Form = styled.form`
   width: 340.2px;
-  height: 126px;
+  height: fit-content;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   gap: 5.9px 0;
-`;
-
-const LoginButton = styled.button<{ disabled: boolean }>`
-  width: 262px;
-  height: 29.3px;
-  border-radius: 3.9px;
-  background: ${({ disabled }) =>
-    disabled ? 'rgba(0, 149, 246, 0.3)' : '#0095F6'};
-  border: none;
-  font-size: 13.7px;
-  font-weight: 600;
-  font-stretch: normal;
-  font-style: normal;
-  line-height: 1.29;
-  letter-spacing: normal;
-  text-align: center;
-  color: #fff;
-  margin-top: 7.8px;
 `;
 
 const InputBox = styled.div<{ keyPress: boolean; clicked: boolean }>`
@@ -112,37 +145,18 @@ const ShowHideText = styled.button`
   &:active {
     color: grey;
   }
+  border: 1px solid red;
+  width: fit-content;
+  height: fit-content;
 `;
 
-const OrBox = styled.div`
+const SignupButton = styled.button<{ disabled: boolean }>`
   width: 262px;
-  height: 14.7px;
-  p {
-    font-size: 12.7px;
-    font-weight: 600;
-    font-stretch: normal;
-    font-style: normal;
-    line-height: 1.15;
-    letter-spacing: normal;
-    color: #8e8e8e;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 0 17px;
-    &::before,
-    &::after {
-      content: '';
-      display: inline-block;
-      width: 103.9px;
-      height: 1px;
-      background: #dbdbdb;
-    }
-  }
-`;
-
-const ErrorMessageBox = styled.div`
-  width: 262px;
-  height: 19.6px;
+  height: 29.3px;
+  border-radius: 3.9px;
+  background: ${({ disabled }) =>
+    disabled ? 'rgba(0, 149, 246, 0.3)' : '#0095F6'};
+  border: none;
   font-size: 13.7px;
   font-weight: 600;
   font-stretch: normal;
@@ -150,44 +164,63 @@ const ErrorMessageBox = styled.div`
   line-height: 1.29;
   letter-spacing: normal;
   text-align: center;
-  color: #ed4956;
+  color: #fff;
+  margin-top: 7.8px;
 `;
 
-const ForgotPasswordBox = styled.div`
-  width: 94.1px;
-  height: 13.7px;
-  font-size: 11.7px;
-  font-weight: normal;
-  font-stretch: normal;
-  font-style: normal;
-  line-height: 1.33;
-  letter-spacing: normal;
-  color: #00376b;
+const NoticeBox = styled.div`
+  width: 262px;
+  height: fit-content;
+  font-size: 12px;
+  font-weight: 400;
+  color: #8e8e8e;
+  line-height: 16px;
+  text-align: center;
+  letter-spacing: 0.4px;
+  span {
+    font-weight: 700;
+  }
 `;
 
 type FormValues = {
+  emailInput: string;
+  fullnameInput: string;
   usernameInput: string;
   passwordInput: string;
 };
 
 const schema = yup.object().shape({
+  emailInput: yup.string().required(),
+  fullnameInput: yup.string().required(),
   usernameInput: yup.string().required(),
   passwordInput: yup.string().min(6).required(),
 });
 
-const Login = () => {
+const SignUp = () => {
+  const [emailKeyPress, setEmailKeyPress] = useState(false);
+  const [fullnameKeyPress, setFullnameKeyPress] = useState(false);
   const [usernameKeyPress, setUsernameKeyPress] = useState(false);
   const [passwordKeyPress, setPasswordKeyPress] = useState(false);
+
   const [showPassword, setShowPassword] = useState(false);
   const [passwordShowAndHide, setPasswordShowAndHide] = useState(false);
+
   const [emailInputBoxClicked, setEmailInputBoxClicked] = useState(false);
+  const [fullnameInputBoxClicked, setFullnameInputBoxClicked] = useState(false);
+  const [usernameInputBoxClicked, setUsernameInputBoxClicked] = useState(false);
   const [passwordInputBoxClicked, setPasswordInputBoxClicked] = useState(false);
 
-  const userNameInputKeyPress = (e: any) => {
+  const {
+    register,
+    handleSubmit,
+    formState: { isValid, errors },
+  } = useForm<FormValues>({ mode: 'onChange', resolver: yupResolver(schema) });
+
+  const InputKeyPress = (e: any, setKeyPress: Function) => {
     if (e.target.value === '') {
-      setUsernameKeyPress(false);
+      setKeyPress(false);
     } else {
-      setUsernameKeyPress(true);
+      setKeyPress(true);
     }
   };
 
@@ -212,27 +245,52 @@ const Login = () => {
   const onError = (err: any) => {
     console.log(err);
   };
-
-  const {
-    register,
-    handleSubmit,
-    formState: { isValid, errors },
-  } = useForm<FormValues>({ mode: 'onChange', resolver: yupResolver(schema) });
-
   return (
-    <LoginContainer>
+    <SignUpContainer>
       <TopBox>
         <img src={instagramLogo} alt="인스타그램로고" />
-        <LoginForm onSubmit={handleSubmit(onSubmit, onError)}>
-          <InputBox keyPress={usernameKeyPress} clicked={emailInputBoxClicked}>
+        <p>Sign up to see photos and videos from your friends.</p>
+        <FacebookLoginButton>
+          <FacebookLogo />
+          Log in with Facebook
+        </FacebookLoginButton>
+        <OrBox>
+          <p>OR</p>
+        </OrBox>
+        <Form onSubmit={handleSubmit(onSubmit, onError)}>
+          <InputBox keyPress={emailKeyPress} clicked={emailInputBoxClicked}>
             <input
               type="text"
               onFocusCapture={() => setEmailInputBoxClicked(true)}
               onBlurCapture={() => setEmailInputBoxClicked(false)}
-              onKeyUp={(e) => userNameInputKeyPress(e)}
+              onKeyUp={(e) => InputKeyPress(e, setEmailKeyPress)}
+              {...register('emailInput', { required: true })}
+            />
+            <span>Email</span>
+          </InputBox>
+          <InputBox
+            keyPress={fullnameKeyPress}
+            clicked={fullnameInputBoxClicked}>
+            <input
+              type="text"
+              onFocusCapture={() => setFullnameInputBoxClicked(true)}
+              onBlurCapture={() => setFullnameInputBoxClicked(false)}
+              onKeyUp={(e) => InputKeyPress(e, setFullnameKeyPress)}
+              {...register('fullnameInput', { required: true })}
+            />
+            <span>Full Name</span>
+          </InputBox>
+          <InputBox
+            keyPress={usernameKeyPress}
+            clicked={usernameInputBoxClicked}>
+            <input
+              type="text"
+              onFocusCapture={() => setUsernameInputBoxClicked(true)}
+              onBlurCapture={() => setUsernameInputBoxClicked(false)}
+              onKeyUp={(e) => InputKeyPress(e, setUsernameKeyPress)}
               {...register('usernameInput', { required: true })}
             />
-            <span>Phone number, username, or email</span>
+            <span>Username</span>
           </InputBox>
           <InputBox
             keyPress={passwordKeyPress}
@@ -253,27 +311,19 @@ const Login = () => {
               </ShowHideText>
             )}
           </InputBox>
-          <LoginButton type="submit" disabled={!isValid}>
-            Log In
-          </LoginButton>
-        </LoginForm>
-        <OrBox>
-          <p>OR</p>
-        </OrBox>
-        <ErrorMessageBox>
-          <p>error message</p>
-        </ErrorMessageBox>
-        <ForgotPasswordBox>
-          <p>Forgot password?</p>
-        </ForgotPasswordBox>
+          <NoticeBox>
+            People who use our service may have uploaded your contact
+            information to Instagram. <span>Learn More</span>
+          </NoticeBox>
+          <SignupButton type="submit" disabled={!isValid}>
+            Sign up
+          </SignupButton>
+        </Form>
       </TopBox>
-      <LoginSignUpMiddleBox
-        question={`Don't have an account?`}
-        linkText="Sign up"
-      />
+      <LoginSignUpMiddleBox question="Have an account?" linkText="Log in" />
       <LoginSignUpBottomBox />
-    </LoginContainer>
+    </SignUpContainer>
   );
 };
 
-export default Login;
+export default SignUp;
