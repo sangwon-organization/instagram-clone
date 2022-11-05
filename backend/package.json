@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "dev": "nodemon app"
+    "local": "nodemon app",
+    "dev": "node app.js"
   },
   "author": "",
   "license": "ISC",
