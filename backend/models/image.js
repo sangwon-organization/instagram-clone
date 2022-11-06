@@ -10,16 +10,16 @@ module.exports = class Image extends Sequelize.Model {
           autoIncrement: true,
           primaryKey: true,
         },
+        originalImageName: {
+          type: Sequelize.STRING(255),
+          allowNull: true,
+        },
         imageName: {
           type: Sequelize.STRING(255),
           allowNull: true,
         },
-        imagePath: {
-          type: Sequelize.STRING(255),
-          allowNull: true,
-        },
-        originalImageName: {
-          type: Sequelize.STRING(255),
+        imageExt: {
+          type: Sequelize.STRING,
           allowNull: true,
         },
         imageSize: {
@@ -32,10 +32,6 @@ module.exports = class Image extends Sequelize.Model {
         },
         imageHeight: {
           type: Sequelize.INTEGER,
-          allowNull: true,
-        },
-        imageExt: {
-          type: Sequelize.STRING,
           allowNull: true,
         },
         createdAt: {

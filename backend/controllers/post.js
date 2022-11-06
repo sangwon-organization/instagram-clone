@@ -4,6 +4,8 @@ const authService = require('../services/auth')
 const ApiError = require('../utils/ApiError')
 const postService = require('../services/post')
 const formidable = require('formidable')
+const env = process.env.NODE_ENV || 'local'
+const config = require('../config/config.json')[env]
 
 const createPost = catchAsync(async (req, res) => {
   let token = req.headers['authorization']
@@ -61,15 +63,21 @@ const getPost = catchAsync(async (req, res) => {
   const post = await postService.getPost(req.params.postId)
 
   const postImages = []
-  const promises = post.PostImages.map(async (PostImage, index) => {
-    let imagePath = PostImage.Image.imagePath
-    let imageName = PostImage.Image.imageName
-    let imageExt = PostImage.Image.imageExt
-    postImages.push(imagePath + imageName + '.' + imageExt)
+  const promises = post.PostImages.map(async (PostImage) => {
+    if (env != 'production') {
+      // storage 서버가 따로 없는 경우
+      var serviceUrl = req.protocol + '://' + req.get('host')
+      let imagePath = config.imagePath.split('public')[1]
+      let imageName = PostImage.Image.imageName
+      let imageExt = PostImage.Image.imageExt
+      postImages.push(serviceUrl + imagePath + imageName + '.' + imageExt)
+    } else {
+      // storage 서버가 따로 있는 경우
+    }
   })
   await Promise.all(promises)
-  const result = { postId: post.postId, content: post.content, createdAt: post.createdAt, postImages: postImages }
 
+  const result = { postId: post.postId, content: post.content, createdAt: post.createdAt, postImages: postImages }
   res.status(httpStatus.OK).send(Object.assign({ code: 0, message: 'success' }, result))
 })
 

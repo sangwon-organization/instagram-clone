@@ -166,4 +166,4 @@ dist
 config/
 
 # images
-images/
+public/images

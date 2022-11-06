@@ -5,6 +5,8 @@ const PostImage = require('../models/postImage')
 const { v4: uuidv4 } = require('uuid')
 const fs = require('fs')
 const sizeOf = require('image-size')
+const env = process.env.NODE_ENV || 'local'
+const config = require('../config/config.json')[env]
 
 const createPost = async (fields, files) => {
   const post = await Post.create(fields)
@@ -13,7 +15,6 @@ const createPost = async (fields, files) => {
   // 이미지 등록
   for await (const [key, file] of Object.entries(files)) {
     const oldFilePath = file.filepath
-    const imagePath = 'C:/node_workspace/instagram-clone/backend/images/'
     const imageExt = file.originalFilename.split('.')[1]
     const originalImageName = file.originalFilename.split('.')[0]
     const imageName = uuidv4()
@@ -22,18 +23,17 @@ const createPost = async (fields, files) => {
     const imageWidth = dimensions.width
     const imageHeight = dimensions.height
 
-    fs.rename(oldFilePath, imagePath + imageName + '.' + imageExt, async (err) => {
+    fs.rename(oldFilePath, config.imagePath + imageName + '.' + imageExt, async (err) => {
       if (err) {
         throw err
       }
       const image = await imageService.createImage({
         originalImageName,
         imageName,
-        imagePath,
+        imageExt,
         imageSize,
         imageWidth,
         imageHeight,
-        imageExt,
       })
       await createPostImage({ postId: post.postId, imageId: image.imageId })
     })
@@ -52,7 +52,7 @@ const updatePost = async (fields, files) => {
 
   // 4. 이미지 파일 삭제
   const deleteImagePromises = images.map(async (image, index) => {
-    const imagePath = image.imagePath + image.imageName
+    const imagePath = config.imagePath + image.imageName + image.imageExt
     fs.unlinkSync(imagePath)
   })
   await Promise.all(deleteImagePromises)
@@ -75,7 +75,6 @@ const updatePost = async (fields, files) => {
   // 8. PostImage 레코드 추가
   for await (const [key, file] of Object.entries(files)) {
     const oldFilePath = file.filepath
-    const imagePath = 'C:/node_workspace/instagram-clone/backend/images/'
     const imageExt = file.originalFilename.split('.')[1]
     const originalImageName = file.originalFilename.split('.')[0]
     const imageName = uuidv4()
@@ -84,18 +83,17 @@ const updatePost = async (fields, files) => {
     const imageWidth = dimensions.width
     const imageHeight = dimensions.height
 
-    fs.rename(oldFilePath, imagePath + imageName + '.' + imageExt, async (err) => {
+    fs.rename(oldFilePath, config.imagePath + imageName + '.' + imageExt, async (err) => {
       if (err) {
         throw err
       }
       const image = await imageService.createImage({
         originalImageName,
         imageName,
-        imagePath,
+        imageExt,
         imageSize,
         imageWidth,
         imageHeight,
-        imageExt,
       })
       await createPostImage({ postId: fields.postId, imageId: image.imageId })
     })
@@ -129,7 +127,7 @@ const deletePost = async (postId) => {
       include: [
         {
           model: Image,
-          attributes: ['imageId', 'imageName', 'imagePath', 'imageExt'],
+          attributes: ['imageId', 'imageName', 'imageExt'],
         },
       ],
     },
@@ -144,11 +142,9 @@ const deletePost = async (postId) => {
   let imagePaths = []
   let getImageIdPromises = postImages.map(async (postImage) => {
     imageIds.push(postImage.Image.imageId)
-    imagePaths.push(postImage.Image.imagePath + postImage.Image.imageName + '.' + postImage.Image.imageExt)
+    imagePaths.push(config.imagePath + postImage.Image.imageName + '.' + postImage.Image.imageExt)
   })
   await Promise.all(getImageIdPromises)
-  console.log(imageIds)
-  console.log(imagePaths)
 
   await PostImage.destroy({
     where: {

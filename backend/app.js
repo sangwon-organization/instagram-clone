@@ -22,6 +22,7 @@ sequelize
 app.use(morgan('dev'))
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
+app.use(express.static('public'))
 
 app.use('/', indexRouter)
 app.use('/user', userRouter)
