@@ -10,7 +10,12 @@ const config = require('../config/config.json')[env]
 
 const createPost = async (fields, files) => {
   const post = await Post.create(fields)
-  console.log(fields)
+
+  if (env != 'production') {
+    if (!fs.existsSync(config.imagePath)) {
+      fs.mkdirSync(config.imagePath, { recursive: true })
+    }
+  }
 
   // 이미지 등록
   for await (const [key, file] of Object.entries(files)) {
