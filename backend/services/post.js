@@ -57,7 +57,7 @@ const updatePost = async (fields, files) => {
 
   // 4. 이미지 파일 삭제
   const deleteImagePromises = images.map(async (image, index) => {
-    const imagePath = config.imagePath + image.imageName + image.imageExt
+    const imagePath = config.imagePath + image.imageName + '.' + image.imageExt
     fs.unlinkSync(imagePath)
   })
   await Promise.all(deleteImagePromises)
