@@ -5,7 +5,7 @@ module.exports = {
       script: 'app.js',
       instances: 1,
       max_memory_restart: '300M',
-      watch: ['.'],
+      watch: false,
       ignore_watch: ['public/images', 'node_modules'],
     },
   ],
