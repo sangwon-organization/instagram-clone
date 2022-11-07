@@ -19,18 +19,23 @@ const createPost = catchAsync(async (req, res) => {
     throw new ApiError(httpStatus.UNAUTHORIZED, '토큰 값이 유효하지 않습니다. 다시 로그인을 해주세요.')
   }
 
-  const form = formidable({ multiples: true })
-  form.parse(req, async (err, fields, files) => {
-    if (err) {
-      res.writeHead(err.httpCode || 400, { 'Content-Type': 'text/plain' })
-      res.end(String(err))
-      return
-    }
-
-    fields = Object.assign(fields, { userId: payload.sub })
-    await postService.createPost(fields, files)
-    res.status(httpStatus.OK).send(Object.assign({ code: 0, message: 'success' }))
+  let form = formidable({ multiples: true })
+  let fields = {}
+  let files = {}
+  await new Promise((resolve, reject) => {
+    form.parse(req, async (err, fields, files) => {
+      if (err) {
+        throw err
+      }
+      resolve({ fields: Object.assign(fields, { userId: payload.sub }), files: files })
+    })
+  }).then((value) => {
+    fields = value.fields
+    files = value.files
   })
+
+  await postService.createPost(fields, files)
+  res.status(httpStatus.OK).send({ code: 0, message: 'success' })
 })
 
 const updatePost = catchAsync(async (req, res) => {

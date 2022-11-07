@@ -3,7 +3,7 @@ const catchAsync = require('../utils/catchAsync')
 const authService = require('../services/auth')
 
 const signup = catchAsync(async (req, res) => {
-  const user = await authService.signup(req.body)
+  await authService.signup(req.body)
   res.status(httpStatus.OK).send(Object.assign({ code: 0, message: 'success' }))
 })
 

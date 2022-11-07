@@ -3,15 +3,19 @@ const moment = require('moment')
 const jwt = require('jsonwebtoken')
 const ApiError = require('../utils/ApiError')
 const { decryptAES256, encryptSHA256 } = require('../utils/encryption')
-const regex = require('../utils/regex')
 const userSerivce = require('../services/user')
 const { Token } = require('../models')
+const commonService = require('../services/common')
 
 const secret = 'test1234'
 
 const signup = async (body) => {
+  await commonService.checkValueIsEmpty(body.email, '이메일')
   await userSerivce.checkEmail(body.email)
+  await commonService.checkValueIsEmpty(body.name, '이름')
+  await commonService.checkValueIsEmpty(body.username, '닉네임')
   await userSerivce.checkUsername(body.username)
+  await commonService.checkValueIsEmpty(body.password, '패스워드')
   body.password = decryptAES256(body.password)
   await userSerivce.checkPassword(body.password)
   body.password = encryptSHA256(body.password)
@@ -19,12 +23,13 @@ const signup = async (body) => {
 }
 
 const signin = async (body) => {
+  await commonService.checkValueIsEmpty(body.email, '이메일')
+  await commonService.checkValueIsEmpty(body.password, '패스워드')
   body.password = encryptSHA256(decryptAES256(body.password))
-  const user = await userSerivce.findUser(body.email, body.password)
+  let user = await userSerivce.findUser(body.email, body.password)
   if (!user) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, '이메일 또는 비밀번호가 정확하지 않습니다. 다시 입력해 주세요.')
+    throw new ApiError(httpStatus.UNAUTHORIZED, '이메일 또는 패스워드가 정확하지 않습니다. 다시 입력해 주세요.')
   }
-
   return user
 }
 
@@ -76,8 +81,15 @@ const saveToken = async (token, userId, expires, type, blacklisted = false) => {
 }
 
 const verifyToken = async (token) => {
-  token = token.split('Bearer ').length > 1 ? token.split('Bearer ')[1] : token
-  const payload = jwt.verify(token, secret)
+  let payload
+  try {
+    token = token.split('Bearer ').length > 1 ? token.split('Bearer ')[1] : token
+    payload = jwt.verify(token, secret)
+  } catch (err) {
+    if (err instanceof jwt.TokenExpiredError) {
+      throw new ApiError(httpStatus.UNAUTHORIZED, '토큰 유효기간이 만료되었습니다. 다시 로그인 해주세요.')
+    }
+  }
   return payload
 }
 

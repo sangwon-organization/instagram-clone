@@ -2,20 +2,17 @@ const httpStatus = require('http-status')
 const catchAsync = require('../utils/catchAsync')
 const userService = require('../services/user')
 const authService = require('../services/auth')
+const commonService = require('../services/common')
 
 const checkEmail = catchAsync(async (req, res) => {
+  await commonService.checkValueIsEmpty(req.body.email, '이메일')
   await userService.checkEmail(req.body.email)
   res.status(httpStatus.OK).send({ code: 0, message: 'success' })
 })
 
 const checkUsername = catchAsync(async (req, res) => {
+  await commonService.checkValueIsEmpty(req.body.username, '닉네임')
   await userService.checkUsername(req.body.username)
-  res.status(httpStatus.OK).send({ code: 0, message: 'success' })
-})
-
-const checkPassword = catchAsync(async (req, res) => {
-  let decryptPassword = decryptAES256(req.body.password)
-  await userService.checkPassword(decryptPassword)
   res.status(httpStatus.OK).send({ code: 0, message: 'success' })
 })
 
@@ -38,6 +35,5 @@ const changePassword = catchAsync(async (req, res) => {
 module.exports = {
   checkEmail,
   checkUsername,
-  checkPassword,
   changePassword,
 }

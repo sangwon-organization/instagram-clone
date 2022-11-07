@@ -7,10 +7,14 @@ const fs = require('fs')
 const sizeOf = require('image-size')
 const env = process.env.NODE_ENV || 'local'
 const config = require('../config/config.json')[env]
+const commonService = require('../services/common')
 
 const createPost = async (fields, files) => {
+  await commonService.checkValueIsEmpty(fields.content, '내용')
+
   const post = await Post.create(fields)
 
+  // 이미지를 담아 둘 디렉토리 생성
   if (env != 'production') {
     if (!fs.existsSync(config.imagePath)) {
       fs.mkdirSync(config.imagePath, { recursive: true })
