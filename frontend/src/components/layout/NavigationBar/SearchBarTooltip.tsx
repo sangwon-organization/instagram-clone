@@ -15,12 +15,12 @@ const SearchBarTooltipContainer = styled.div<{
   border-radius: 5px;
   filter: drop-shadow(0px 0px 10px rgba(0, 0, 0, 0.1));
   position: absolute;
-  background: #fff;
+  background: ${({ theme }) => theme.searchBarBgColor};
   top: 60px;
   left: 220px;
   z-index: 500;
   &:after {
-    border-color: white transparent;
+    border-color: ${({ theme }) => theme.searchBarBgColor} transparent;
     border-style: solid;
     border-width: 0 6px 8px 6.5px;
     content: '';
@@ -69,6 +69,7 @@ const TooltipHeader = styled.div`
     font-size: 16px;
     font-weight: 600;
     /* border: 1px solid green; */
+    color: ${({ theme }) => theme.textColor};
   }
   button {
     font-size: 14px;
@@ -89,7 +90,7 @@ const RecentSearchItem = styled.div`
   align-items: center;
   padding: 0 15px 0 10px;
   &:hover {
-    background: #f8f6f6;
+    background: ${({ theme }) => theme.bgColor};
     cursor: pointer;
   }
   &:active {
@@ -106,7 +107,10 @@ const UserAvatar = styled.div`
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  background-image: linear-gradient(#fff, #fff),
+  background-image: linear-gradient(
+      ${({ theme }) => theme.searchBarBgColor},
+      ${({ theme }) => theme.searchBarBgColor}
+    ),
     linear-gradient(to right, red 0%, orange 100%);
   background-origin: border-box;
   background-clip: content-box, border-box;
@@ -128,12 +132,12 @@ const UserInfo = styled.div`
   gap: 3px 0;
   margin-left: 10px;
   p:nth-child(1) {
-    color: #262626;
+    color: ${({ theme }) => theme.textColor};
     font-size: 14px;
     font-weight: 600;
   }
   p:nth-child(2) {
-    color: #8e8e8e;
+    color: ${({ theme }) => theme.greyTextColor};
     font-size: 14px;
     font-weight: 400;
   }
@@ -142,7 +146,7 @@ const UserInfo = styled.div`
 const CloseIcon = styled(IoClose)`
   width: 25px;
   height: 25px;
-  color: rgb(142, 142, 142);
+  color: ${({ theme }) => theme.greyTextColor};
 `;
 
 const EmptyRecentSearch = styled.div`
@@ -154,7 +158,7 @@ const EmptyRecentSearch = styled.div`
   p {
     font-size: 14px;
     font-weight: 600;
-    color: #8e8e8e;
+    color: ${({ theme }) => theme.greyTextColor};
   }
 `;
 
@@ -170,7 +174,7 @@ const SearchBarTooltip = ({
   setSearchBarClicked,
 }: SearchBarTooltipProps) => {
   const outsideRef = useRef();
-  const [recentSearch, setRecentSearch] = useState(false);
+  const [recentSearch, setRecentSearch] = useState(true);
 
   useOutsideClick(outsideRef, () => {
     setShowTooltip(false);

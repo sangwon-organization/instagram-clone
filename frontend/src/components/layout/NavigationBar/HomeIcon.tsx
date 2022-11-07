@@ -10,8 +10,9 @@ const HomeIconBox = styled.div`
   display: flex;
   justify-content: center;
   align-content: center;
+  color: ${({ theme }) => theme.textColor};
   &:active {
-    color: #8e8e8e;
+    color: ${({ theme }) => theme.greyTextColor};
   }
 `;
 

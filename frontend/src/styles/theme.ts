@@ -15,15 +15,22 @@ const colors = {
   lightModeGreyTextColor: '#8e8e8e',
   lightModeFooterTextColor: '#c7c7c7',
   lightModeUltraLightGreyColor: '#efefef',
+  lightModeHashTagColor: '#00376b;',
+  lightModeSearchBarBgColor: '#ffffff',
+  lightModeDropDownBgColor: '#ffffff',
+  lightModeSearchBarInputColor: '#e6e6e6',
 
   // DarkMode
   darkModeBgColor: '#121212',
   darkModeBorderColor: '#363636',
   darkModeTextColor: '#fafafa',
-  darkModeDropDownBgColor: '#262626',
   darkModeGreyTextColor: '#8e8e8e',
   darkModeFooterTextColor: '#737373',
   darkModeUltraLightGreyColor: '#CCD0D5',
+  darkModeHashTagColor: '#e0f1ff;',
+  darkModeSearchBarBgColor: '#000000',
+  darkModeDropDownBgColor: '#262626',
+  darkModeSearchBarInputColor: '#262626',
 };
 
 const flexCenter = css`
@@ -39,6 +46,10 @@ const lightTheme = {
   greyTextColor: colors.lightModeGreyTextColor,
   footerTextColor: colors.lightModeFooterTextColor,
   ultraLightGreyColor: colors.lightModeUltraLightGreyColor,
+  hashTagColor: colors.lightModeHashTagColor,
+  searchBarBgColor: colors.lightModeSearchBarBgColor,
+  dropDownBgColor: colors.lightModeDropDownBgColor,
+  searchBarInputColor: colors.lightModeSearchBarInputColor,
 };
 
 const darkTheme = {
@@ -49,15 +60,22 @@ const darkTheme = {
   footerTextColor: colors.darkModeFooterTextColor,
   ultraLightGreyColor: colors.darkModeUltraLightGreyColor,
   dropdownBgColor: colors.darkModeDropDownBgColor,
+  hashTagColor: colors.darkModeHashTagColor,
+  searchBarBgColor: colors.darkModeSearchBarBgColor,
+  dropDownBgColor: colors.darkModeDropDownBgColor,
+  searchBarInputColor: colors.darkModeSearchBarInputColor,
 };
 
 export type ColorsTypes = typeof colors;
+export type flexCenterTypes = typeof flexCenter;
 export type LightThemeTypes = typeof lightTheme;
 export type DarkThemeTypes = typeof darkTheme;
 
-export const theme: DefaultTheme = {
+export const theme = {
   colors,
   flexCenter,
   lightTheme,
   darkTheme,
 };
+
+export default theme;

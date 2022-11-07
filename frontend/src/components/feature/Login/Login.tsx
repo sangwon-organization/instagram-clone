@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import instagramLogo from '../../../assets/image/instagram-logo.png';
+import clonestagramLogoBlack from '../../../assets/image/clonestagramLogoBlack.png';
 import LoginSignUpBottomBox from '../../share/LoginSignUpBottomBox';
 import LoginSignUpMiddleBox from '../../share/LoginSignUpMiddleBox';
 
@@ -19,7 +19,7 @@ const TopBox = styled.div`
   width: 100%;
   height: 387.1px;
   border-radius: 1px;
-  border: solid 1px #dbdbdb;
+  border: solid 1px ${({ theme }) => theme.borderColor};
   background-color: #fff;
   display: flex;
   flex-direction: column;
@@ -66,8 +66,9 @@ const InputBox = styled.div<{ keyPress: boolean; clicked: boolean }>`
   width: 262px;
   height: 37.1px;
   border-radius: 2.9px;
-  border: solid 1px ${({ clicked }) => (clicked ? '#a2a1a1' : '#dbdbdb')};
-  background-color: #fafafa;
+  border: solid 1px
+    ${({ theme, clicked }) => (clicked ? '#a2a1a1' : theme.borderColor)};
+  background-color: ${({ theme }) => theme.bgColor};
   input {
     position: absolute;
     width: 100%;
@@ -110,7 +111,7 @@ const ShowHideText = styled.button`
   background: transparent;
   z-index: 200;
   &:active {
-    color: grey;
+    color: ${({ theme }) => theme.greyTextColor};
   }
 `;
 
@@ -124,7 +125,7 @@ const OrBox = styled.div`
     font-style: normal;
     line-height: 1.15;
     letter-spacing: normal;
-    color: #8e8e8e;
+    color: ${({ theme }) => theme.greyTextColor};
     display: flex;
     justify-content: center;
     align-items: center;
@@ -135,7 +136,7 @@ const OrBox = styled.div`
       display: inline-block;
       width: 103.9px;
       height: 1px;
-      background: #dbdbdb;
+      background: ${({ theme }) => theme.borderColor};
     }
   }
 `;
@@ -162,7 +163,7 @@ const ForgotPasswordBox = styled.div`
   font-style: normal;
   line-height: 1.33;
   letter-spacing: normal;
-  color: #00376b;
+  color: ${({ theme }) => theme.hashTagColor};
 `;
 
 type FormValues = {
@@ -222,7 +223,7 @@ const Login = () => {
   return (
     <LoginContainer>
       <TopBox>
-        <img src={instagramLogo} alt="인스타그램로고" />
+        <img src={clonestagramLogoBlack} alt="인스타그램로고" />
         <LoginForm onSubmit={handleSubmit(onSubmit, onError)}>
           <InputBox keyPress={usernameKeyPress} clicked={emailInputBoxClicked}>
             <input

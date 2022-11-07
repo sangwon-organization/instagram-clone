@@ -7,6 +7,8 @@ import { IoIosSettings } from 'react-icons/io';
 import { BiMessageAltError } from 'react-icons/bi';
 import { CgSync } from 'react-icons/cg';
 import useOutsideClick from '../../../hooks/useOutsideClick';
+import { useDispatch } from 'react-redux';
+import { changeThemeMode } from '../../../redux/slices/themeModeSlice';
 
 const AvatarDropdownContainer = styled.div<{ showDropdown: boolean; ref: any }>`
   display: ${({ showDropdown }) => (showDropdown ? 'block' : 'none')};
@@ -18,9 +20,9 @@ const AvatarDropdownContainer = styled.div<{ showDropdown: boolean; ref: any }>`
   right: -30px;
   top: 57px;
   filter: drop-shadow(0px 0px 10px rgba(0, 0, 0, 0.1));
-  background: #fff;
+  background: ${({ theme }) => theme.dropDownBgColor};
   &:after {
-    border-color: white transparent;
+    border-color: ${({ theme }) => theme.dropDownBgColor} transparent;
     border-style: solid;
     border-width: 0 6px 8px 6.5px;
     content: '';
@@ -36,7 +38,7 @@ const AvatarDropdownContainer = styled.div<{ showDropdown: boolean; ref: any }>`
 const AvatarDropdownWrapper = styled.div`
   width: 100%;
   height: fit-content;
-  border-bottom: #8e8e8e;
+  border-bottom: ${({ theme }) => theme.greyTextColor};
 `;
 
 const ProfileIcon = styled(CgProfile)`
@@ -74,14 +76,15 @@ const DropdownItem = styled.div<{ first?: boolean; last?: boolean }>`
   font-size: 14px;
   font-weight: 400;
   cursor: pointer;
+  color: ${({ theme }) => theme.textColor};
   &:hover {
-    background: #fafafa;
+    background: ${({ theme }) => theme.bgColor};
     border-top-left-radius: ${({ first }) => first && '5px'};
     border-top-right-radius: ${({ first }) => first && '5px'};
     border-bottom-left-radius: ${({ last }) => last && '5px'};
     border-bottom-right-radius: ${({ last }) => last && '5px'};
   }
-  border-top: ${({ last }) => last && '1px solid #dbdbdb'};
+  border-top: ${({ last, theme }) => last && `1px solid ${theme.borderColor}`};
   padding: 8px 16px;
 `;
 
@@ -95,6 +98,7 @@ const AvatarDropdown = ({
   setShowDropdown,
 }: AvatarDropdownProps) => {
   const outsideRef = useRef();
+  const dispatch = useDispatch();
 
   useOutsideClick(outsideRef, () => setShowDropdown(false));
 
@@ -109,7 +113,7 @@ const AvatarDropdown = ({
           <SavedIcon />
           <p>Saved</p>
         </DropdownItem>
-        <DropdownItem>
+        <DropdownItem onClick={() => dispatch(changeThemeMode())}>
           <SwitchAppearanceIcon />
           <p>Switch appearance</p>
         </DropdownItem>

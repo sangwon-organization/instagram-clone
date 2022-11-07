@@ -12,7 +12,7 @@ const MainContainer = styled.div`
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: #fafafa;
+  background: ${({ theme }) => theme.bgColor};
   padding-top: 60px;
 `;
 

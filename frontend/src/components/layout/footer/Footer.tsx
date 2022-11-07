@@ -4,7 +4,7 @@ import styled from 'styled-components';
 const FooterContainer = styled.footer`
   width: 100%;
   height: 131px;
-  background-color: #fafafa;
+  background-color: ${({ theme }) => theme.bgColor};
   display: flex;
   justify-content: center;
   align-items: center;
@@ -14,7 +14,7 @@ const FooterContainer = styled.footer`
   font-style: normal;
   line-height: 1.33;
   letter-spacing: normal;
-  color: #8e8e8e;
+  color: ${({ theme }) => theme.greyTextColor};
 `;
 
 const FooterWrapper = styled.div`

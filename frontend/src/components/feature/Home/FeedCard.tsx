@@ -16,15 +16,16 @@ import {
   IoIosArrowDropleftCircle,
   IoIosArrowDroprightCircle,
 } from 'react-icons/io';
+import theme from '../../../styles/theme';
 
 const FeedCardContainer = styled.div`
   width: 470px;
   height: fit-content;
-  border: 1px solid #dbdbdb;
+  border: 1px solid ${({ theme }) => theme.borderColor};
   border-radius: 10px;
   display: flex;
   flex-direction: column;
-  background: #fff;
+  background: ${({ theme }) => theme.searchBarBgColor};
 `;
 
 const UserInformationWrapper = styled.div`
@@ -34,12 +35,6 @@ const UserInformationWrapper = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 5px 10px;
-  p {
-    width: fit-content;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-  }
 `;
 
 const UserInfo = styled.div`
@@ -49,6 +44,13 @@ const UserInfo = styled.div`
   justify-content: space-between;
   align-items: center;
   gap: 0 10px;
+  p {
+    width: fit-content;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    color: ${({ theme }) => theme.textColor};
+  }
 `;
 
 const ImageBoxWrapper = styled.div`
@@ -96,7 +98,10 @@ const UserAvatar = styled.div`
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  background-image: linear-gradient(#fff, #fff),
+  background-image: linear-gradient(
+      ${({ theme }) => theme.searchBarBgColor},
+      ${({ theme }) => theme.searchBarBgColor}
+    ),
     linear-gradient(to right, red 0%, orange 100%);
   background-origin: border-box;
   background-clip: content-box, border-box;
@@ -130,8 +135,9 @@ const HeartIcon = styled(BsHeart)`
   width: 23px;
   height: 23px;
   cursor: pointer;
+  color: ${({ theme }) => theme.textColor};
   &:hover {
-    color: grey;
+    color: ${({ theme }) => theme.greyTextColor};
   }
 `;
 
@@ -156,9 +162,9 @@ const SmallHeartIcon = styled(BsHeart)`
   width: 10px;
   height: 10px;
   cursor: pointer;
-  color: #262626;
+  color: ${({ theme }) => theme.textColor};
   &:hover {
-    color: #8e8e8e;
+    color: ${({ theme }) => theme.greyTextColor};
   }
 `;
 
@@ -166,8 +172,9 @@ const ChatIcon = styled(RiChat3Line)`
   width: 23px;
   height: 23px;
   cursor: pointer;
+  color: ${({ theme }) => theme.textColor};
   &:hover {
-    color: grey;
+    color: ${({ theme }) => theme.greyTextColor};
   }
 `;
 
@@ -175,8 +182,9 @@ const LocationIcon = styled(TbLocation)`
   width: 23px;
   height: 23px;
   cursor: pointer;
+  color: ${({ theme }) => theme.textColor};
   &:hover {
-    color: grey;
+    color: ${({ theme }) => theme.greyTextColor};
   }
 `;
 
@@ -184,8 +192,9 @@ const BookmarkIcon = styled(BiBookmark)`
   width: 23px;
   height: 23px;
   cursor: pointer;
+  color: ${({ theme }) => theme.textColor};
   &:hover {
-    color: grey;
+    color: ${({ theme }) => theme.greyTextColor};
   }
 `;
 
@@ -195,6 +204,7 @@ const LikedMemberBox = styled.div`
   font-size: 14px;
   font-weight: 600;
   margin: 0 10px 10px 10px;
+  color: ${({ theme }) => theme.textColor};
   cursor: pointer;
 `;
 const FeedDescriptionBox = styled.div`
@@ -210,18 +220,18 @@ const FeedDescriptionBox = styled.div`
   div {
     font-size: 14px;
     font-weight: 600;
-    color: #262626;
+    color: ${({ theme }) => theme.textColor};
     cursor: pointer;
   }
   span {
     font-size: 14px;
     font-weight: 400;
-    color: #262626;
+    color: ${({ theme }) => theme.textColor};
   }
   button {
     font-size: 14px;
     font-weight: 400;
-    color: #8e8e8e;
+    color: ${({ theme }) => theme.greyTextColor};
     border: none;
     background: transparent;
   }
@@ -231,7 +241,7 @@ const ViewAllCommentsBox = styled.div`
   height: fit-content;
   font-size: 14px;
   font-weight: 400;
-  color: #8e8e8e;
+  color: ${({ theme }) => theme.greyTextColor};
   margin: 0 10px 10px 10px;
   cursor: pointer;
 `;
@@ -259,7 +269,7 @@ const CommentText = styled.div`
     height: fit-content;
     font-size: 14px;
     font-weight: 600;
-    color: #262626;
+    color: ${({ theme }) => theme.textColor};
     cursor: pointer;
   }
   p {
@@ -267,12 +277,12 @@ const CommentText = styled.div`
     height: fit-content;
     font-size: 14px;
     font-weight: 400;
-    color: #262626;
+    color: ${({ theme }) => theme.textColor};
     span {
       width: fit-content;
       height: fit-content;
       margin-right: 5px;
-      color: #00376b;
+      color: ${({ theme }) => theme.hashTagColor};
       cursor: pointer;
     }
   }
@@ -282,14 +292,14 @@ const DateBox = styled.div`
   height: fit-content;
   font-size: 10px;
   font-weight: 400;
-  color: #8e8e8e;
+  color: ${({ theme }) => theme.greyTextColor};
   padding: 0 10px 10px 10px;
 `;
 
 const AddCommentBox = styled.form`
   width: 100%;
   height: fit-content;
-  border-top: 1px solid #dbdbdb;
+  border-top: 1px solid ${({ theme }) => theme.borderColor};
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -301,6 +311,7 @@ const AddCommentBox = styled.form`
     resize: none;
     outline: none;
     margin-left: 10px;
+    background: transparent;
   }
   button {
     font-size: 14px;
@@ -315,6 +326,7 @@ const SmileIcon = styled(HiOutlineEmojiHappy)`
   width: 30px;
   height: 30px;
   cursor: pointer;
+  color: ${({ theme }) => theme.textColor};
 `;
 
 const KebabMenuIcon = styled(GoKebabHorizontal)`
@@ -390,7 +402,7 @@ const MeatballIconBox = styled.div`
 const MeatballIcon = styled(FaCircle)`
   width: 6px;
   height: 6px;
-  color: #8e8e8e;
+  color: ${({ theme }) => theme.greyTextColor};
 `;
 
 const TOTAL_SLIDES = 2;

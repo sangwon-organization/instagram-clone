@@ -5,7 +5,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import LoginSignUpBottomBox from '../../share/LoginSignUpBottomBox';
 import LoginSignUpMiddleBox from '../../share/LoginSignUpMiddleBox';
-import instagramLogo from '../../../assets/image/instagram-logo.png';
+import clonestagramLogoBlack from '../../../assets/image/clonestagramLogoBlack.png';
 import { AiFillFacebook } from 'react-icons/ai';
 
 const SignUpContainer = styled.div`
@@ -248,7 +248,7 @@ const SignUp = () => {
   return (
     <SignUpContainer>
       <TopBox>
-        <img src={instagramLogo} alt="인스타그램로고" />
+        <img src={clonestagramLogoBlack} alt="인스타그램로고" />
         <p>Sign up to see photos and videos from your friends.</p>
         <FacebookLoginButton>
           <FacebookLogo />

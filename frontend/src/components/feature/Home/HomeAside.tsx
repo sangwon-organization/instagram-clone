@@ -43,11 +43,12 @@ const UserInfoWrapper = styled.div`
   p:nth-child(1) {
     font-size: 14px;
     font-weight: 600;
+    color: ${({ theme }) => theme.textColor};
   }
   p:nth-child(2) {
     font-size: 14px;
     font-weight: 400;
-    color: #8e8e8e;
+    color: ${({ theme }) => theme.greyTextColor};
   }
 `;
 
@@ -64,12 +65,12 @@ const SuggestionsHeader = styled.div`
   align-items: center;
   margin-top: 8px;
   p {
-    color: #8e8e8e;
+    color: ${({ theme }) => theme.greyTextColor};
     font-size: 14px;
     font-weight: 600;
   }
   button {
-    color: #262626;
+    color: ${({ theme }) => theme.textColor};
     font-size: 12px;
     font-weight: 600;
     border: none;
@@ -114,11 +115,12 @@ const ItemUserInfoWrapper = styled.div`
   p:nth-child(1) {
     font-size: 14px;
     font-weight: 600;
+    color: ${({ theme }) => theme.textColor};
   }
   p:nth-child(2) {
     font-size: 12px;
     font-weight: 400;
-    color: #8e8e8e;
+    color: ${({ theme }) => theme.greyTextColor};
   }
 `;
 
@@ -139,7 +141,7 @@ const FooterItems = styled.ul`
     line-height: 18px;
     font-size: 12px;
     font-weight: 400;
-    color: #c7c7c7;
+    color: ${({ theme }) => theme.footerTextColor};
     cursor: pointer;
     &:hover {
       text-decoration: underline;
@@ -156,7 +158,7 @@ const FooterItems = styled.ul`
 const Copyright = styled.div`
   font-size: 12px;
   font-weight: 400;
-  color: #c7c7c7;
+  color: ${({ theme }) => theme.footerTextColor};
 `;
 
 const HomeAside = () => {
