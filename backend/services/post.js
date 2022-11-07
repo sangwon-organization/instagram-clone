@@ -8,17 +8,23 @@ const sizeOf = require('image-size')
 const env = process.env.NODE_ENV || 'local'
 const config = require('../config/config.json')[env]
 const commonService = require('../services/common')
+const ApiError = require('../utils/ApiError')
+const httpStatus = require('http-status')
 
 const createPost = async (fields, files) => {
   await commonService.checkValueIsEmpty(fields.content, '내용')
-
-  const post = await Post.create(fields)
 
   // 이미지를 담아 둘 디렉토리 생성
   if (env != 'production') {
     if (!fs.existsSync(config.imagePath)) {
       fs.mkdirSync(config.imagePath, { recursive: true })
     }
+  }
+
+  // 포스트 등록
+  const post = await Post.create(fields)
+  if (!post) {
+    throw new ApiError(httpStatus.BAD_REQUEST, '포스트 등록에 실패하였습니다. 다시 시도해주세요.')
   }
 
   // 이미지 등록
@@ -50,23 +56,15 @@ const createPost = async (fields, files) => {
 }
 
 const updatePost = async (fields, files) => {
-  // 1. Image 레코드 조회
-  const images = await Image.findAll({ where: { imageId: fields.deleteImageIds } })
+  await commonService.checkValueIsEmpty(fields.postId, 'PostID')
+  await commonService.checkValueIsEmpty(fields.content, '내용')
 
-  // 2. Image 레코드 삭제
-  Image.destroy({ where: { imageId: fields.deleteImageIds } })
+  let post = await getPost(fields.postId)
+  if (!post) {
+    throw new ApiError(httpStatus.BAD_REQUEST, '해당 포스트가 존재하지 않습니다.')
+  }
 
-  // 3. PostImage 레코드 삭제
-  PostImage.destroy({ where: { postId: fields.postId, imageId: fields.deleteImageIds } })
-
-  // 4. 이미지 파일 삭제
-  const deleteImagePromises = images.map(async (image, index) => {
-    const imagePath = config.imagePath + image.imageName + '.' + image.imageExt
-    fs.unlinkSync(imagePath)
-  })
-  await Promise.all(deleteImagePromises)
-
-  // 5. Post 레코드 수정
+  // Post 레코드 수정
   const updatedPostCount = await Post.update(
     {
       content: fields.content,
@@ -79,9 +77,29 @@ const updatePost = async (fields, files) => {
     }
   )
 
-  // 6. 새로 등록할 이미지 파일 등록
-  // 7. Image 레코드 추가
-  // 8. PostImage 레코드 추가
+  if (!updatedPostCount[0]) {
+    throw new ApiError(httpStatus.BAD_REQUEST, '포스트 수정에 실패하였습니다. 다시 시도해주세요.')
+  }
+
+  // 이미지 삭제
+  const images = await Image.findAll({ where: { imageId: fields.deleteImageIds } })
+
+  await Image.destroy({ where: { imageId: fields.deleteImageIds } })
+
+  await PostImage.destroy({ where: { postId: fields.postId, imageId: fields.deleteImageIds } })
+
+  images.map((image) => {
+    let deleteImagePath = config.imagePath + image.imageName + '.' + image.imageExt
+    fs.unlink(deleteImagePath, (err) => {
+      if (!err) {
+        console.log(`이미지 파일 삭제 >> ${deleteImagePath}`)
+      } else {
+        console.log(`이미지 파일이 존재하지 않음 >> ${deleteImagePath}`)
+      }
+    })
+  })
+
+  // 이미지 등록
   for await (const [key, file] of Object.entries(files)) {
     const oldFilePath = file.filepath
     const imageExt = file.originalFilename.split('.')[1]
@@ -130,6 +148,13 @@ const getPost = async (postId) => {
 }
 
 const deletePost = async (postId) => {
+  await commonService.checkValueIsEmpty(postId, 'PostID')
+
+  let post = await getPost(postId)
+  if (!post) {
+    throw new ApiError(httpStatus.BAD_REQUEST, '해당 포스트가 존재하지 않습니다.')
+  }
+
   let postImages = await PostImage.findAll(
     {
       attributes: ['postId'],
@@ -149,7 +174,7 @@ const deletePost = async (postId) => {
 
   let imageIds = []
   let imagePaths = []
-  let getImageIdPromises = postImages.map(async (postImage) => {
+  let getImageIdPromises = postImages.map((postImage) => {
     imageIds.push(postImage.Image.imageId)
     imagePaths.push(config.imagePath + postImage.Image.imageName + '.' + postImage.Image.imageExt)
   })
@@ -173,10 +198,15 @@ const deletePost = async (postId) => {
     },
   })
 
-  let deleteImagePromises = imagePaths.map(async (imagePath) => {
-    fs.unlinkSync(imagePath)
+  imagePaths.map((imagePath) => {
+    fs.unlink(imagePath, (err) => {
+      if (!err) {
+        console.log(`이미지 파일 삭제 >> ${imagePath}`)
+      } else {
+        console.log(`이미지 파일이 존재하지 않음 >> ${imagePath}`)
+      }
+    })
   })
-  await Promise.all(deleteImagePromises)
 }
 
 module.exports = {

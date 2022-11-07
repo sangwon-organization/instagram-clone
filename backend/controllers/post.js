@@ -6,6 +6,7 @@ const postService = require('../services/post')
 const formidable = require('formidable')
 const env = process.env.NODE_ENV || 'local'
 const config = require('../config/config.json')[env]
+const commonService = require('../services/common')
 
 const createPost = catchAsync(async (req, res) => {
   let token = req.headers['authorization']
@@ -23,7 +24,7 @@ const createPost = catchAsync(async (req, res) => {
   let fields = {}
   let files = {}
   await new Promise((resolve, reject) => {
-    form.parse(req, async (err, fields, files) => {
+    form.parse(req, (err, fields, files) => {
       if (err) {
         throw err
       }
@@ -50,28 +51,38 @@ const updatePost = catchAsync(async (req, res) => {
     throw new ApiError(httpStatus.UNAUTHORIZED, '토큰 값이 유효하지 않습니다. 다시 로그인을 해주세요.')
   }
 
-  const form = formidable({ multiples: true })
-  form.parse(req, async (err, fields, files) => {
-    if (err) {
-      res.writeHead(err.httpCode || 400, { 'Content-Type': 'text/plain' })
-      res.end(String(err))
-      return
-    }
-
-    fields = Object.assign(fields, { userId: payload.sub })
-    await postService.updatePost(fields, files)
-    res.status(httpStatus.OK).send(Object.assign({ code: 0, message: 'success' }))
+  let form = formidable({ multiples: true })
+  let fields = {}
+  let files = {}
+  await new Promise((resolve, reject) => {
+    form.parse(req, (err, fields, files) => {
+      if (err) {
+        throw err
+      }
+      resolve({ fields: Object.assign(fields, { userId: payload.sub }), files: files })
+    })
+  }).then((value) => {
+    fields = value.fields
+    files = value.files
   })
+
+  await postService.updatePost(fields, files)
+  res.status(httpStatus.OK).send({ code: 0, message: 'success' })
 })
 
 const getPost = catchAsync(async (req, res) => {
-  const post = await postService.getPost(req.params.postId)
+  await commonService.checkValueIsEmpty(req.params.postId, 'PostID')
 
-  const postImages = []
-  const promises = post.PostImages.map(async (PostImage) => {
+  let post = await postService.getPost(req.params.postId)
+  if (!post) {
+    throw new ApiError(httpStatus.BAD_REQUEST, '해당 포스트가 존재하지 않습니다.')
+  }
+
+  let postImages = []
+  let promises = post.PostImages.map((PostImage) => {
     if (env != 'production') {
       // storage 서버가 따로 없는 경우
-      var serviceUrl = req.protocol + '://' + req.get('host')
+      let serviceUrl = req.protocol + '://' + req.get('host')
       let imagePath = config.imagePath.split('public')[1]
       let imageName = PostImage.Image.imageName
       let imageExt = PostImage.Image.imageExt
@@ -82,11 +93,11 @@ const getPost = catchAsync(async (req, res) => {
   })
   await Promise.all(promises)
 
-  const result = { postId: post.postId, content: post.content, createdAt: post.createdAt, postImages: postImages }
+  let result = { postId: post.postId, content: post.content, createdAt: post.createdAt, postImages: postImages }
   res.status(httpStatus.OK).send(Object.assign({ code: 0, message: 'success' }, result))
 })
 
-const deletePost = catchAsync(async (req, res) => {
+let deletePost = catchAsync(async (req, res) => {
   await postService.deletePost(req.params.postId)
   res.status(httpStatus.OK).send(Object.assign({ code: 0, message: 'success' }))
 })
