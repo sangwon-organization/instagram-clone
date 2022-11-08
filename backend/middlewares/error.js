@@ -1,6 +1,14 @@
 const httpStatus = require('http-status')
 const ApiError = require('../utils/ApiError')
 
+const corsConverter = (req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE')
+  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type')
+  res.setHeader('Access-Control-Allow-Credentials', true)
+  next()
+}
+
 const notFoundConverter = (req, res, next) => {
   const statusCode = httpStatus.NOT_FOUND
   const message = httpStatus[statusCode]
@@ -39,6 +47,7 @@ const errorHandler = (err, req, res, next) => {
 }
 
 module.exports = {
+  corsConverter,
   notFoundConverter,
   errorConverter,
   errorHandler,
