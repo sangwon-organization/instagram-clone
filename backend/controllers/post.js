@@ -71,7 +71,7 @@ const updatePost = catchAsync(async (req, res) => {
 })
 
 const getPost = catchAsync(async (req, res) => {
-  await commonService.checkValueIsEmpty(req.params.postId, 'PostID')
+  await commonService.checkValueIsEmpty(req.params.postId, 'postId')
 
   let post = await postService.getPost(req.params.postId)
   if (!post) {
@@ -97,8 +97,44 @@ const getPost = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send(Object.assign({ code: 0, message: 'success' }, result))
 })
 
-let deletePost = catchAsync(async (req, res) => {
-  await postService.deletePost(req.params.postId)
+const deletePost = catchAsync(async (req, res) => {
+  await postService.deletePost(req.body.postId)
+  res.status(httpStatus.OK).send(Object.assign({ code: 0, message: 'success' }))
+})
+
+const likePost = catchAsync(async (req, res) => {
+  let token = req.headers['authorization']
+
+  if (!token) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, '토큰 값이 유효하지 않습니다. 다시 로그인을 해주세요.')
+  }
+
+  let payload = await authService.verifyToken(token)
+  if (!payload) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, '토큰 값이 유효하지 않습니다. 다시 로그인을 해주세요.')
+  }
+
+  req.body.userId = payload.sub
+
+  await postService.likePost(req.body.userId, req.body.postId, req.body.likeYn)
+  res.status(httpStatus.OK).send(Object.assign({ code: 0, message: 'success' }))
+})
+
+const bookmarkPost = catchAsync(async (req, res) => {
+  let token = req.headers['authorization']
+
+  if (!token) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, '토큰 값이 유효하지 않습니다. 다시 로그인을 해주세요.')
+  }
+
+  let payload = await authService.verifyToken(token)
+  if (!payload) {
+    throw new ApiError(httpStatus.UNAUTHORIZED, '토큰 값이 유효하지 않습니다. 다시 로그인을 해주세요.')
+  }
+
+  req.body.userId = payload.sub
+
+  await postService.bookmarkPost(req.body.userId, req.body.postId, req.body.bookmarkYn)
   res.status(httpStatus.OK).send(Object.assign({ code: 0, message: 'success' }))
 })
 
@@ -107,4 +143,6 @@ module.exports = {
   updatePost,
   getPost,
   deletePost,
+  likePost,
+  bookmarkPost,
 }

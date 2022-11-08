@@ -15,6 +15,7 @@ const CommentLike = require('./commentLike')
 const Token = require('./token')
 const Image = require('./image')
 const PostImage = require('./postImage')
+const PostBookmark = require('./postBookmark')
 
 let sequelize = new Sequelize(config.database, config.username, config.password, config)
 
@@ -28,6 +29,7 @@ db.CommentLike = CommentLike
 db.Token = Token
 db.Image = Image
 db.PostImage = PostImage
+db.PostBookmark = PostBookmark
 
 User.init(sequelize)
 Post.init(sequelize)
@@ -38,6 +40,7 @@ CommentLike.init(sequelize)
 Token.init(sequelize)
 Image.init(sequelize)
 PostImage.init(sequelize)
+PostBookmark.init(sequelize)
 
 User.associate(db)
 Post.associate(db)
@@ -48,5 +51,6 @@ CommentLike.associate(db)
 Token.associate(db)
 Image.associate(db)
 PostImage.associate(db)
+PostBookmark.associate(db)
 
 module.exports = db

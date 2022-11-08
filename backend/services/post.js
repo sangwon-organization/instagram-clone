@@ -1,15 +1,17 @@
-const imageService = require('../services/image')
-const Image = require('../models/image')
-const Post = require('../models/post')
-const PostImage = require('../models/postImage')
 const { v4: uuidv4 } = require('uuid')
 const fs = require('fs')
 const sizeOf = require('image-size')
 const env = process.env.NODE_ENV || 'local'
 const config = require('../config/config.json')[env]
-const commonService = require('../services/common')
-const ApiError = require('../utils/ApiError')
 const httpStatus = require('http-status')
+const ApiError = require('../utils/ApiError')
+const imageService = require('../services/image')
+const commonService = require('../services/common')
+const Image = require('../models/image')
+const Post = require('../models/post')
+const PostImage = require('../models/postImage')
+const PostLike = require('../models/postLike')
+const PostBookmark = require('../models/postBookmark')
 
 const createPost = async (fields, files) => {
   await commonService.checkValueIsEmpty(fields.content, '내용')
@@ -56,7 +58,7 @@ const createPost = async (fields, files) => {
 }
 
 const updatePost = async (fields, files) => {
-  await commonService.checkValueIsEmpty(fields.postId, 'PostID')
+  await commonService.checkValueIsEmpty(fields.postId, 'postId')
   await commonService.checkValueIsEmpty(fields.content, '내용')
 
   let post = await getPost(fields.postId)
@@ -148,7 +150,7 @@ const getPost = async (postId) => {
 }
 
 const deletePost = async (postId) => {
-  await commonService.checkValueIsEmpty(postId, 'PostID')
+  await commonService.checkValueIsEmpty(postId, 'postId')
 
   let post = await getPost(postId)
   if (!post) {
@@ -209,9 +211,45 @@ const deletePost = async (postId) => {
   })
 }
 
+const likePost = async (userId, postId, likeYn) => {
+  await commonService.checkValueIsEmpty(userId, 'userId')
+  await commonService.checkValueIsEmpty(postId, 'postId')
+  await commonService.checkValueIsEmpty(likeYn, 'likeYn')
+
+  let post = await getPost(postId)
+  if (!post) {
+    throw new ApiError(httpStatus.BAD_REQUEST, '해당 포스트가 존재하지 않습니다.')
+  }
+
+  if (likeYn == 'Y') {
+    PostLike.upsert({ postId: postId, userId: userId, updatedAt: new Date() }, { where: { postId: postId, userId: userId } })
+  } else {
+    PostLike.destroy({ where: { postId: postId, userId: userId } })
+  }
+}
+
+const bookmarkPost = async (userId, postId, bookmarkYn) => {
+  await commonService.checkValueIsEmpty(userId, 'userId')
+  await commonService.checkValueIsEmpty(postId, 'postId')
+  await commonService.checkValueIsEmpty(bookmarkYn, 'bookmarkYn')
+
+  let post = await getPost(postId)
+  if (!post) {
+    throw new ApiError(httpStatus.BAD_REQUEST, '해당 포스트가 존재하지 않습니다.')
+  }
+
+  if (bookmarkYn == 'Y') {
+    PostBookmark.upsert({ postId: postId, userId: userId, updatedAt: new Date() }, { where: { postId: postId, userId: userId } })
+  } else {
+    PostBookmark.destroy({ where: { postId: postId, userId: userId } })
+  }
+}
+
 module.exports = {
   createPost,
   updatePost,
   getPost,
   deletePost,
+  likePost,
+  bookmarkPost,
 }

@@ -46,5 +46,6 @@ module.exports = class Post extends Sequelize.Model {
     db.Post.hasMany(db.PostLike, { foreignKey: 'postId', sourceKey: 'postId' })
     db.Post.hasMany(db.Comment, { foreignKey: 'postId', sourceKey: 'postId' })
     db.Post.hasMany(db.PostImage, { foreignKey: 'postId', sourceKey: 'postId' })
+    db.Post.hasMany(db.PostBookmark, { foreignKey: 'postId', sourceKey: 'postId' })
   }
 }
