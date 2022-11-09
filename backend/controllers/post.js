@@ -103,37 +103,11 @@ const deletePost = catchAsync(async (req, res) => {
 })
 
 const likePost = catchAsync(async (req, res) => {
-  let token = req.headers['authorization']
-
-  if (!token) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, '토큰 값이 유효하지 않습니다. 다시 로그인을 해주세요.')
-  }
-
-  let payload = await authService.verifyToken(token)
-  if (!payload) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, '토큰 값이 유효하지 않습니다. 다시 로그인을 해주세요.')
-  }
-
-  req.body.userId = payload.sub
-
   await postService.likePost(req.body.userId, req.body.postId, req.body.likeYn)
   res.status(httpStatus.OK).send(Object.assign({ code: 0, message: 'success' }))
 })
 
 const bookmarkPost = catchAsync(async (req, res) => {
-  let token = req.headers['authorization']
-
-  if (!token) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, '토큰 값이 유효하지 않습니다. 다시 로그인을 해주세요.')
-  }
-
-  let payload = await authService.verifyToken(token)
-  if (!payload) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, '토큰 값이 유효하지 않습니다. 다시 로그인을 해주세요.')
-  }
-
-  req.body.userId = payload.sub
-
   await postService.bookmarkPost(req.body.userId, req.body.postId, req.body.bookmarkYn)
   res.status(httpStatus.OK).send(Object.assign({ code: 0, message: 'success' }))
 })
