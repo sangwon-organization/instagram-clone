@@ -16,7 +16,7 @@ const signup = async (body) => {
   await commonService.checkValueIsEmpty(body.username, '닉네임')
   await userSerivce.checkUsername(body.username)
   await commonService.checkValueIsEmpty(body.password, '패스워드')
-  body.password = decryptAES256(body.password)
+  //body.password = decryptAES256(body.password) => aes256 적용 코드
   await userSerivce.checkPassword(body.password)
   body.password = encryptSHA256(body.password)
   return userSerivce.createUser(body)
@@ -25,7 +25,8 @@ const signup = async (body) => {
 const signin = async (body) => {
   await commonService.checkValueIsEmpty(body.email, '이메일')
   await commonService.checkValueIsEmpty(body.password, '패스워드')
-  body.password = encryptSHA256(decryptAES256(body.password))
+  // body.password = encryptSHA256(decryptAES256(body.password)) => aes256 적용 코드
+  body.password = encryptSHA256(body.password)
   let user = await userSerivce.findUser(body.email, body.password)
   if (!user) {
     throw new ApiError(httpStatus.UNAUTHORIZED, '이메일 또는 패스워드가 정확하지 않습니다. 다시 입력해 주세요.')

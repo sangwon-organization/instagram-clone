@@ -46,9 +46,11 @@ const changePassword = async (email, oldPassword, newPassword) => {
   await commonService.checkValueIsEmpty(oldPassword, '기존 패스워드')
   await commonService.checkValueIsEmpty(newPassword, '새 패스워드')
 
-  let decryptOldPassword = decryptAES256(oldPassword)
+  //let decryptOldPassword = decryptAES256(oldPassword) => aes256 적용 코드
+  let decryptOldPassword = oldPassword
   let encryptOldPassword = encryptSHA256(decryptOldPassword)
-  let decryptNewPassword = decryptAES256(newPassword)
+  //let decryptNewPassword = decryptAES256(newPassword) => aes256 적용 코드
+  let decryptNewPassword = newPassword
   let encryptNewPassword = encryptSHA256(decryptNewPassword)
   let user = await findUser(email, encryptOldPassword)
 
