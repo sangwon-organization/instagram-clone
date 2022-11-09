@@ -19,6 +19,7 @@ sequelize
     console.error(err)
   })
 
+app.use(corsConverter)
 app.use(morgan('dev'))
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
@@ -28,7 +29,6 @@ app.use('/', indexRouter)
 app.use('/user', userRouter)
 app.use('/post', postRouter)
 
-app.use(corsConverter)
 app.use(notFoundConverter)
 app.use(errorConverter)
 app.use(errorHandler)
