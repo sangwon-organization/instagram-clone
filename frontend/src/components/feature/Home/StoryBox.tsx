@@ -18,6 +18,12 @@ const StoryBoxContainer = styled.section`
   position: relative;
   margin-top: 28px;
   margin-bottom: 4px;
+  @media ${({ theme }) => theme.mobile} {
+    width: 100vw;
+  }
+  @media ${({ theme }) => theme.tablet} {
+    width: 100vw;
+  }
 `;
 
 const StoryBoxWrapper = styled.ul`

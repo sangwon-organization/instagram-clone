@@ -26,6 +26,16 @@ const FeedCardContainer = styled.div`
   display: flex;
   flex-direction: column;
   background: ${({ theme }) => theme.searchBarBgColor};
+  @media ${({ theme }) => theme.tablet} {
+    width: 100vw;
+    display: flex;
+    flex-direction: column;
+  }
+  @media ${({ theme }) => theme.mobile} {
+    width: 100vw;
+    display: flex;
+    flex-direction: column;
+  }
 `;
 
 const UserInformationWrapper = styled.div`
@@ -333,6 +343,7 @@ const KebabMenuIcon = styled(GoKebabHorizontal)`
   width: 20px;
   height: 20px;
   cursor: pointer;
+  color: ${({ theme }) => theme.textColor};
 `;
 
 const BigLikedIcon = styled(BsHeartFill)<{ likeButtonClicked: boolean }>`

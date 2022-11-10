@@ -3,10 +3,11 @@ import styled from 'styled-components';
 import FeedCard from '../../components/feature/Home/FeedCard';
 import HomeAside from '../../components/feature/Home/HomeAside';
 import StoryBox from '../../components/feature/Home/StoryBox';
+import BottomNavigationBar from '../../components/layout/NavigationBar/BottomNavigationBar';
 import NavigationBar from '../../components/layout/NavigationBar/NavigationBar';
 
 const MainContainer = styled.div`
-  width: 100%;
+  width: 100vw;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -14,6 +15,21 @@ const MainContainer = styled.div`
   align-items: center;
   background: ${({ theme }) => theme.bgColor};
   padding-top: 60px;
+  border: 1px solid blue;
+  @media ${({ theme }) => theme.tablet} {
+    width: 100vw;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  @media ${({ theme }) => theme.mobile} {
+    width: 100vw;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
 `;
 
 const MainWrapper = styled.main`
@@ -23,6 +39,16 @@ const MainWrapper = styled.main`
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  @media ${({ theme }) => theme.tablet} {
+    width: 80vw;
+    align-items: center;
+    justify-content: center;
+  }
+  @media ${({ theme }) => theme.mobile} {
+    width: 100vw;
+    align-items: center;
+    justify-content: center;
+  }
 `;
 
 const StoryAndFeedSection = styled.section`
@@ -31,6 +57,18 @@ const StoryAndFeedSection = styled.section`
   display: flex;
   flex-direction: column;
   gap: 14px 0;
+  @media ${({ theme }) => theme.tablet} {
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  @media ${({ theme }) => theme.mobile} {
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 `;
 
 const HomePresenter = () => {
@@ -47,6 +85,7 @@ const HomePresenter = () => {
           <HomeAside />
         </MainWrapper>
       </MainContainer>
+      <BottomNavigationBar />
     </>
   );
 };

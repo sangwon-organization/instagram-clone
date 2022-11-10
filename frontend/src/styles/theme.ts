@@ -1,5 +1,11 @@
 import { css, DefaultTheme } from 'styled-components';
 
+const deviceSizes = {
+  mobile: '375px',
+  tablet: '768px',
+  laptop: '1024px',
+};
+
 const colors = {
   whiteColor: '#FFFFFF',
   blackColor: '#000000',
@@ -50,6 +56,9 @@ const lightTheme = {
   searchBarBgColor: colors.lightModeSearchBarBgColor,
   dropDownBgColor: colors.lightModeDropDownBgColor,
   searchBarInputColor: colors.lightModeSearchBarInputColor,
+  mobile: `screen and (max-width: ${deviceSizes.mobile})`,
+  tablet: `screen and (max-width: ${deviceSizes.tablet})`,
+  laptop: `screen and (max-width: ${deviceSizes.laptop})`,
 };
 
 const darkTheme = {
@@ -64,6 +73,9 @@ const darkTheme = {
   searchBarBgColor: colors.darkModeSearchBarBgColor,
   dropDownBgColor: colors.darkModeDropDownBgColor,
   searchBarInputColor: colors.darkModeSearchBarInputColor,
+  mobile: `screen and (max-width: ${deviceSizes.mobile})`,
+  tablet: `screen and (max-width: ${deviceSizes.tablet})`,
+  laptop: `screen and (max-width: ${deviceSizes.laptop})`,
 };
 
 export type ColorsTypes = typeof colors;

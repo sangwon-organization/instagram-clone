@@ -13,6 +13,7 @@ const GlobalStyle = createGlobalStyle`
         padding: 0;
         margin: 0;
         font-family: "RobotoFont", sans-serif;
+        
     };
     button{
         display: flex;

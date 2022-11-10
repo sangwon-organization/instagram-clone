@@ -15,7 +15,7 @@ import useOutsideClick from '../../../hooks/useOutsideClick';
 import { useSelector } from 'react-redux';
 
 const NavigationBarContainer = styled.nav`
-  width: 100%;
+  width: 100vw;
   height: 60px;
   border-bottom: 1px solid ${({ theme }) => theme.borderColor};
   background: ${({ theme }) => theme.searchBarBgColor};
@@ -24,6 +24,12 @@ const NavigationBarContainer = styled.nav`
   align-items: center;
   position: fixed;
   z-index: 10000;
+  @media ${({ theme }) => theme.tablet} {
+    width: 100vw;
+  }
+  @media ${({ theme }) => theme.mobile} {
+    width: 100vw;
+  }
 `;
 
 const NavigationBarWrapper = styled.div`
@@ -33,6 +39,13 @@ const NavigationBarWrapper = styled.div`
   justify-content: space-between;
   align-items: center;
   position: relative;
+  border: 1px solid red;
+  @media ${({ theme }) => theme.tablet} {
+    width: 90vw;
+  }
+  @media ${({ theme }) => theme.mobile} {
+    width: 90vw;
+  }
 `;
 
 const LogoWrapper = styled.div`

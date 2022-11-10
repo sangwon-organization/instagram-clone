@@ -3,9 +3,12 @@ import styled from 'styled-components';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
+import { useMutation } from '@tanstack/react-query';
+import { loginUser } from '../../../api/api';
 import clonestagramLogoBlack from '../../../assets/image/clonestagramLogoBlack.png';
 import LoginSignUpBottomBox from '../../share/LoginSignUpBottomBox';
 import LoginSignUpMiddleBox from '../../share/LoginSignUpMiddleBox';
+import { useDispatch } from 'react-redux';
 
 const LoginContainer = styled.div`
   width: 342.2px;
@@ -167,13 +170,13 @@ const ForgotPasswordBox = styled.div`
 `;
 
 type FormValues = {
-  usernameInput: string;
-  passwordInput: string;
+  email: string;
+  password: string;
 };
 
 const schema = yup.object().shape({
-  usernameInput: yup.string().required(),
-  passwordInput: yup.string().min(6).required(),
+  email: yup.string().required(),
+  password: yup.string().min(6).required(),
 });
 
 const Login = () => {
@@ -183,6 +186,8 @@ const Login = () => {
   const [passwordShowAndHide, setPasswordShowAndHide] = useState(false);
   const [emailInputBoxClicked, setEmailInputBoxClicked] = useState(false);
   const [passwordInputBoxClicked, setPasswordInputBoxClicked] = useState(false);
+
+  const dispatch = useDispatch();
 
   const userNameInputKeyPress = (e: any) => {
     if (e.target.value === '') {
@@ -206,10 +211,6 @@ const Login = () => {
     setPasswordShowAndHide((prev: boolean) => !prev);
   };
 
-  const onSubmit = (dataInput: any) => {
-    console.log(dataInput);
-  };
-
   const onError = (err: any) => {
     console.log(err);
   };
@@ -219,6 +220,24 @@ const Login = () => {
     handleSubmit,
     formState: { isValid, errors },
   } = useForm<FormValues>({ mode: 'onChange', resolver: yupResolver(schema) });
+
+  const { mutate, data, error, reset } = useMutation(loginUser, {
+    onError: (err: any) => {
+      console.log(err.response.data);
+    },
+    onSuccess: (userInfo: any) => {
+      console.log('로그인 성공!');
+      // console.log(userInfo);
+      // console.log(data);
+    },
+  });
+
+  const onSubmit = (dataInput: any) => {
+    // console.log(dataInput);
+    // const result = JSON.stringify(dataInput);
+    // console.log(result);
+    mutate(dataInput);
+  };
 
   return (
     <LoginContainer>
@@ -231,7 +250,7 @@ const Login = () => {
               onFocusCapture={() => setEmailInputBoxClicked(true)}
               onBlurCapture={() => setEmailInputBoxClicked(false)}
               onKeyUp={(e) => userNameInputKeyPress(e)}
-              {...register('usernameInput', { required: true })}
+              {...register('email', { required: true })}
             />
             <span>Phone number, username, or email</span>
           </InputBox>
@@ -243,7 +262,7 @@ const Login = () => {
               onFocusCapture={() => setPasswordInputBoxClicked(true)}
               onBlurCapture={() => setPasswordInputBoxClicked(false)}
               onKeyUp={(e) => passwordInputKeyPress(e)}
-              {...register('passwordInput', { required: true })}
+              {...register('password', { required: true })}
             />
             <span>Password</span>
             {showPassword && (

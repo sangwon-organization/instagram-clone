@@ -7,6 +7,9 @@ const HomeAsideContainer = styled.aside`
   height: 984px;
   /* border: 1px solid red; */
   margin-top: 55px;
+  @media ${({ theme }) => theme.tablet} {
+    display: none;
+  }
 `;
 
 const UserAccountWrapper = styled.div`

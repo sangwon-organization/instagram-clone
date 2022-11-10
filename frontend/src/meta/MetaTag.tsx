@@ -16,6 +16,7 @@ const MetaTag = ({
   imgsrc,
   url,
 }: MetaTagProps) => {
+  console.log(title);
   return (
     <Helmet>
       <title>{title}</title>

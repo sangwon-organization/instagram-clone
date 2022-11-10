@@ -15,12 +15,12 @@ const SearchBarTooltipContainer = styled.div<{
   border-radius: 5px;
   filter: drop-shadow(0px 0px 10px rgba(0, 0, 0, 0.1));
   position: absolute;
-  background: ${({ theme }) => theme.searchBarBgColor};
+  background: ${({ theme }) => theme.dropDownBgColor};
   top: 60px;
   left: 220px;
   z-index: 500;
   &:after {
-    border-color: ${({ theme }) => theme.searchBarBgColor} transparent;
+    border-color: ${({ theme }) => theme.dropDownBgColor} transparent;
     border-style: solid;
     border-width: 0 6px 8px 6.5px;
     content: '';
