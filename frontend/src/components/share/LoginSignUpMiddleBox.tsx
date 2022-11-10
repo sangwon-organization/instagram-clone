@@ -15,7 +15,8 @@ const Container = styled.div`
   p {
     color: #262626;
     font-size: 13.7px;
-    font-weight: normal;
+    font-family: 'RobotoFont';
+    font-weight: 400;
     font-stretch: normal;
     font-style: normal;
     line-height: 1.29;

@@ -3,9 +3,12 @@ import styled from 'styled-components';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import instagramLogo from '../../../assets/image/instagram-logo.png';
+import { useMutation } from '@tanstack/react-query';
+import { loginUser } from '../../../api/api';
+import clonestagramLogoBlack from '../../../assets/image/clonestagramLogoBlack.png';
 import LoginSignUpBottomBox from '../../share/LoginSignUpBottomBox';
 import LoginSignUpMiddleBox from '../../share/LoginSignUpMiddleBox';
+import { useDispatch } from 'react-redux';
 
 const LoginContainer = styled.div`
   width: 342.2px;
@@ -19,7 +22,7 @@ const TopBox = styled.div`
   width: 100%;
   height: 387.1px;
   border-radius: 1px;
-  border: solid 1px #dbdbdb;
+  border: solid 1px ${({ theme }) => theme.borderColor};
   background-color: #fff;
   display: flex;
   flex-direction: column;
@@ -66,8 +69,9 @@ const InputBox = styled.div<{ keyPress: boolean; clicked: boolean }>`
   width: 262px;
   height: 37.1px;
   border-radius: 2.9px;
-  border: solid 1px ${({ clicked }) => (clicked ? '#a2a1a1' : '#dbdbdb')};
-  background-color: #fafafa;
+  border: solid 1px
+    ${({ theme, clicked }) => (clicked ? '#a2a1a1' : theme.borderColor)};
+  background-color: ${({ theme }) => theme.bgColor};
   input {
     position: absolute;
     width: 100%;
@@ -110,7 +114,7 @@ const ShowHideText = styled.button`
   background: transparent;
   z-index: 200;
   &:active {
-    color: grey;
+    color: ${({ theme }) => theme.greyTextColor};
   }
 `;
 
@@ -124,7 +128,7 @@ const OrBox = styled.div`
     font-style: normal;
     line-height: 1.15;
     letter-spacing: normal;
-    color: #8e8e8e;
+    color: ${({ theme }) => theme.greyTextColor};
     display: flex;
     justify-content: center;
     align-items: center;
@@ -135,7 +139,7 @@ const OrBox = styled.div`
       display: inline-block;
       width: 103.9px;
       height: 1px;
-      background: #dbdbdb;
+      background: ${({ theme }) => theme.borderColor};
     }
   }
 `;
@@ -162,17 +166,17 @@ const ForgotPasswordBox = styled.div`
   font-style: normal;
   line-height: 1.33;
   letter-spacing: normal;
-  color: #00376b;
+  color: ${({ theme }) => theme.hashTagColor};
 `;
 
 type FormValues = {
-  usernameInput: string;
-  passwordInput: string;
+  email: string;
+  password: string;
 };
 
 const schema = yup.object().shape({
-  usernameInput: yup.string().required(),
-  passwordInput: yup.string().min(6).required(),
+  email: yup.string().required(),
+  password: yup.string().min(6).required(),
 });
 
 const Login = () => {
@@ -182,6 +186,8 @@ const Login = () => {
   const [passwordShowAndHide, setPasswordShowAndHide] = useState(false);
   const [emailInputBoxClicked, setEmailInputBoxClicked] = useState(false);
   const [passwordInputBoxClicked, setPasswordInputBoxClicked] = useState(false);
+
+  const dispatch = useDispatch();
 
   const userNameInputKeyPress = (e: any) => {
     if (e.target.value === '') {
@@ -205,10 +211,6 @@ const Login = () => {
     setPasswordShowAndHide((prev: boolean) => !prev);
   };
 
-  const onSubmit = (dataInput: any) => {
-    console.log(dataInput);
-  };
-
   const onError = (err: any) => {
     console.log(err);
   };
@@ -219,10 +221,28 @@ const Login = () => {
     formState: { isValid, errors },
   } = useForm<FormValues>({ mode: 'onChange', resolver: yupResolver(schema) });
 
+  const { mutate, data, error, reset } = useMutation(loginUser, {
+    onError: (err: any) => {
+      console.log(err.response.data);
+    },
+    onSuccess: (userInfo: any) => {
+      console.log('로그인 성공!');
+      // console.log(userInfo);
+      // console.log(data);
+    },
+  });
+
+  const onSubmit = (dataInput: any) => {
+    // console.log(dataInput);
+    // const result = JSON.stringify(dataInput);
+    // console.log(result);
+    mutate(dataInput);
+  };
+
   return (
     <LoginContainer>
       <TopBox>
-        <img src={instagramLogo} alt="인스타그램로고" />
+        <img src={clonestagramLogoBlack} alt="인스타그램로고" />
         <LoginForm onSubmit={handleSubmit(onSubmit, onError)}>
           <InputBox keyPress={usernameKeyPress} clicked={emailInputBoxClicked}>
             <input
@@ -230,7 +250,7 @@ const Login = () => {
               onFocusCapture={() => setEmailInputBoxClicked(true)}
               onBlurCapture={() => setEmailInputBoxClicked(false)}
               onKeyUp={(e) => userNameInputKeyPress(e)}
-              {...register('usernameInput', { required: true })}
+              {...register('email', { required: true })}
             />
             <span>Phone number, username, or email</span>
           </InputBox>
@@ -242,7 +262,7 @@ const Login = () => {
               onFocusCapture={() => setPasswordInputBoxClicked(true)}
               onBlurCapture={() => setPasswordInputBoxClicked(false)}
               onKeyUp={(e) => passwordInputKeyPress(e)}
-              {...register('passwordInput', { required: true })}
+              {...register('password', { required: true })}
             />
             <span>Password</span>
             {showPassword && (
