@@ -18,7 +18,7 @@ const MainContainer = styled.div`
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: #fafafa;
+  background: ${({ theme }) => theme.bgColor};
   padding-top: 60px;
 `;
 
@@ -58,7 +58,10 @@ const UserAvatar = styled.div`
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  background-image: linear-gradient(#fff, #fff),
+  background-image: linear-gradient(
+      ${({ theme }) => theme.searchBarBgColor},
+      ${({ theme }) => theme.searchBarBgColor}
+    ),
     linear-gradient(to right, red 0%, orange 100%);
   background-origin: border-box;
   background-clip: content-box, border-box;
@@ -89,6 +92,7 @@ const FirstBox = styled.div`
   h2 {
     font-size: 28px;
     font-weight: 400;
+    color: ${({ theme }) => theme.textColor};
   }
 `;
 
@@ -108,6 +112,7 @@ const SecondBox = styled.div`
   p {
     font-size: 16px;
     font-weight: 400;
+    color: ${({ theme }) => theme.textColor};
     span {
       font-weight: 600;
     }
@@ -118,16 +123,17 @@ const ThirdBox = styled.div`
   height: fit-content;
   p {
     line-height: 24px;
+    color: ${({ theme }) => theme.textColor};
   }
 `;
 const FourthBox = styled.div`
   width: fit-content;
   height: 16px;
-  color: #8e8e8e;
+  color: ${({ theme }) => theme.greyTextColor};
   font-size: 12px;
   font-weight: 600;
   span {
-    color: #262626;
+    color: ${({ theme }) => theme.textColor};
   }
 `;
 
@@ -135,12 +141,14 @@ const KebabMenuIcon = styled(GoKebabHorizontal)`
   width: 27px;
   height: 27px;
   cursor: pointer;
+  color: ${({ theme }) => theme.textColor};
   /* border: 1px solid red; */
 `;
 
 const ArrowDownIcon = styled(SlArrowDown)`
   width: 10px;
   height: 10px;
+  color: ${({ theme }) => theme.textColor};
 `;
 
 const UserCheckIcon = styled(FaUserCheck)`
@@ -154,30 +162,33 @@ const MessageButton = styled.button`
   padding: 5px 9px;
   font-size: 14px;
   font-weight: 600;
-  border: 1px solid #dbdbdb;
+  border: 1px solid ${({ theme }) => theme.borderColor};
   border-radius: 5px;
   background: transparent;
+  color: ${({ theme }) => theme.textColor};
 `;
 const FollowButton = styled.button`
   width: 72px;
   height: 30px;
   padding: 5px 9px;
-  border: 1px solid #dbdbdb;
+  border: 1px solid ${({ theme }) => theme.borderColor};
   border-radius: 5px;
   background: transparent;
+  color: ${({ theme }) => theme.textColor};
 `;
 const SuggestedButton = styled.button`
   width: 34px;
   height: 30px;
   padding: 5px 9px;
-  border: 1px solid #dbdbdb;
+  border: 1px solid ${({ theme }) => theme.borderColor};
   border-radius: 5px;
   background: transparent;
+  color: ${({ theme }) => theme.textColor};
 `;
 const TabMenu = styled.div`
   width: 100%;
   height: 53px;
-  border-top: 1px solid #dbdbdb;
+  border-top: 1px solid ${({ theme }) => theme.borderColor};
   display: flex;
   justify-content: center;
   align-items: center;
@@ -193,7 +204,7 @@ const MenuWrapper = styled.ul`
     width: fit-content;
     height: 100%;
     font-size: 12px;
-    color: #8e8e8e;
+    color: ${({ theme }) => theme.greyTextColor};
     font-weight: 600;
     letter-spacing: 1px;
     display: flex;

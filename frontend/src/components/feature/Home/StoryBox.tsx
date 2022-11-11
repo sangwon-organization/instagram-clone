@@ -9,15 +9,21 @@ import {
 const StoryBoxContainer = styled.section`
   width: 470px;
   height: 119px;
-  border: 1px solid #dbdbdb;
+  border: 1px solid ${({ theme }) => theme.borderColor};
   border-radius: 10px;
-  background: #fff;
+  background: ${({ theme }) => theme.searchBarBgColor};
   display: flex;
   justify-content: center;
   align-items: center;
   position: relative;
   margin-top: 28px;
   margin-bottom: 4px;
+  @media ${({ theme }) => theme.mobile} {
+    width: 100vw;
+  }
+  @media ${({ theme }) => theme.tablet} {
+    width: 100vw;
+  }
 `;
 
 const StoryBoxWrapper = styled.ul`
@@ -49,6 +55,7 @@ const StoryItem = styled.button`
     font-size: 12px;
     font-weight: 400;
     letter-spacing: 0.12px;
+    color: ${({ theme }) => theme.textColor};
     /* border: 1px solid red; */
   }
 `;
@@ -61,7 +68,10 @@ const UserAvatar = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  background-image: linear-gradient(#fff, #fff),
+  background-image: linear-gradient(
+      ${({ theme }) => theme.searchBarBgColor},
+      ${({ theme }) => theme.searchBarBgColor}
+    ),
     linear-gradient(to right, red 0%, orange 100%);
   background-origin: border-box;
   background-clip: content-box, border-box;

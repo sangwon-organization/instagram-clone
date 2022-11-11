@@ -4,12 +4,16 @@ import reset from 'styled-reset';
 const GlobalStyle = createGlobalStyle`
     ${reset};
     * {
-        font-family: -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
         box-sizing: border-box;
-    }
+    };
+    html {
+        background: ${({ theme }: any) => theme.bgColor};
+    };
     body{
         padding: 0;
         margin: 0;
+        font-family: "RobotoFont", sans-serif;
+        
     };
     button{
         display: flex;
