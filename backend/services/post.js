@@ -294,11 +294,10 @@ const getPostList = async (req, page = 1) => {
   })
 
   postList = postList.map((post) => {
-    console.log(post)
     let postId = post.postId
     let content = post.content
     let createdAt = dateFormat(post.createdAt)
-    let followYn = post.PostLikes.length > 0 ? 'Y' : 'N'
+    let likeYn = post.PostLikes.length > 0 ? 'Y' : 'N'
     let bookmarkYn = post.PostBookmarks.length > 0 ? 'Y' : 'N'
     let postImageList = post.PostImages.map((postImage) => {
       if (env != 'production') {
@@ -318,7 +317,7 @@ const getPostList = async (req, page = 1) => {
       postId,
       content,
       createdAt,
-      followYn,
+      likeYn,
       bookmarkYn,
       postImageList,
     }
