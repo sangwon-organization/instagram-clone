@@ -18,7 +18,7 @@ const getPost = catchAsync(async (req, res) => {
 })
 
 const deletePost = catchAsync(async (req, res) => {
-  await postService.deletePost(req.body.postId)
+  await postService.deletePost(req.params.postId)
   res.status(httpStatus.OK).send(Object.assign({ code: 0, message: 'success' }))
 })
 
