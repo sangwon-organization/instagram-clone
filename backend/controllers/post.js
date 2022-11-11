@@ -37,6 +37,26 @@ const getPostList = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send(Object.assign({ code: 0, message: 'success' }, { postList: postList }))
 })
 
+const createComment = catchAsync(async (req, res) => {
+  await postService.createComment(req.body)
+  res.status(httpStatus.OK).send({ code: 0, message: 'success' })
+})
+
+const updateComment = catchAsync(async (req, res) => {
+  await postService.updateComment(req.body)
+  res.status(httpStatus.OK).send({ code: 0, message: 'success' })
+})
+
+const deleteComment = catchAsync(async (req, res) => {
+  await postService.deleteComment(req.body)
+  res.status(httpStatus.OK).send({ code: 0, message: 'success' })
+})
+
+const likeComment = catchAsync(async (req, res) => {
+  await postService.likeComment(req.body)
+  res.status(httpStatus.OK).send(Object.assign({ code: 0, message: 'success' }))
+})
+
 module.exports = {
   createPost,
   updatePost,
@@ -45,4 +65,8 @@ module.exports = {
   likePost,
   bookmarkPost,
   getPostList,
+  createComment,
+  updateComment,
+  deleteComment,
+  likeComment,
 }

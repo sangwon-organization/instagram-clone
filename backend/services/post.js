@@ -9,6 +9,8 @@ const imageService = require('../services/image')
 const commonService = require('../services/common')
 const Image = require('../models/image')
 const Post = require('../models/post')
+const Comment = require('../models/comment')
+const CommentLike = require('../models/commentLike')
 const PostImage = require('../models/postImage')
 const PostLike = require('../models/postLike')
 const PostBookmark = require('../models/postBookmark')
@@ -403,6 +405,91 @@ const getPostList = async (req, page = 1) => {
   return result
 }
 
+const createComment = async (data) => {
+  await commonService.checkValueIsEmpty(data.postId, 'postId')
+  await commonService.checkValueIsEmpty(data.content, '내용')
+  data.parentCommentId = data.parentCommentId == '' ? undefined : data.parentCommentId
+
+  if (data.parentCommentId) {
+    let parentComment = await Comment.findOne({
+      where: { commentId: data.parentCommentId },
+    })
+    if (!parentComment) {
+      throw new ApiError(httpStatus.BAD_REQUEST, '해당 상위 댓글이 존재하지 않습니다.')
+    }
+  }
+
+  let post = await Post.findOne({ where: { postId: data.postId } })
+  if (!post) {
+    throw new ApiError(httpStatus.BAD_REQUEST, '해당 포스트가 존재하지 않습니다.')
+  }
+
+  let comment = await Comment.create(data)
+  if (!comment) {
+    throw new ApiError(httpStatus.BAD_REQUEST, '댓글 등록에 실패하였습니다. 다시 시도해주세요.')
+  }
+}
+
+const updateComment = async (data) => {
+  await commonService.checkValueIsEmpty(data.commentId, 'commentId')
+  await commonService.checkValueIsEmpty(data.content, '내용')
+
+  let comment = await Comment.findOne({
+    where: { commentId: data.commentId },
+  })
+  if (!comment) {
+    throw new ApiError(httpStatus.BAD_REQUEST, '해당 댓글이 존재하지 않습니다.')
+  }
+
+  const updatedCommentCount = await Comment.update(
+    {
+      content: data.content,
+      updatedAt: Date.now(),
+    },
+    {
+      where: {
+        commentId: data.commentId,
+      },
+    }
+  )
+
+  if (!updatedCommentCount[0]) {
+    throw new ApiError(httpStatus.BAD_REQUEST, '댓글 수정에 실패하였습니다. 다시 시도해주세요.')
+  }
+}
+
+const deleteComment = async (data) => {
+  await commonService.checkValueIsEmpty(data.commentId, 'commentId')
+
+  let comment = await Comment.findOne({ where: { commentId: data.commentId } })
+  if (!comment) {
+    throw new ApiError(httpStatus.BAD_REQUEST, '해당 댓글이 존재하지 않습니다.')
+  }
+
+  await Comment.destroy({ where: { parentCommentId: data.commentId } })
+  await Comment.destroy({ where: { commentId: data.commentId } })
+}
+
+const likeComment = async (data) => {
+  await commonService.checkValueIsEmpty(data.userId, 'userId')
+  await commonService.checkValueIsEmpty(data.commentId, 'commentId')
+  await commonService.checkValueIsEmpty(data.likeYn, 'likeYn')
+
+  let comment = await Comment.findOne({ where: { commentId: data.commentId } })
+  if (!comment) {
+    throw new ApiError(httpStatus.BAD_REQUEST, '해당 댓글이 존재하지 않습니다.')
+  }
+
+  if (data.likeYn == 'Y') {
+    CommentLike.upsert({ commentId: data.commentId, userId: data.userId, updatedAt: new Date() }, { where: { commentId: data.commentId, userId: data.userId } })
+  } else {
+    CommentLike.destroy({ where: { commentId: data.commentId, userId: data.userId } })
+  }
+}
+
+// 부모 댓글 => 20개씩
+// 자식 댓글 => 10개씩
+
 module.exports = {
   createPost,
   updatePost,
@@ -411,4 +498,8 @@ module.exports = {
   likePost,
   bookmarkPost,
   getPostList,
+  createComment,
+  updateComment,
+  deleteComment,
+  likeComment,
 }

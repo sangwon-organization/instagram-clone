@@ -6,6 +6,7 @@ const { decryptAES256, encryptSHA256 } = require('../utils/encryption')
 const userSerivce = require('../services/user')
 const { Token } = require('../models')
 const commonService = require('../services/common')
+const { dateFormat } = require('../utils/regex')
 
 const secret = 'test1234'
 
@@ -45,11 +46,11 @@ const generateAuthTokens = async (user) => {
   return {
     access: {
       token: accessToken,
-      expires: accessTokenExpires.toDate(),
+      expires: dateFormat(accessTokenExpires.toDate()),
     },
     refresh: {
       token: refreshToken,
-      expires: refreshTokenExpires.toDate(),
+      expires: dateFormat(refreshTokenExpires.toDate()),
     },
   }
 }
@@ -89,9 +90,6 @@ const verifyToken = async (token) => {
   } catch (err) {
     if (err instanceof jwt.TokenExpiredError) {
       throw new ApiError(httpStatus.UNAUTHORIZED, '토큰 유효기간이 만료되었습니다. 다시 로그인 해주세요.')
-    }
-    if (err instanceof jwt.JsonWebTokenError) {
-      throw new ApiError(httpStatus.UNAUTHORIZED, '토큰 인증에 실패하였습니다.  다시 로그인 해주세요.')
     }
   }
   return payload
