@@ -90,6 +90,9 @@ const verifyToken = async (token) => {
     if (err instanceof jwt.TokenExpiredError) {
       throw new ApiError(httpStatus.UNAUTHORIZED, '토큰 유효기간이 만료되었습니다. 다시 로그인 해주세요.')
     }
+    if (err instanceof jwt.JsonWebTokenError) {
+      throw new ApiError(httpStatus.UNAUTHORIZED, '토큰 인증에 실패하였습니다.  다시 로그인 해주세요.')
+    }
   }
   return payload
 }

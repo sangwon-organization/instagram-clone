@@ -2,6 +2,7 @@ const httpStatus = require('http-status')
 const ApiError = require('../utils/ApiError')
 const authService = require('../services/auth')
 const catchAsync = require('../utils/catchAsync')
+const formidable = require('formidable')
 
 const corsConverter = (req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*')
@@ -64,10 +65,27 @@ const checkToken = catchAsync(async (req, res, next) => {
   next()
 })
 
+const convertFormDataToRequestBody = catchAsync(async (req, res, next) => {
+  let form = formidable({ multiples: true })
+  await new Promise((resolve, reject) => {
+    form.parse(req, (err, fields, files) => {
+      if (err) {
+        throw err
+      }
+      resolve(Object.assign(fields, { files: files, userId: req.body.userId }))
+    })
+  }).then((value) => {
+    req.body = value
+  })
+
+  next()
+})
+
 module.exports = {
   corsConverter,
   notFoundConverter,
   errorConverter,
   errorHandler,
   checkToken,
+  convertFormDataToRequestBody,
 }

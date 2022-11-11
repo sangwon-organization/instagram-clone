@@ -12,12 +12,11 @@ const Post = require('../models/post')
 const PostImage = require('../models/postImage')
 const PostLike = require('../models/postLike')
 const PostBookmark = require('../models/postBookmark')
-const { sequelize } = require('../models')
 const { dateFormat } = require('../utils/regex')
 const authService = require('../services/auth')
 
-const createPost = async (fields, files) => {
-  await commonService.checkValueIsEmpty(fields.content, '내용')
+const createPost = async (data) => {
+  await commonService.checkValueIsEmpty(data.content, '내용')
 
   // 이미지를 담아 둘 디렉토리 생성
   if (env != 'production') {
@@ -27,13 +26,13 @@ const createPost = async (fields, files) => {
   }
 
   // 포스트 등록
-  const post = await Post.create(fields)
+  const post = await Post.create({ content: data.content, userId: data.userId })
   if (!post) {
     throw new ApiError(httpStatus.BAD_REQUEST, '포스트 등록에 실패하였습니다. 다시 시도해주세요.')
   }
 
   // 이미지 등록
-  for await (const [key, file] of Object.entries(files)) {
+  for await (const [key, file] of Object.entries(data.files)) {
     const oldFilePath = file.filepath
     const imageExt = file.originalFilename.split('.')[1]
     const originalImageName = file.originalFilename.split('.')[0]
@@ -60,11 +59,23 @@ const createPost = async (fields, files) => {
   }
 }
 
-const updatePost = async (fields, files) => {
-  await commonService.checkValueIsEmpty(fields.postId, 'postId')
-  await commonService.checkValueIsEmpty(fields.content, '내용')
+const updatePost = async (data) => {
+  await commonService.checkValueIsEmpty(data.postId, 'postId')
+  await commonService.checkValueIsEmpty(data.content, '내용')
 
-  let post = await getPost(fields.postId)
+  let post = await Post.findOne({
+    include: [
+      {
+        model: PostImage,
+        include: [
+          {
+            model: Image,
+          },
+        ],
+      },
+    ],
+    where: { postId: data.postId },
+  })
   if (!post) {
     throw new ApiError(httpStatus.BAD_REQUEST, '해당 포스트가 존재하지 않습니다.')
   }
@@ -72,12 +83,12 @@ const updatePost = async (fields, files) => {
   // Post 레코드 수정
   const updatedPostCount = await Post.update(
     {
-      content: fields.content,
+      content: data.content,
       updatedAt: Date.now(),
     },
     {
       where: {
-        postId: fields.postId,
+        postId: data.postId,
       },
     }
   )
@@ -87,11 +98,11 @@ const updatePost = async (fields, files) => {
   }
 
   // 이미지 삭제
-  const images = await Image.findAll({ where: { imageId: fields.deleteImageIds } })
+  const images = await Image.findAll({ where: { imageId: data.deleteImageIds } })
 
-  await Image.destroy({ where: { imageId: fields.deleteImageIds } })
+  await Image.destroy({ where: { imageId: data.deleteImageIds } })
 
-  await PostImage.destroy({ where: { postId: fields.postId, imageId: fields.deleteImageIds } })
+  await PostImage.destroy({ where: { postId: data.postId, imageId: data.deleteImageIds } })
 
   images.map((image) => {
     let deleteImagePath = config.imagePath + image.imageName + '.' + image.imageExt
@@ -105,7 +116,7 @@ const updatePost = async (fields, files) => {
   })
 
   // 이미지 등록
-  for await (const [key, file] of Object.entries(files)) {
+  for await (const [key, file] of Object.entries(data.files)) {
     const oldFilePath = file.filepath
     const imageExt = file.originalFilename.split('.')[1]
     const originalImageName = file.originalFilename.split('.')[0]
@@ -127,7 +138,7 @@ const updatePost = async (fields, files) => {
         imageWidth,
         imageHeight,
       })
-      await createPostImage({ postId: fields.postId, imageId: image.imageId })
+      await createPostImage({ postId: data.postId, imageId: image.imageId })
     })
   }
 }
@@ -136,8 +147,10 @@ const createPostImage = async (data) => {
   return await PostImage.create(data)
 }
 
-const getPost = async (postId) => {
-  return await Post.findOne({
+const getPost = async (req, postId) => {
+  await commonService.checkValueIsEmpty(postId, 'postId')
+
+  let post = await Post.findOne({
     include: [
       {
         model: PostImage,
@@ -150,12 +163,51 @@ const getPost = async (postId) => {
     ],
     where: { postId: postId },
   })
+  if (!post) {
+    throw new ApiError(httpStatus.BAD_REQUEST, '해당 포스트가 존재하지 않습니다.')
+  }
+
+  let postImages = []
+  let promises = post.PostImages.map((PostImage) => {
+    if (env != 'production') {
+      // storage 서버가 따로 없는 경우
+      let serviceUrl = req.protocol + '://' + req.get('host')
+      let imagePath = config.imagePath.split('public')[1]
+      let imageName = PostImage.Image.imageName
+      let imageExt = PostImage.Image.imageExt
+      postImages.push(serviceUrl + imagePath + imageName + '.' + imageExt)
+    } else {
+      // storage 서버가 따로 있는 경우
+    }
+  })
+  await Promise.all(promises)
+
+  post = {
+    postId: post.postId,
+    content: post.content,
+    createdAt: dateFormat(post.createdAt),
+    postImages: postImages,
+  }
+
+  return post
 }
 
 const deletePost = async (postId) => {
   await commonService.checkValueIsEmpty(postId, 'postId')
 
-  let post = await getPost(postId)
+  let post = await Post.findOne({
+    include: [
+      {
+        model: PostImage,
+        include: [
+          {
+            model: Image,
+          },
+        ],
+      },
+    ],
+    where: { postId: postId },
+  })
   if (!post) {
     throw new ApiError(httpStatus.BAD_REQUEST, '해당 포스트가 존재하지 않습니다.')
   }
@@ -219,7 +271,19 @@ const likePost = async (userId, postId, likeYn) => {
   await commonService.checkValueIsEmpty(postId, 'postId')
   await commonService.checkValueIsEmpty(likeYn, 'likeYn')
 
-  let post = await getPost(postId)
+  let post = await Post.findOne({
+    include: [
+      {
+        model: PostImage,
+        include: [
+          {
+            model: Image,
+          },
+        ],
+      },
+    ],
+    where: { postId: postId },
+  })
   if (!post) {
     throw new ApiError(httpStatus.BAD_REQUEST, '해당 포스트가 존재하지 않습니다.')
   }
@@ -236,7 +300,19 @@ const bookmarkPost = async (userId, postId, bookmarkYn) => {
   await commonService.checkValueIsEmpty(postId, 'postId')
   await commonService.checkValueIsEmpty(bookmarkYn, 'bookmarkYn')
 
-  let post = await getPost(postId)
+  let post = await Post.findOne({
+    include: [
+      {
+        model: PostImage,
+        include: [
+          {
+            model: Image,
+          },
+        ],
+      },
+    ],
+    where: { postId: postId },
+  })
   if (!post) {
     throw new ApiError(httpStatus.BAD_REQUEST, '해당 포스트가 존재하지 않습니다.')
   }

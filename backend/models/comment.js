@@ -13,6 +13,10 @@ module.exports = class Comment extends Sequelize.Model {
           type: Sequelize.INTEGER,
           allowNull: true,
         },
+        content: {
+          type: Sequelize.TEXT,
+          allowNull: true,
+        },
         createdAt: {
           type: Sequelize.DATE(3),
           allowNull: true,
