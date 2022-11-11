@@ -12,6 +12,9 @@ const Post = require('../models/post')
 const PostImage = require('../models/postImage')
 const PostLike = require('../models/postLike')
 const PostBookmark = require('../models/postBookmark')
+const { sequelize } = require('../models')
+const { dateFormat } = require('../utils/regex')
+const authService = require('../services/auth')
 
 const createPost = async (fields, files) => {
   await commonService.checkValueIsEmpty(fields.content, '내용')
@@ -245,6 +248,86 @@ const bookmarkPost = async (userId, postId, bookmarkYn) => {
   }
 }
 
+const getPostList = async (req, page = 1) => {
+  let token = req.headers['authorization']
+  let userId = ''
+  if (token) {
+    let payload = await authService.verifyToken(token)
+    if (payload) {
+      userId = payload.sub
+    }
+  }
+
+  let pageSize = 10
+  let offset = (page - 1) * pageSize
+  let postList = await Post.findAll({
+    attributes: ['postId', 'content', 'createdAt'],
+    include: [
+      {
+        model: PostImage,
+        attributes: ['imageId'],
+        include: [
+          {
+            model: Image,
+            attributes: ['imageName', 'imageExt'],
+          },
+        ],
+      },
+      {
+        model: PostLike,
+        required: false,
+        where: {
+          userId: userId,
+        },
+      },
+      {
+        model: PostBookmark,
+        required: false,
+        where: {
+          userId: userId,
+        },
+      },
+    ],
+    offset: offset,
+    limit: pageSize,
+    order: [['createdAt', 'DESC']],
+  })
+
+  postList = postList.map((post) => {
+    console.log(post)
+    let postId = post.postId
+    let content = post.content
+    let createdAt = dateFormat(post.createdAt)
+    let followYn = post.PostLikes.length > 0 ? 'Y' : 'N'
+    let bookmarkYn = post.PostBookmarks.length > 0 ? 'Y' : 'N'
+    let postImageList = post.PostImages.map((postImage) => {
+      if (env != 'production') {
+        // storage 서버가 따로 없는 경우
+        let serviceUrl = req.protocol + '://' + req.get('host')
+        let imagePath = config.imagePath.split('public')[1]
+        let imageName = postImage.Image.imageName
+        let imageExt = postImage.Image.imageExt
+
+        return serviceUrl + imagePath + imageName + '.' + imageExt
+      } else {
+        // storage 서버가 따로 있는 경우
+      }
+    })
+
+    return {
+      postId,
+      content,
+      createdAt,
+      followYn,
+      bookmarkYn,
+      postImageList,
+    }
+  })
+
+  let result = postList
+  return result
+}
+
 module.exports = {
   createPost,
   updatePost,
@@ -252,4 +335,5 @@ module.exports = {
   deletePost,
   likePost,
   bookmarkPost,
+  getPostList,
 }

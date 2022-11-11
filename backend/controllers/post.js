@@ -7,6 +7,7 @@ const formidable = require('formidable')
 const env = process.env.NODE_ENV || 'local'
 const config = require('../config/config.json')[env]
 const commonService = require('../services/common')
+const { post } = require('../routes/post')
 
 const createPost = catchAsync(async (req, res) => {
   let token = req.headers['authorization']
@@ -112,6 +113,11 @@ const bookmarkPost = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send(Object.assign({ code: 0, message: 'success' }))
 })
 
+const getPostList = catchAsync(async (req, res) => {
+  let postList = await postService.getPostList(req, req.query.page)
+  res.status(httpStatus.OK).send(Object.assign({ code: 0, message: 'success' }, { postList: postList }))
+})
+
 module.exports = {
   createPost,
   updatePost,
@@ -119,4 +125,5 @@ module.exports = {
   deletePost,
   likePost,
   bookmarkPost,
+  getPostList,
 }
