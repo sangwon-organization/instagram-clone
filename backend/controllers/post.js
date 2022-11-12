@@ -33,8 +33,8 @@ const bookmarkPost = catchAsync(async (req, res) => {
 })
 
 const getPostList = catchAsync(async (req, res) => {
-  let postList = await postService.getPostList(req, req.query.page)
-  res.status(httpStatus.OK).send(Object.assign({ code: 0, message: 'success' }, { postList: postList }))
+  let result = await postService.getPostList(req, req.query.page)
+  res.status(httpStatus.OK).send(Object.assign({ code: 0, message: 'success' }, result))
 })
 
 const createComment = catchAsync(async (req, res) => {
@@ -57,6 +57,11 @@ const likeComment = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send(Object.assign({ code: 0, message: 'success' }))
 })
 
+const getCommentList = catchAsync(async (req, res) => {
+  let result = await postService.getCommentList(req, req.query.postId, req.query.parentCommentId, req.query.page)
+  res.status(httpStatus.OK).send(Object.assign({ code: 0, message: 'success' }, result))
+})
+
 module.exports = {
   createPost,
   updatePost,
@@ -69,4 +74,5 @@ module.exports = {
   updateComment,
   deleteComment,
   likeComment,
+  getCommentList,
 }

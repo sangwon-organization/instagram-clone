@@ -1,5 +1,4 @@
 const { v4: uuidv4 } = require('uuid')
-const fs = require('fs')
 const sizeOf = require('image-size')
 const env = process.env.NODE_ENV || 'local'
 const config = require('../config/config.json')[env]
@@ -9,6 +8,7 @@ const imageService = require('../services/image')
 const commonService = require('../services/common')
 const Image = require('../models/image')
 const Post = require('../models/post')
+const User = require('../models/user')
 const Comment = require('../models/comment')
 const CommentLike = require('../models/commentLike')
 const PostImage = require('../models/postImage')
@@ -16,16 +16,11 @@ const PostLike = require('../models/postLike')
 const PostBookmark = require('../models/postBookmark')
 const { dateFormat } = require('../utils/regex')
 const authService = require('../services/auth')
+const { Op } = require('sequelize')
+const fs = require('fs')
 
 const createPost = async (data) => {
   await commonService.checkValueIsEmpty(data.content, '내용')
-
-  // 이미지를 담아 둘 디렉토리 생성
-  if (env != 'production') {
-    if (!fs.existsSync(config.imagePath)) {
-      fs.mkdirSync(config.imagePath, { recursive: true })
-    }
-  }
 
   // 포스트 등록
   const post = await Post.create({ content: data.content, userId: data.userId })
@@ -44,7 +39,7 @@ const createPost = async (data) => {
     const imageWidth = dimensions.width
     const imageHeight = dimensions.height
 
-    fs.rename(oldFilePath, config.imagePath + imageName + '.' + imageExt, async (err) => {
+    fs.rename(oldFilePath, config.postImagePath + imageName + '.' + imageExt, async (err) => {
       if (err) {
         throw err
       }
@@ -107,7 +102,7 @@ const updatePost = async (data) => {
   await PostImage.destroy({ where: { postId: data.postId, imageId: data.deleteImageIds } })
 
   images.map((image) => {
-    let deleteImagePath = config.imagePath + image.imageName + '.' + image.imageExt
+    let deleteImagePath = config.postImagePath + image.imageName + '.' + image.imageExt
     fs.unlink(deleteImagePath, (err) => {
       if (!err) {
         console.log(`이미지 파일 삭제 >> ${deleteImagePath}`)
@@ -128,7 +123,7 @@ const updatePost = async (data) => {
     const imageWidth = dimensions.width
     const imageHeight = dimensions.height
 
-    fs.rename(oldFilePath, config.imagePath + imageName + '.' + imageExt, async (err) => {
+    fs.rename(oldFilePath, config.postImagePath + imageName + '.' + imageExt, async (err) => {
       if (err) {
         throw err
       }
@@ -174,7 +169,7 @@ const getPost = async (req, postId) => {
     if (env != 'production') {
       // storage 서버가 따로 없는 경우
       let serviceUrl = req.protocol + '://' + req.get('host')
-      let imagePath = config.imagePath.split('public')[1]
+      let imagePath = config.postImagePath.split('public')[1]
       let imageName = PostImage.Image.imageName
       let imageExt = PostImage.Image.imageExt
       postImages.push(serviceUrl + imagePath + imageName + '.' + imageExt)
@@ -214,6 +209,10 @@ const deletePost = async (postId) => {
     throw new ApiError(httpStatus.BAD_REQUEST, '해당 포스트가 존재하지 않습니다.')
   }
 
+  await deleteComment({ postId: postId })
+  await PostLike.destroy({ where: { postId: postId } })
+  await PostBookmark.destroy({ where: { postId: postId } })
+
   let postImages = await PostImage.findAll(
     {
       attributes: ['postId'],
@@ -235,7 +234,7 @@ const deletePost = async (postId) => {
   let imagePaths = []
   let getImageIdPromises = postImages.map((postImage) => {
     imageIds.push(postImage.Image.imageId)
-    imagePaths.push(config.imagePath + postImage.Image.imageName + '.' + postImage.Image.imageExt)
+    imagePaths.push(config.postImagePath + postImage.Image.imageName + '.' + postImage.Image.imageExt)
   })
   await Promise.all(getImageIdPromises)
 
@@ -327,8 +326,10 @@ const bookmarkPost = async (userId, postId, bookmarkYn) => {
 }
 
 const getPostList = async (req, page = 1) => {
+  await commonService.checkValueIsEmpty(page, 'page')
+
   let token = req.headers['authorization']
-  let userId = ''
+  let userId = null
   if (token) {
     let payload = await authService.verifyToken(token)
     if (payload) {
@@ -336,17 +337,33 @@ const getPostList = async (req, page = 1) => {
     }
   }
 
+  page = !page || page <= 0 ? (page = 1) : page
+
   let pageSize = 10
   let offset = (page - 1) * pageSize
   let postList = await Post.findAll({
     attributes: ['postId', 'content', 'createdAt'],
     include: [
       {
+        model: User,
+        required: true,
+        attributes: ['userId', 'name', 'username', 'profileImageId'],
+        include: [
+          {
+            model: Image,
+            required: false,
+            attributes: ['imageName', 'imageExt'],
+          },
+        ],
+      },
+      {
         model: PostImage,
+        required: false,
         attributes: ['imageId'],
         include: [
           {
             model: Image,
+            required: false,
             attributes: ['imageName', 'imageExt'],
           },
         ],
@@ -371,38 +388,55 @@ const getPostList = async (req, page = 1) => {
     order: [['createdAt', 'DESC']],
   })
 
-  postList = postList.map((post) => {
-    let postId = post.postId
-    let content = post.content
-    let createdAt = dateFormat(post.createdAt)
-    let likeYn = post.PostLikes.length > 0 ? 'Y' : 'N'
-    let bookmarkYn = post.PostBookmarks.length > 0 ? 'Y' : 'N'
-    let postImageList = post.PostImages.map((postImage) => {
-      if (env != 'production') {
-        // storage 서버가 따로 없는 경우
-        let serviceUrl = req.protocol + '://' + req.get('host')
-        let imagePath = config.imagePath.split('public')[1]
+  postList = await Promise.all(
+    postList.map(async (post) => {
+      let serviceUrl = env != 'production' ? req.protocol + '://' + req.get('host') : ''
+
+      let postId = post.postId
+      let userId = post.User.userId
+      let name = post.User.name
+      let username = post.User.username
+      let content = post.content
+      let createdAt = dateFormat(post.createdAt)
+      let likeYn = post.PostLikes.length > 0 ? 'Y' : 'N'
+      let bookmarkYn = post.PostBookmarks.length > 0 ? 'Y' : 'N'
+      let commentCount = await Comment.count({ where: { postId: postId } })
+      let likeCount = await PostLike.count({ where: { postId: postId } })
+      let profileImage = ''
+      if (!post.User.Image) {
+        profileImage = serviceUrl + config.commonImagePath.split('public')[1] + 'profile.png'
+      } else {
+        let imagePath = config.commonImagePath.split('public')[1]
+        let imageName = post.User.Image.imageName
+        let imageExt = post.User.Image.imageExt
+        profileImage = serviceUrl + imagePath + imageName + '.' + imageExt
+      }
+      let postImageList = post.PostImages.map((postImage) => {
+        let imagePath = config.postImagePath.split('public')[1]
         let imageName = postImage.Image.imageName
         let imageExt = postImage.Image.imageExt
 
         return serviceUrl + imagePath + imageName + '.' + imageExt
-      } else {
-        // storage 서버가 따로 있는 경우
+      })
+
+      return {
+        postId,
+        name,
+        username,
+        userId,
+        content,
+        createdAt,
+        likeYn,
+        bookmarkYn,
+        likeCount,
+        commentCount,
+        profileImage,
+        postImageList,
       }
     })
+  )
 
-    return {
-      postId,
-      content,
-      createdAt,
-      likeYn,
-      bookmarkYn,
-      postImageList,
-    }
-  })
-
-  let result = postList
-  return result
+  return { page: page, postList: postList }
 }
 
 const createComment = async (data) => {
@@ -412,16 +446,16 @@ const createComment = async (data) => {
 
   if (data.parentCommentId) {
     let parentComment = await Comment.findOne({
-      where: { commentId: data.parentCommentId },
+      where: { postId: data.postId, commentId: data.parentCommentId },
     })
     if (!parentComment) {
       throw new ApiError(httpStatus.BAD_REQUEST, '해당 상위 댓글이 존재하지 않습니다.')
     }
-  }
-
-  let post = await Post.findOne({ where: { postId: data.postId } })
-  if (!post) {
-    throw new ApiError(httpStatus.BAD_REQUEST, '해당 포스트가 존재하지 않습니다.')
+  } else {
+    let post = await Post.findOne({ where: { postId: data.postId } })
+    if (!post) {
+      throw new ApiError(httpStatus.BAD_REQUEST, '해당 포스트가 존재하지 않습니다.')
+    }
   }
 
   let comment = await Comment.create(data)
@@ -459,15 +493,21 @@ const updateComment = async (data) => {
 }
 
 const deleteComment = async (data) => {
-  await commonService.checkValueIsEmpty(data.commentId, 'commentId')
+  // await commonService.checkValueIsEmpty(data.commentId, 'commentId')
+  data.postId = !data.postId ? null : data.postId
+  data.commentId = !data.commentId ? null : data.commentId
 
-  let comment = await Comment.findOne({ where: { commentId: data.commentId } })
-  if (!comment) {
+  let commentList = await Comment.findAll({ where: { [Op.or]: [{ postId: data.postId }, { commentId: data.commentId }, { parentCommentId: data.commentId }] } })
+  if (!commentList) {
     throw new ApiError(httpStatus.BAD_REQUEST, '해당 댓글이 존재하지 않습니다.')
   }
 
-  await Comment.destroy({ where: { parentCommentId: data.commentId } })
-  await Comment.destroy({ where: { commentId: data.commentId } })
+  let commentIdList = commentList.map((comment) => {
+    return comment.commentId
+  })
+
+  await CommentLike.destroy({ where: { commentId: commentIdList } })
+  await Comment.destroy({ where: { [Op.or]: [{ postId: data.postId }, { commentId: data.commentId }, { parentCommentId: data.commentId }] } })
 }
 
 const likeComment = async (data) => {
@@ -487,8 +527,98 @@ const likeComment = async (data) => {
   }
 }
 
-// 부모 댓글 => 20개씩
-// 자식 댓글 => 10개씩
+const getCommentList = async (req, postId, parentCommentId, page = 1) => {
+  await commonService.checkValueIsEmpty(postId, 'postId')
+  await commonService.checkValueIsEmpty(page, 'page')
+
+  let token = req.headers['authorization']
+  let userId = null
+  if (token) {
+    let payload = await authService.verifyToken(token)
+    if (payload) {
+      userId = payload.sub
+    }
+  }
+
+  page = !page || page <= 0 ? (page = 1) : page
+  parentCommentId = !parentCommentId ? null : parentCommentId
+
+  let pageSize = !parentCommentId ? 20 : 10
+  let offset = (page - 1) * pageSize
+  let commentList = await Comment.findAll({
+    attributes: ['commentId', 'parentCommentId', 'content', 'createdAt', 'postId'],
+    include: [
+      {
+        model: User,
+        required: true,
+        attributes: ['userId', 'name', 'username', 'profileImageId'],
+        include: [
+          {
+            model: Image,
+            required: false,
+            attributes: ['imageName', 'imageExt'],
+          },
+        ],
+      },
+      {
+        model: CommentLike,
+        required: false,
+        where: {
+          userId: userId,
+        },
+      },
+    ],
+    where: {
+      postId: postId,
+      parentCommentId: parentCommentId,
+    },
+    offset: offset,
+    limit: pageSize,
+    order: [['createdAt', 'DESC']],
+  })
+
+  commentList = await Promise.all(
+    commentList.map(async (comment) => {
+      let serviceUrl = env != 'production' ? req.protocol + '://' + req.get('host') : ''
+
+      let postId = comment.postId
+      let commentId = comment.commentId
+      let parentCommentId = comment.parentCommentId
+      let userId = comment.User.userId
+      let name = comment.User.name
+      let username = comment.User.username
+      let content = comment.content
+      let createdAt = dateFormat(comment.createdAt)
+      let likeYn = comment.CommentLikes.length > 0 ? 'Y' : 'N'
+      let likeCount = await CommentLike.count({ where: { commentId: commentId } })
+      let profileImage = ''
+      if (!comment.User.Image) {
+        profileImage = serviceUrl + config.commonImagePath.split('public')[1] + 'profile.png'
+      } else {
+        let imagePath = config.commonImagePath.split('public')[1]
+        let imageName = comment.User.Image.imageName
+        let imageExt = comment.User.Image.imageExt
+        profileImage = serviceUrl + imagePath + imageName + '.' + imageExt
+      }
+
+      return {
+        postId,
+        commentId,
+        parentCommentId,
+        userId,
+        name,
+        username,
+        content,
+        createdAt,
+        likeYn,
+        likeCount,
+        profileImage,
+      }
+    })
+  )
+
+  return { page: page, commentList: commentList }
+}
 
 module.exports = {
   createPost,
@@ -502,4 +632,5 @@ module.exports = {
   updateComment,
   deleteComment,
   likeComment,
+  getCommentList,
 }

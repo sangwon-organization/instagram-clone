@@ -30,8 +30,8 @@ module.exports = class User extends Sequelize.Model {
           type: Sequelize.TEXT,
           allowNull: true,
         },
-        profileImage: {
-          type: Sequelize.TEXT,
+        profileImageId: {
+          type: Sequelize.INTEGER,
           allowNull: true,
         },
         createdAt: {
@@ -66,5 +66,6 @@ module.exports = class User extends Sequelize.Model {
     db.User.hasMany(db.CommentLike, { foreignKey: 'userId', sourceKey: 'userId' })
     db.User.hasMany(db.Token, { foreignKey: 'userId', sourceKey: 'userId' })
     db.User.hasMany(db.PostBookmark, { foreignKey: 'userId', sourceKey: 'userId' })
+    db.User.belongsTo(db.Image, { foreignKey: 'profileImageId', targetKey: 'imageId' })
   }
 }

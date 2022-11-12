@@ -166,4 +166,5 @@ dist
 config/
 
 # images
-public/images
+public/images/post
+public/images/profile

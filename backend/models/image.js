@@ -59,5 +59,6 @@ module.exports = class Image extends Sequelize.Model {
   }
   static associate(db) {
     db.Image.hasMany(db.PostImage, { foreignKey: 'imageId', sourceKey: 'imageId' })
+    db.Image.hasOne(db.User, { foreignKey: 'profileImageId', sourceKey: 'imageId' })
   }
 }

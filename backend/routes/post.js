@@ -8,6 +8,7 @@ router.route('').put(checkToken, convertFormDataToRequestBody, postController.up
 router.route('/comment').post(checkToken, postController.createComment)
 router.route('/comment').put(checkToken, postController.updateComment)
 router.route('/comment').delete(checkToken, postController.deleteComment)
+router.route('/comment/list').get(postController.getCommentList)
 router.route('/comment/like').post(checkToken, postController.likeComment)
 router.route('/list').get(postController.getPostList)
 router.route('/like').post(checkToken, postController.likePost)
