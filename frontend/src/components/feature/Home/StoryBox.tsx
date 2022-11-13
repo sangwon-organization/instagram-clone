@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import styled from 'styled-components';
 import userAvatar from '../../../assets/image/userAvatar.png';
 import {
@@ -105,11 +105,28 @@ const RightArrowIcon = styled(IoIosArrowDroprightCircle)`
 `;
 
 const StoryBox = () => {
+  const ref = useRef(null);
+
+  const moveRight = () => {
+    ref.current.scrollBy({
+      top: 0,
+      left: -200,
+      behavior: 'smooth',
+    });
+  };
+
+  const moveLeft = () => {
+    ref.current.scrollBy({
+      top: 0,
+      left: 200,
+      behavior: 'smooth',
+    });
+  };
   return (
     <StoryBoxContainer>
-      <StoryBoxWrapper>
+      <StoryBoxWrapper ref={ref}>
         <StoryItem>
-          <LeftArrowIcon />
+          <LeftArrowIcon onClick={moveRight} />
           <UserAvatar>
             <img src={userAvatar} alt="유저아바타" />
           </UserAvatar>
@@ -163,7 +180,7 @@ const StoryBox = () => {
           </UserAvatar>
           <p>username</p>
         </StoryItem>
-        <RightArrowIcon />
+        <RightArrowIcon onClick={moveLeft} />
       </StoryBoxWrapper>
     </StoryBoxContainer>
   );

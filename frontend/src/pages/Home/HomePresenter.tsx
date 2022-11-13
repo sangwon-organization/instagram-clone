@@ -15,7 +15,6 @@ const MainContainer = styled.div`
   align-items: center;
   background: ${({ theme }) => theme.bgColor};
   padding-top: 60px;
-  border: 1px solid blue;
   @media ${({ theme }) => theme.tablet} {
     width: 100vw;
     display: flex;

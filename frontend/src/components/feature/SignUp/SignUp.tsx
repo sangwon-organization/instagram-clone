@@ -7,6 +7,8 @@ import LoginSignUpBottomBox from '../../share/LoginSignUpBottomBox';
 import LoginSignUpMiddleBox from '../../share/LoginSignUpMiddleBox';
 import clonestagramLogoBlack from '../../../assets/image/clonestagramLogoBlack.png';
 import { AiFillFacebook } from 'react-icons/ai';
+import { useMutation } from '@tanstack/react-query';
+import { signUpUser } from '../../../api/api';
 
 const SignUpContainer = styled.div`
   width: 347px;
@@ -183,17 +185,17 @@ const NoticeBox = styled.div`
 `;
 
 type FormValues = {
-  emailInput: string;
-  fullnameInput: string;
-  usernameInput: string;
-  passwordInput: string;
+  email: string;
+  fullname: string;
+  username: string;
+  password: string;
 };
 
 const schema = yup.object().shape({
-  emailInput: yup.string().required(),
-  fullnameInput: yup.string().required(),
-  usernameInput: yup.string().required(),
-  passwordInput: yup.string().min(6).required(),
+  email: yup.string().required(),
+  fullname: yup.string().required(),
+  username: yup.string().required(),
+  password: yup.string().min(6).required(),
 });
 
 const SignUp = () => {
@@ -240,11 +242,24 @@ const SignUp = () => {
 
   const onSubmit = (dataInput: any) => {
     console.log(dataInput);
+
+    mutate(dataInput);
   };
 
   const onError = (err: any) => {
     console.log(err);
   };
+
+  const { mutate, data, error, reset } = useMutation(signUpUser, {
+    onError: (err: any) => {
+      console.log(err.response.data);
+    },
+    onSuccess: (userInfo: any) => {
+      console.log('회원가입 성공!');
+      // console.log(userInfo);
+      // console.log(data);
+    },
+  });
   return (
     <SignUpContainer>
       <TopBox>
@@ -264,7 +279,7 @@ const SignUp = () => {
               onFocusCapture={() => setEmailInputBoxClicked(true)}
               onBlurCapture={() => setEmailInputBoxClicked(false)}
               onKeyUp={(e) => InputKeyPress(e, setEmailKeyPress)}
-              {...register('emailInput', { required: true })}
+              {...register('email', { required: true })}
             />
             <span>Email</span>
           </InputBox>
@@ -276,7 +291,7 @@ const SignUp = () => {
               onFocusCapture={() => setFullnameInputBoxClicked(true)}
               onBlurCapture={() => setFullnameInputBoxClicked(false)}
               onKeyUp={(e) => InputKeyPress(e, setFullnameKeyPress)}
-              {...register('fullnameInput', { required: true })}
+              {...register('fullname', { required: true })}
             />
             <span>Full Name</span>
           </InputBox>
@@ -288,7 +303,7 @@ const SignUp = () => {
               onFocusCapture={() => setUsernameInputBoxClicked(true)}
               onBlurCapture={() => setUsernameInputBoxClicked(false)}
               onKeyUp={(e) => InputKeyPress(e, setUsernameKeyPress)}
-              {...register('usernameInput', { required: true })}
+              {...register('username', { required: true })}
             />
             <span>Username</span>
           </InputBox>
@@ -300,7 +315,7 @@ const SignUp = () => {
               onFocusCapture={() => setPasswordInputBoxClicked(true)}
               onBlurCapture={() => setPasswordInputBoxClicked(false)}
               onKeyUp={(e) => passwordInputKeyPress(e)}
-              {...register('passwordInput', { required: true })}
+              {...register('password', { required: true })}
             />
             <span>Password</span>
             {showPassword && (
