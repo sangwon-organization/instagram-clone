@@ -33,7 +33,14 @@ interface changePasswordType {
   newPassword: string;
 }
 
+interface addPostType {
+  content: string;
+  postImage1: string;
+  postImage2?: string;
+}
+
 export const loginUser = async (userInfo: LoginType) => {
+  console.log(userInfo);
   const data = await api.post('/signin', JSON.stringify(userInfo));
   return data;
 };
@@ -79,5 +86,10 @@ export const changePassword = async ({
     newPassword,
   });
   console.log(data);
+  return data;
+};
+
+export const addPost = async (formData: addPostType) => {
+  const data = await api.post('/post', formData);
   return data;
 };
