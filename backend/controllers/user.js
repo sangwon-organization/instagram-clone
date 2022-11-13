@@ -5,18 +5,21 @@ const authService = require('../services/auth')
 const commonService = require('../services/common')
 
 const checkEmail = catchAsync(async (req, res) => {
+  console.log('param:', req.body)
   await commonService.checkValueIsEmpty(req.body.email, '이메일')
   await userService.checkEmail(req.body.email)
   res.status(httpStatus.OK).send({ code: 0, message: 'success' })
 })
 
 const checkUsername = catchAsync(async (req, res) => {
+  console.log('param:', req.body)
   await commonService.checkValueIsEmpty(req.body.username, '닉네임')
   await userService.checkUsername(req.body.username)
   res.status(httpStatus.OK).send({ code: 0, message: 'success' })
 })
 
 const changePassword = catchAsync(async (req, res) => {
+  console.log('param:', req.body)
   let token = req.headers['authorization']
 
   if (!token) {

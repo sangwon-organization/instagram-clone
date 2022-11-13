@@ -15,7 +15,7 @@ const { notFoundConverter, errorConverter, errorHandler, corsConverter } = requi
 app.set('port', process.env.PORT || 3000)
 
 sequelize
-  .sync({ force: true })
+  .sync({ alter: true })
   .then(() => {
     console.log('success db connection')
   })
