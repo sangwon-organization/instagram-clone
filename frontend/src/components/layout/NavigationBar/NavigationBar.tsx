@@ -13,6 +13,8 @@ import HomeIcon from './HomeIcon';
 import AvatarDropdown from './AvatarDropdown';
 import useOutsideClick from '../../../hooks/useOutsideClick';
 import { useSelector } from 'react-redux';
+import ModalPortal from '../../feature/Modal/ModalPortal';
+import ModalContainer from '../../feature/Modal/ModalContainer';
 
 const NavigationBarContainer = styled.nav`
   width: 100vw;
@@ -23,7 +25,7 @@ const NavigationBarContainer = styled.nav`
   justify-content: center;
   align-items: center;
   position: fixed;
-  z-index: 10000;
+  z-index: 500;
   @media ${({ theme }) => theme.tablet} {
     width: 100vw;
   }
@@ -39,7 +41,6 @@ const NavigationBarWrapper = styled.div`
   justify-content: space-between;
   align-items: center;
   position: relative;
-  border: 1px solid red;
   @media ${({ theme }) => theme.tablet} {
     width: 90vw;
   }
@@ -166,8 +167,19 @@ const NavigationBar = () => {
   const [showTooltip, setShowTooltip] = useState(false);
   const [searchBarClicked, setSearchBarClicked] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [createPostModalOpen, setCreatePostModalOpen] = useState(false);
 
   const isDarkMode = useSelector((state: any) => state.themeMode.darkMode);
+
+  const openModal = () => {
+    setCreatePostModalOpen(true);
+    document.body.style.overflow = 'hidden';
+  };
+
+  const closeModal = () => {
+    setCreatePostModalOpen(false);
+    document.body.style.overflow = 'unset';
+  };
 
   const navigate = useNavigate();
 
@@ -200,7 +212,7 @@ const NavigationBar = () => {
         <MenuWrapper>
           <HomeIcon />
           <LocationIcon />
-          <PlusSquareIcon />
+          <PlusSquareIcon onClick={openModal} />
           <CompassIcon />
           <HeartIcon />
           <UserImage
@@ -215,6 +227,11 @@ const NavigationBar = () => {
           setShowDropdown={setShowDropdown}
         />
       </NavigationBarWrapper>
+      {createPostModalOpen && (
+        <ModalPortal>
+          <ModalContainer closeModal={closeModal} />
+        </ModalPortal>
+      )}
     </NavigationBarContainer>
   );
 };

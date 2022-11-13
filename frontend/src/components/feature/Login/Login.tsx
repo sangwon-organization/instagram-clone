@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -9,6 +9,7 @@ import clonestagramLogoBlack from '../../../assets/image/clonestagramLogoBlack.p
 import LoginSignUpBottomBox from '../../share/LoginSignUpBottomBox';
 import LoginSignUpMiddleBox from '../../share/LoginSignUpMiddleBox';
 import { useDispatch } from 'react-redux';
+import Loader from 'react-loader';
 
 const LoginContainer = styled.div`
   width: 342.2px;
@@ -62,6 +63,7 @@ const LoginButton = styled.button<{ disabled: boolean }>`
   text-align: center;
   color: #fff;
   margin-top: 7.8px;
+  position: relative;
 `;
 
 const InputBox = styled.div<{ keyPress: boolean; clicked: boolean }>`
@@ -187,8 +189,6 @@ const Login = () => {
   const [emailInputBoxClicked, setEmailInputBoxClicked] = useState(false);
   const [passwordInputBoxClicked, setPasswordInputBoxClicked] = useState(false);
 
-  const dispatch = useDispatch();
-
   const userNameInputKeyPress = (e: any) => {
     if (e.target.value === '') {
       setUsernameKeyPress(false);
@@ -221,7 +221,7 @@ const Login = () => {
     formState: { isValid, errors },
   } = useForm<FormValues>({ mode: 'onChange', resolver: yupResolver(schema) });
 
-  const { mutate, data, error, reset } = useMutation(loginUser, {
+  const { mutate, data, error, reset, isLoading } = useMutation(loginUser, {
     onError: (err: any) => {
       console.log(err.response.data);
     },
@@ -231,6 +231,8 @@ const Login = () => {
       // console.log(data);
     },
   });
+
+  console.log(isLoading);
 
   const onSubmit = (dataInput: any) => {
     // console.log(dataInput);
@@ -274,7 +276,17 @@ const Login = () => {
             )}
           </InputBox>
           <LoginButton type="submit" disabled={!isValid}>
-            Log In
+            {isLoading ? (
+              <Loader
+                loaded={!isLoading}
+                color="#fafafa"
+                scale={0.4}
+                top="50%"
+                left="50%"
+              />
+            ) : (
+              'Log In'
+            )}
           </LoginButton>
         </LoginForm>
         <OrBox>

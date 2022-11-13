@@ -7,6 +7,7 @@ const Container = styled.nav`
   height: 60px;
   background: ${({ theme }) => theme.bgColor};
   /* position: fixed; */
+  display: none;
   z-index: 10000;
   @media ${({ theme }) => theme.mobile} {
     display: flex;
