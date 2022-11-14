@@ -157,6 +157,7 @@ const ErrorMessageBox = styled.div`
   letter-spacing: normal;
   text-align: center;
   color: #ed4956;
+  white-space: pre-line;
 `;
 
 const ForgotPasswordBox = styled.div`
@@ -232,7 +233,7 @@ const Login = () => {
       console.log(data);
     },
   });
-
+  console.log(error);
   const onSubmit = (dataInput: any) => {
     mutate(dataInput);
   };
@@ -288,9 +289,15 @@ const Login = () => {
         <OrBox>
           <p>OR</p>
         </OrBox>
-        <ErrorMessageBox>
-          <p>error message</p>
-        </ErrorMessageBox>
+        {error && (
+          <ErrorMessageBox>
+            <p>
+              {error.response.status === 401 &&
+                `이메일 또는 패스워드가 정확하지 않습니다.\n다시 입력해 주세요.`}
+            </p>
+          </ErrorMessageBox>
+        )}
+
         <ForgotPasswordBox>
           <p>Forgot password?</p>
         </ForgotPasswordBox>

@@ -40,18 +40,13 @@ interface addPostType {
 }
 
 export const loginUser = async (userInfo: LoginType) => {
-  try {
-    const { data } = await api.post('/signin', userInfo);
-    localStorage.setItem('accessToken', data.accessToken);
-    console.info('token ? ', data.accessToken);
+  const { data } = await api.post('/signin', userInfo);
+  localStorage.setItem('accessToken', data.accessToken);
 
-    setTimeout(() => {
-      window.location.reload();
-    }, 600);
-  } catch (error) {
-    console.log(error);
-  }
-  // return data;
+  setTimeout(() => {
+    window.location.reload();
+  }, 600);
+  return data;
 };
 
 export const signUpUser = async ({
