@@ -189,6 +189,8 @@ const Login = () => {
   const [emailInputBoxClicked, setEmailInputBoxClicked] = useState(false);
   const [passwordInputBoxClicked, setPasswordInputBoxClicked] = useState(false);
 
+  const dispatch = useDispatch();
+
   const userNameInputKeyPress = (e: any) => {
     if (e.target.value === '') {
       setUsernameKeyPress(false);
@@ -227,17 +229,11 @@ const Login = () => {
     },
     onSuccess: (userInfo: any) => {
       console.log('로그인 성공!');
-      // console.log(userInfo);
-      // console.log(data);
+      console.log(data);
     },
   });
 
-  console.log(isLoading);
-
   const onSubmit = (dataInput: any) => {
-    // console.log(dataInput);
-    // const result = JSON.stringify(dataInput);
-    // console.log(result);
     mutate(dataInput);
   };
 

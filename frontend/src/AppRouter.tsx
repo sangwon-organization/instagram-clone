@@ -7,18 +7,23 @@ import Profile from './pages/Profile';
 
 const LoggedOutRoutes = () => (
   <Routes>
-    <Route path="/login" element={<Login />} />
-    <Route path="/home" element={<Home />} />
+    <Route path="/" element={<Login />} />
+  </Routes>
+);
+
+const LoggedInRoutes = () => (
+  <Routes>
+    <Route path="/" element={<Home />} />
     <Route path="/profile" element={<Profile />} />
   </Routes>
 );
 
-const AppRouter = () => {
-  return (
-    <>
-      <LoggedOutRoutes />
-    </>
-  );
+interface AppRouterType {
+  isLoggedIn: boolean;
+}
+
+const AppRouter = ({ isLoggedIn }: AppRouterType) => {
+  return <>{isLoggedIn ? <LoggedInRoutes /> : <LoggedOutRoutes />}</>;
 };
 
 export default AppRouter;

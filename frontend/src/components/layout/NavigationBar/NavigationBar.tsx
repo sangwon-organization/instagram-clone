@@ -188,7 +188,11 @@ const NavigationBar = () => {
       <NavigationBarWrapper>
         <LogoWrapper onClick={() => navigate('/home')}>
           <img
-            src={isDarkMode ? clonestagramLogoWhite : clonestagramLogoBlack}
+            src={
+              isDarkMode === 'dark'
+                ? clonestagramLogoWhite
+                : clonestagramLogoBlack
+            }
             alt="인스타그램로고"
           />
         </LogoWrapper>

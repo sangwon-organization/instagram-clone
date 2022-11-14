@@ -3,8 +3,8 @@ import axios from 'axios';
 const api = axios.create({
   baseURL: 'http://59.187.205.70:3000',
   headers: {
-    'Content-type': 'application/json; charset=UTF-8',
-    accept: 'application/json,',
+    'Content-Type': 'application/json; charset=UTF-8',
+    accept: 'application/json',
   },
 });
 
@@ -40,9 +40,18 @@ interface addPostType {
 }
 
 export const loginUser = async (userInfo: LoginType) => {
-  console.log(userInfo);
-  const data = await api.post('/signin', JSON.stringify(userInfo));
-  return data;
+  try {
+    const { data } = await api.post('/signin', userInfo);
+    localStorage.setItem('accessToken', data.accessToken);
+    console.info('token ? ', data.accessToken);
+
+    setTimeout(() => {
+      window.location.reload();
+    }, 600);
+  } catch (error) {
+    console.log(error);
+  }
+  // return data;
 };
 
 export const signUpUser = async ({

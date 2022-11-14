@@ -152,7 +152,7 @@ const LeftArrowIcon = styled(BiArrowBack)`
 `;
 
 const CreatePostModal = () => {
-  const [imageSrc, setImageSrc] = useState<string | ArrayBuffer>('');
+  const [imageSrc, setImageSrc] = useState<string>('');
   const [nextModal, setNextModal] = useState(false);
   const [textAreaText, setTextAreaText] = useState(0);
 
@@ -168,7 +168,8 @@ const CreatePostModal = () => {
     reader.readAsDataURL(fileBlob);
     return new Promise((resolve: any) => {
       reader.onload = () => {
-        setImageSrc(reader.result);
+        const csv: string = reader.result as string;
+        setImageSrc(csv);
         resolve();
       };
     });

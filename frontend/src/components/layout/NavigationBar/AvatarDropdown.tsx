@@ -9,6 +9,7 @@ import { CgSync } from 'react-icons/cg';
 import useOutsideClick from '../../../hooks/useOutsideClick';
 import { useDispatch } from 'react-redux';
 import { changeThemeMode } from '../../../redux/slices/themeModeSlice';
+import { useSelector } from 'react-redux';
 
 const AvatarDropdownContainer = styled.div<{ showDropdown: boolean; ref: any }>`
   display: ${({ showDropdown }) => (showDropdown ? 'block' : 'none')};
@@ -102,6 +103,13 @@ const AvatarDropdown = ({
 
   useOutsideClick(outsideRef, () => setShowDropdown(false));
 
+  const logout = () => {
+    localStorage.removeItem('accessToken');
+    setTimeout(() => {
+      window.location.reload();
+    }, 600);
+  };
+
   return (
     <AvatarDropdownContainer showDropdown={showDropdown} ref={outsideRef}>
       <AvatarDropdownWrapper>
@@ -130,7 +138,7 @@ const AvatarDropdown = ({
           <p>Switch accounts</p>
         </DropdownItem>
       </AvatarDropdownWrapper>
-      <DropdownItem last>
+      <DropdownItem last onClick={logout}>
         <p>Log Out</p>
       </DropdownItem>
     </AvatarDropdownContainer>
