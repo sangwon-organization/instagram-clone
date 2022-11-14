@@ -3,14 +3,12 @@ const catchAsync = require('../utils/catchAsync')
 const authService = require('../services/auth')
 
 const signup = catchAsync(async (req, res) => {
-  console.log('req:', req)
   console.log('param:', req.body)
   await authService.signup(req.body)
   res.status(httpStatus.OK).send(Object.assign({ code: 0, message: 'success' }))
 })
 
 const signin = catchAsync(async (req, res) => {
-  console.log('req:', req)
   console.log('param:', req.body)
   const user = await authService.signin(req.body)
   const tokens = await authService.generateAuthTokens(user)

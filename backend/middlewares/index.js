@@ -69,6 +69,8 @@ const convertFormDataToRequestBody = catchAsync(async (req, res, next) => {
   let form = formidable({ multiples: true })
   await new Promise((resolve, reject) => {
     form.parse(req, (err, fields, files) => {
+      console.log('req:', req)
+      console.log('fields:', fields)
       if (err) {
         throw err
       }
