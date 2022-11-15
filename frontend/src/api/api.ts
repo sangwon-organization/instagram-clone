@@ -62,6 +62,7 @@ export const signUpUser = async ({
     username,
   });
   console.log(data);
+  window.location.reload();
   return data;
 };
 

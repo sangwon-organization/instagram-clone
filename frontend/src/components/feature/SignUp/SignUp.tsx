@@ -8,19 +8,27 @@ import LoginSignUpMiddleBox from '../../share/LoginSignUpMiddleBox';
 import clonestagramLogoBlack from '../../../assets/image/clonestagramLogoBlack.png';
 import { AiFillFacebook } from 'react-icons/ai';
 import { useMutation } from '@tanstack/react-query';
-import { signUpUser } from '../../../api/api';
+import {
+  emailDuplicationCheck,
+  signUpUser,
+  usernameDuplicationCheck,
+} from '../../../api/api';
+import {
+  IoIosCloseCircleOutline,
+  IoIosCheckmarkCircleOutline,
+} from 'react-icons/io';
 
-const SignUpContainer = styled.div`
+const SignUpContainer = styled.div<{ error: any }>`
   width: 347px;
-  height: 768px;
+  height: ${({ error }) => (error ? ' 855px' : '768px')};
   display: flex;
   flex-direction: column;
   justify-content: space-between;
 `;
 
-const TopBox = styled.div`
+const TopBox = styled.div<{ error: any }>`
   width: 100%;
-  height: 575px;
+  height: ${({ error }) => (error ? ' 660px' : '575px')};
   border-radius: 1px;
   border: solid 1px #dbdbdb;
   background-color: #fff;
@@ -147,7 +155,6 @@ const ShowHideText = styled.button`
   &:active {
     color: grey;
   }
-  border: 1px solid red;
   width: fit-content;
   height: fit-content;
 `;
@@ -184,16 +191,52 @@ const NoticeBox = styled.div`
   }
 `;
 
+const ValidationTrueIcon = styled(IoIosCheckmarkCircleOutline)`
+  font-size: 25px;
+  color: ${({ theme }) => theme.greyTextColor};
+  position: absolute;
+  top: 5px;
+  right: 5px;
+`;
+
+const ValidationFalseIcon = styled(IoIosCloseCircleOutline)`
+  font-size: 25px;
+  color: #ed4956;
+  position: absolute;
+  top: 5px;
+  right: 5px;
+`;
+
+const ErrorMessageBox = styled.div`
+  width: 262px;
+  height: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  p {
+    color: #ed4956;
+    font-size: 14px;
+    font-weight: 400;
+    font-stretch: normal;
+    font-style: normal;
+    line-height: 1.29;
+    letter-spacing: normal;
+    text-align: center;
+    white-space: pre-line;
+  }
+`;
+
 type FormValues = {
   email: string;
-  fullname: string;
+  name: string;
   username: string;
   password: string;
 };
 
 const schema = yup.object().shape({
   email: yup.string().required(),
-  fullname: yup.string().required(),
+  name: yup.string().required(),
   username: yup.string().required(),
   password: yup.string().min(6).required(),
 });
@@ -260,9 +303,27 @@ const SignUp = () => {
       // console.log(data);
     },
   });
+
+  const emailDuplicationChecking = useMutation(emailDuplicationCheck, {
+    onError: (err: any) => {
+      console.log(err.response.data);
+    },
+    onSuccess: (userInfo: any) => {
+      console.log('이메일 사용 가능!');
+    },
+  });
+
+  const usernameDuplicationChecking = useMutation(usernameDuplicationCheck, {
+    onError: (err: any) => {
+      console.log(err.response.data);
+    },
+    onSuccess: (userInfo: any) => {
+      console.log('유저네임 사용 가능!');
+    },
+  });
   return (
-    <SignUpContainer>
-      <TopBox>
+    <SignUpContainer error={error}>
+      <TopBox error={error}>
         <img src={clonestagramLogoBlack} alt="인스타그램로고" />
         <p>Sign up to see photos and videos from your friends.</p>
         <FacebookLoginButton>
@@ -277,11 +338,16 @@ const SignUp = () => {
             <input
               type="text"
               onFocusCapture={() => setEmailInputBoxClicked(true)}
-              onBlurCapture={() => setEmailInputBoxClicked(false)}
+              onBlurCapture={(e: any) => {
+                setEmailInputBoxClicked(false);
+                emailDuplicationChecking.mutate({ email: e.target.value });
+              }}
               onKeyUp={(e) => InputKeyPress(e, setEmailKeyPress)}
               {...register('email', { required: true })}
             />
             <span>Email</span>
+            {emailDuplicationChecking.isSuccess && <ValidationTrueIcon />}
+            {emailDuplicationChecking.error && <ValidationFalseIcon />}
           </InputBox>
           <InputBox
             keyPress={fullnameKeyPress}
@@ -291,7 +357,7 @@ const SignUp = () => {
               onFocusCapture={() => setFullnameInputBoxClicked(true)}
               onBlurCapture={() => setFullnameInputBoxClicked(false)}
               onKeyUp={(e) => InputKeyPress(e, setFullnameKeyPress)}
-              {...register('fullname', { required: true })}
+              {...register('name', { required: true })}
             />
             <span>Full Name</span>
           </InputBox>
@@ -301,11 +367,18 @@ const SignUp = () => {
             <input
               type="text"
               onFocusCapture={() => setUsernameInputBoxClicked(true)}
-              onBlurCapture={() => setUsernameInputBoxClicked(false)}
+              onBlurCapture={(e: any) => {
+                setUsernameInputBoxClicked(false);
+                usernameDuplicationChecking.mutate({
+                  username: e.target.value,
+                });
+              }}
               onKeyUp={(e) => InputKeyPress(e, setUsernameKeyPress)}
               {...register('username', { required: true })}
             />
             <span>Username</span>
+            {usernameDuplicationChecking.isSuccess && <ValidationTrueIcon />}
+            {usernameDuplicationChecking.error && <ValidationFalseIcon />}
           </InputBox>
           <InputBox
             keyPress={passwordKeyPress}
@@ -333,6 +406,14 @@ const SignUp = () => {
           <SignupButton type="submit" disabled={!isValid}>
             Sign up
           </SignupButton>
+          {error && (
+            <ErrorMessageBox>
+              <p>
+                {error.response.status === 400 &&
+                  `이미 등록된 닉네임입니다.\n 다시 입력해 주세요.`}
+              </p>
+            </ErrorMessageBox>
+          )}
         </Form>
       </TopBox>
       <LoginSignUpMiddleBox question="Have an account?" linkText="Log in" />
