@@ -151,13 +151,13 @@ const HeartIcon = styled(BsHeart)`
   }
 `;
 
-const ColoredHeartIcon = styled(BsHeartFill)<{ likeButtonClicked: boolean }>`
+const ColoredHeartIcon = styled(BsHeartFill)<{ likebuttonclicked: string }>`
   width: 23px;
   height: 23px;
   color: #ed4956;
   cursor: pointer;
-  animation: ${({ likeButtonClicked }) =>
-    likeButtonClicked ? 'pop 0.2s linear' : ''};
+  animation: ${({ likebuttonclicked }) =>
+    likebuttonclicked ? 'pop 0.2s linear' : ''};
   @keyframes pop {
     0% {
       transform: scale(1);
@@ -346,7 +346,7 @@ const KebabMenuIcon = styled(GoKebabHorizontal)`
   color: ${({ theme }) => theme.textColor};
 `;
 
-const BigLikedIcon = styled(BsHeartFill)<{ likeButtonClicked: boolean }>`
+const BigLikedIcon = styled(BsHeartFill)<{ likebuttonclicked: string }>`
   width: 80px;
   height: 80px;
   color: #fff;
@@ -357,8 +357,8 @@ const BigLikedIcon = styled(BsHeartFill)<{ likeButtonClicked: boolean }>`
   transform-origin: center center;
   filter: drop-shadow(5px 5px 30px rgba(0, 0, 0, 0.7));
   opacity: 0.7;
-  animation: ${({ likeButtonClicked }) =>
-    likeButtonClicked && 'popIcon 0.2s linear 0s 1 alternate'};
+  animation: ${({ likebuttonclicked }) =>
+    likebuttonclicked && 'popIcon 0.2s linear 0s 1 alternate'};
   @keyframes popIcon {
     0% {
       transform: scale(0.1);
@@ -486,14 +486,14 @@ const FeedCard = () => {
           <img src={userImage3} alt="유저이미지" />
         </ImageWrapper>
         <RightArrowIcon currentslide={currentSlide} onClick={NextSlide} />
-        <BigLikedIcon likeButtonClicked={likeButtonClicked} />
+        <BigLikedIcon likebuttonclicked={likeButtonClicked.toString()} />
       </ImageBoxWrapper>
       <CommentBoxWrapper>
         <IconBox>
           <LeftIconBox>
             {likeButtonClicked ? (
               <ColoredHeartIcon
-                likeButtonClicked={likeButtonClicked}
+                likebuttonclicked={likeButtonClicked.toString()}
                 onClick={() => {
                   setLikeButtonClicked((prev) => !prev);
                 }}

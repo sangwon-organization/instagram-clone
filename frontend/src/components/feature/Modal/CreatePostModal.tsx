@@ -5,6 +5,7 @@ import { BiArrowBack } from 'react-icons/bi';
 import userAvatar from '../../../assets/image/userAvatar.png';
 import { addPost } from '../../../api/api';
 import { URL } from 'url';
+import { useMutation } from '@tanstack/react-query';
 
 const Container = styled.div<{ nextmodal: boolean }>`
   width: ${({ nextmodal }) => (nextmodal ? '1120px' : '768px')};
@@ -157,6 +158,7 @@ const CreatePostModal = () => {
   const [textAreaText, setTextAreaText] = useState(0);
 
   const imageInput = useRef(null);
+  const textareaRef = useRef(null);
 
   const countTextLength = (e: any) => {
     // const textLength = e.target.innerText.length;
@@ -175,11 +177,23 @@ const CreatePostModal = () => {
     });
   };
 
-  const onChangeImage = async (event: any) => {
+  const submitFormData = async (e: any) => {
+    e.preventDefault();
     const formData = new FormData();
-    formData.append('file', event.target.files[0]);
-    // const response = await addPost(formData);
+    formData.append('content', textareaRef.current.value);
+    formData.append('postImage1', imageSrc);
+    mutate(formData);
   };
+
+  const { mutate, data, error, reset, isLoading } = useMutation(addPost, {
+    onError: (err: any) => {
+      console.log(err.response.data);
+    },
+    onSuccess: (userInfo: any) => {
+      console.log('로그인 성공!');
+      console.log(data);
+    },
+  });
 
   const onImageInputButtonClick = (event: any) => {
     event.preventDefault();
@@ -193,7 +207,9 @@ const CreatePostModal = () => {
         {imageSrc && nextModal === false && (
           <NextButton onClick={() => setNextModal(true)}>Next</NextButton>
         )}
-        {imageSrc && nextModal && <NextButton>Share</NextButton>}
+        {imageSrc && nextModal && (
+          <NextButton onClick={submitFormData}>Share</NextButton>
+        )}
       </Title>
       <Wrapper>
         <Content>
@@ -228,6 +244,7 @@ const CreatePostModal = () => {
               </UserInfoWrapper>
             </UserAccountWrapper>
             <TextBox
+              ref={textareaRef}
               placeholder="Write a caption..."
               maxLength={450}
               onChange={countTextLength}></TextBox>

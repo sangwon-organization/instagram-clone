@@ -1,10 +1,18 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://59.187.205.70:3000',
+  baseURL: 'https://59.187.205.70:3000',
   headers: {
     'Content-Type': 'application/json; charset=UTF-8',
     accept: 'application/json',
+  },
+});
+
+const multipartFormDataApi = axios.create({
+  baseURL: 'https://59.187.205.70:3000',
+  headers: {
+    'Content-Type': 'multipart/form-data',
+    Authorization: 'Bearer ' + localStorage.getItem('accessToken'),
   },
 });
 
@@ -35,8 +43,8 @@ interface changePasswordType {
 
 interface addPostType {
   content: string;
-  postImage1: string;
-  postImage2?: string;
+  postImage1: File;
+  postImage2?: File;
 }
 
 export const loginUser = async (userInfo: LoginType) => {
@@ -94,7 +102,7 @@ export const changePassword = async ({
   return data;
 };
 
-export const addPost = async (formData: addPostType) => {
-  const data = await api.post('/post', formData);
+export const addPost = async (formData: FormData) => {
+  const data = await multipartFormDataApi.post('/post', formData);
   return data;
 };

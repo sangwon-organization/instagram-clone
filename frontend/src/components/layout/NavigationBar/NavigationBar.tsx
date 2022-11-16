@@ -60,7 +60,7 @@ const LogoWrapper = styled.div`
   /* border: 1px solid red; */
 `;
 
-const SearchBarWrapper = styled.div<{ searchBarClicked: boolean }>`
+const SearchBarWrapper = styled.div<{ searchbarclicked: string }>`
   width: 270px;
   height: 35px;
   background: ${({ theme }) => theme.searchBarInputColor};
@@ -74,8 +74,8 @@ const SearchBarWrapper = styled.div<{ searchBarClicked: boolean }>`
     height: 100%;
     background: transparent;
     padding-left: 40px;
-    padding-left: ${({ searchBarClicked }) =>
-      searchBarClicked ? '15px' : '40px'};
+    padding-left: ${({ searchbarclicked }) =>
+      searchbarclicked ? '15px' : '40px'};
     border: none;
     z-index: 10;
     font-size: 16px;
@@ -92,14 +92,14 @@ const MenuWrapper = styled.div`
   position: relative;
 `;
 
-const SearchIcon = styled(FiSearch)<{ searchBarClicked: boolean }>`
+const SearchIcon = styled(FiSearch)<{ searchbarclicked: string }>`
   width: 18px;
   height: 18px;
   color: ${({ theme }) => theme.greyTextColor};
   position: absolute;
   top: 8px;
   left: 12px;
-  display: ${({ searchBarClicked }) => (searchBarClicked ? 'none' : 'block')};
+  display: ${({ searchbarclicked }) => (searchbarclicked ? 'none' : 'block')};
 `;
 
 const UserImage = styled.img<{ showDropdown: boolean }>`
@@ -152,7 +152,7 @@ const HeartIcon = styled(FiHeart)`
   }
 `;
 
-const CancelButton = styled(MdCancel)<{ searchBarClicked: boolean }>`
+const CancelButton = styled(MdCancel)<{ searchbarclicked: string }>`
   width: 17px;
   height: 17px;
   position: absolute;
@@ -160,7 +160,7 @@ const CancelButton = styled(MdCancel)<{ searchBarClicked: boolean }>`
   color: ${({ theme }) => theme.greyTextColor};
   cursor: pointer;
   z-index: 10;
-  display: ${({ searchBarClicked }) => (searchBarClicked ? 'block' : 'none')};
+  display: ${({ searchbarclicked }) => (searchbarclicked ? 'block' : 'none')};
 `;
 
 const NavigationBar = () => {
@@ -186,7 +186,7 @@ const NavigationBar = () => {
   return (
     <NavigationBarContainer>
       <NavigationBarWrapper>
-        <LogoWrapper onClick={() => navigate('/home')}>
+        <LogoWrapper onClick={() => navigate('/')}>
           <img
             src={
               isDarkMode === 'dark'
@@ -196,8 +196,8 @@ const NavigationBar = () => {
             alt="인스타그램로고"
           />
         </LogoWrapper>
-        <SearchBarWrapper searchBarClicked={searchBarClicked}>
-          <SearchIcon searchBarClicked={searchBarClicked} />
+        <SearchBarWrapper searchbarclicked={searchBarClicked.toString()}>
+          <SearchIcon searchbarclicked={searchBarClicked.toString()} />
           <input
             type="text"
             placeholder="Search"
@@ -206,7 +206,7 @@ const NavigationBar = () => {
               setSearchBarClicked(true);
             }}
           />
-          <CancelButton searchBarClicked={searchBarClicked} />
+          <CancelButton searchbarclicked={searchBarClicked.toString()} />
         </SearchBarWrapper>
         <SearchBarTooltip
           showTooltip={showTooltip}

@@ -289,14 +289,14 @@ const Login = () => {
         <OrBox>
           <p>OR</p>
         </OrBox>
-        {error && (
+        {/* {error && (
           <ErrorMessageBox>
             <p>
-              {error.response.status === 401 &&
+              {error.response.code === 401 &&
                 `이메일 또는 패스워드가 정확하지 않습니다.\n다시 입력해 주세요.`}
             </p>
           </ErrorMessageBox>
-        )}
+        )} */}
 
         <ForgotPasswordBox>
           <p>Forgot password?</p>
