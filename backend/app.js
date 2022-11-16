@@ -48,9 +48,9 @@ app.use(errorConverter)
 app.use(errorHandler)
 
 console.log(__dirname + '/keys/instagram_clone_private.key')
-console.log(__dirname + '/keys/instagram_clone_private.crt')
-const privateKey = fs.readFileSync(__dirname + '/keys/private.key')
-const certificate = fs.readFileSync(__dirname + '/keys/selfsigned.crt')
+console.log(__dirname + '/keys/instagram_clone_public.crt')
+const privateKey = fs.readFileSync(__dirname + '/keys/instagram_clone_private.key')
+const certificate = fs.readFileSync(__dirname + '/keys/instagram_clone_public.crt')
 const httpsOptions = { key: privateKey, cert: certificate }
 const httpsServer = https.createServer(httpsOptions, app)
 httpsServer.listen(port, () => {
