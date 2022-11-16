@@ -47,10 +47,10 @@ app.use(notFoundConverter)
 app.use(errorConverter)
 app.use(errorHandler)
 
-console.log(__dirname + '/keys/private.pem')
-console.log(__dirname + '/keys/public.pem')
-const privateKey = fs.readFileSync(__dirname + '/keys/private.pem')
-const certificate = fs.readFileSync(__dirname + '/keys/public.pem')
+console.log(__dirname + '/keys/instagram_clone_private.key')
+console.log(__dirname + '/keys/instagram_clone_private.crt')
+const privateKey = fs.readFileSync(__dirname + '/keys/private.key')
+const certificate = fs.readFileSync(__dirname + '/keys/selfsigned.crt')
 const httpsOptions = { key: privateKey, cert: certificate }
 const httpsServer = https.createServer(httpsOptions, app)
 httpsServer.listen(port, () => {
