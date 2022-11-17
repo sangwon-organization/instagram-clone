@@ -64,5 +64,3 @@ const httpsServer = http.createServer(httpsOptions, app)
 httpsServer.listen(port, () => {
   console.log('listen on port', port)
 })
-
-console.log(app.get('port'))

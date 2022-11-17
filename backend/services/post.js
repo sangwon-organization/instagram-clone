@@ -340,9 +340,18 @@ const getPostList = async (req, data) => {
       include: [
         {
           model: User,
+          as: 'Follower',
           required: true,
           attributes: ['userId', 'name', 'username', 'profileImageId'],
           include: [
+            {
+              model: UserFollow,
+              required: false,
+              attributes: ['fromUserId', 'toUserId'],
+              where: {
+                fromUserId: data.userId,
+              },
+            },
             {
               model: Image,
               required: false,
@@ -393,6 +402,7 @@ const getPostList = async (req, data) => {
       include: [
         {
           model: User,
+          as: 'Follower',
           required: true,
           attributes: ['userId', 'name', 'username', 'profileImageId'],
           include: [
@@ -449,22 +459,23 @@ const getPostList = async (req, data) => {
       let serviceUrl = env != 'production' ? req.protocol + '://' + req.get('host') : ''
 
       let postId = post.postId
-      let userId = post.User.userId
-      let name = post.User.name
-      let username = post.User.username
+      let userId = post.Follower.userId
+      let name = post.Follower.name
+      let username = post.Follower.username
       let content = post.content
       let createdAt = dateFormat(post.createdAt)
-      let likeYn = post.PostLikes.length > 0 ? 'Y' : 'N'
+      let followYn = post.Follower.UserFollows.length ? 'Y' : 'N'
       let bookmarkYn = post.PostBookmarks.length > 0 ? 'Y' : 'N'
+      let likeYn = post.PostLikes.length > 0 ? 'Y' : 'N'
       let commentCount = await Comment.count({ where: { postId: postId } })
       let likeCount = await PostLike.count({ where: { postId: postId } })
       let profileImage = ''
-      if (!post.User.Image) {
+      if (!post.Follower.Image) {
         profileImage = serviceUrl + config.commonImagePath.split('public')[1] + 'profile.png'
       } else {
         let imagePath = config.commonImagePath.split('public')[1]
-        let imageName = post.User.Image.imageName
-        let imageExt = post.User.Image.imageExt
+        let imageName = post.Follower.Image.imageName
+        let imageExt = post.Follower.Image.imageExt
         profileImage = serviceUrl + imagePath + imageName + '.' + imageExt
       }
       let postImageList = post.PostImages.map((postImage) => {
@@ -482,8 +493,9 @@ const getPostList = async (req, data) => {
         userId,
         content,
         createdAt,
-        likeYn,
+        followYn,
         bookmarkYn,
+        likeYn,
         likeCount,
         commentCount,
         profileImage,

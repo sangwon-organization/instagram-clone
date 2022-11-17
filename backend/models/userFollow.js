@@ -36,7 +36,7 @@ module.exports = class UserFollow extends Sequelize.Model {
     )
   }
   static associate(db) {
-    db.UserFollow.belongsTo(db.User, { as: 'FromUser', foreignKey: 'fromUserId', targetKey: 'userId' })
-    db.UserFollow.belongsTo(db.User, { as: 'ToUser', foreignKey: 'toUserId', targetKey: 'userId' })
+    db.UserFollow.belongsTo(db.User, { as: 'Following', foreignKey: 'fromUserId', targetKey: 'userId' })
+    db.UserFollow.belongsTo(db.User, { as: 'Follower', foreignKey: 'toUserId', targetKey: 'userId' })
   }
 }

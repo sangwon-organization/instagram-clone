@@ -42,6 +42,7 @@ module.exports = class Post extends Sequelize.Model {
     )
   }
   static associate(db) {
+    db.Post.belongsTo(db.User, { as: 'Follower', foreignKey: 'userId', targetKey: 'userId' })
     db.Post.belongsTo(db.User, { foreignKey: 'userId', targetKey: 'userId' })
     db.Post.hasMany(db.PostLike, { foreignKey: 'postId', sourceKey: 'postId' })
     db.Post.hasMany(db.Comment, { foreignKey: 'postId', sourceKey: 'postId' })
