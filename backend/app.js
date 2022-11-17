@@ -9,6 +9,7 @@ const fs = require('fs')
 const env = process.env.NODE_ENV || 'local'
 const config = require('./config/config.json')[env]
 const port = 3000
+const cors = require('cors')
 
 const indexRouter = require('./routes')
 const userRouter = require('./routes/user')
@@ -34,7 +35,12 @@ if (env != 'production') {
   }
 }
 
-app.use(corsConverter)
+app.use(
+  cors({
+    origin: '*', // 모든 출처 허용 옵션. true 를 써도 된다.
+  })
+)
+//app.use(corsConverter)
 app.use(morgan('dev'))
 app.use(express.json({}))
 app.use(express.urlencoded({ extended: false }))
