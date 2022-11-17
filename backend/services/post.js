@@ -6,8 +6,8 @@ const httpStatus = require('http-status')
 const ApiError = require('../utils/ApiError')
 const imageService = require('../services/image')
 const commonService = require('../services/common')
-const Image = require('../models/image')
 const Post = require('../models/post')
+const Image = require('../models/image')
 const User = require('../models/user')
 const Comment = require('../models/comment')
 const CommentLike = require('../models/commentLike')
@@ -18,6 +18,7 @@ const { dateFormat } = require('../utils/regex')
 const authService = require('../services/auth')
 const { Op } = require('sequelize')
 const fs = require('fs')
+const { UserFollow } = require('../models')
 
 const createPost = async (data) => {
   await commonService.checkValueIsEmpty(data.content, '내용')
@@ -39,7 +40,8 @@ const createPost = async (data) => {
     const imageWidth = dimensions.width
     const imageHeight = dimensions.height
 
-    fs.rename(oldFilePath, config.postImagePath + imageName + '.' + imageExt, async (err) => {
+    console.log(__dirname, config.postImagePath)
+    fs.rename(oldFilePath, __dirname + '/../' + config.postImagePath + imageName + '.' + imageExt, async (err) => {
       if (err) {
         throw err
       }
@@ -95,22 +97,24 @@ const updatePost = async (data) => {
   }
 
   // 이미지 삭제
-  const images = await Image.findAll({ where: { imageId: data.deleteImageIds } })
+  if (data.deleteImageIds) {
+    const images = await Image.findAll({ where: { imageId: data.deleteImageIds } })
 
-  await Image.destroy({ where: { imageId: data.deleteImageIds } })
+    await Image.destroy({ where: { imageId: data.deleteImageIds } })
 
-  await PostImage.destroy({ where: { postId: data.postId, imageId: data.deleteImageIds } })
+    await PostImage.destroy({ where: { postId: data.postId, imageId: data.deleteImageIds } })
 
-  images.map((image) => {
-    let deleteImagePath = config.postImagePath + image.imageName + '.' + image.imageExt
-    fs.unlink(deleteImagePath, (err) => {
-      if (!err) {
-        console.log(`이미지 파일 삭제 >> ${deleteImagePath}`)
-      } else {
-        console.log(`이미지 파일이 존재하지 않음 >> ${deleteImagePath}`)
-      }
+    images.map((image) => {
+      let deleteImagePath = __dirname + '/../' + config.postImagePath + image.imageName + '.' + image.imageExt
+      fs.unlink(deleteImagePath, (err) => {
+        if (!err) {
+          console.log(`이미지 파일 삭제 >> ${deleteImagePath}`)
+        } else {
+          console.log(`이미지 파일이 존재하지 않음 >> ${deleteImagePath}`)
+        }
+      })
     })
-  })
+  }
 
   // 이미지 등록
   for await (const [key, file] of Object.entries(data.files)) {
@@ -123,7 +127,7 @@ const updatePost = async (data) => {
     const imageWidth = dimensions.width
     const imageHeight = dimensions.height
 
-    fs.rename(oldFilePath, config.postImagePath + imageName + '.' + imageExt, async (err) => {
+    fs.rename(oldFilePath, __dirname + '/../' + config.postImagePath + imageName + '.' + imageExt, async (err) => {
       if (err) {
         throw err
       }
@@ -189,8 +193,8 @@ const getPost = async (req, postId) => {
   return post
 }
 
-const deletePost = async (postId) => {
-  await commonService.checkValueIsEmpty(postId, 'postId')
+const deletePost = async (data) => {
+  await commonService.checkValueIsEmpty(data.postId, 'postId')
 
   let post = await Post.findOne({
     include: [
@@ -203,44 +207,40 @@ const deletePost = async (postId) => {
         ],
       },
     ],
-    where: { postId: postId },
+    where: { postId: data.postId },
   })
   if (!post) {
     throw new ApiError(httpStatus.BAD_REQUEST, '해당 포스트가 존재하지 않습니다.')
   }
 
-  await deleteComment({ postId: postId })
-  await PostLike.destroy({ where: { postId: postId } })
-  await PostBookmark.destroy({ where: { postId: postId } })
+  await deleteComment({ postId: data.postId })
+  await PostLike.destroy({ where: { postId: data.postId } })
+  await PostBookmark.destroy({ where: { postId: data.postId } })
 
-  let postImages = await PostImage.findAll(
-    {
-      attributes: ['postId'],
-      include: [
-        {
-          model: Image,
-          attributes: ['imageId', 'imageName', 'imageExt'],
-        },
-      ],
-    },
-    {
-      where: {
-        postId: postId,
+  let postImages = await PostImage.findAll({
+    attributes: ['postId'],
+    include: [
+      {
+        model: Image,
+        attributes: ['imageId', 'imageName', 'imageExt'],
       },
-    }
-  )
+    ],
+    where: {
+      postId: data.postId,
+    },
+  })
 
   let imageIds = []
   let imagePaths = []
   let getImageIdPromises = postImages.map((postImage) => {
     imageIds.push(postImage.Image.imageId)
-    imagePaths.push(config.postImagePath + postImage.Image.imageName + '.' + postImage.Image.imageExt)
+    imagePaths.push(__dirname + '/../' + config.postImagePath + postImage.Image.imageName + '.' + postImage.Image.imageExt)
   })
   await Promise.all(getImageIdPromises)
 
   await PostImage.destroy({
     where: {
-      postId: postId,
+      postId: data.postId,
     },
   })
 
@@ -252,7 +252,7 @@ const deletePost = async (postId) => {
 
   await Post.destroy({
     where: {
-      postId: postId,
+      postId: data.postId,
     },
   })
 
@@ -325,68 +325,124 @@ const bookmarkPost = async (userId, postId, bookmarkYn) => {
   }
 }
 
-const getPostList = async (req, page = 1) => {
-  await commonService.checkValueIsEmpty(page, 'page')
+const getPostList = async (req, data) => {
+  await commonService.checkValueIsEmpty(data.page, 'page')
 
-  let token = req.headers['authorization']
-  let userId = null
-  if (token) {
-    let payload = await authService.verifyToken(token)
-    if (payload) {
-      userId = payload.sub
-    }
+  let page = data.page <= 0 ? 1 : data.page
+  let postList = []
+
+  if (data.postUserId) {
+    // 특정 유저 포스트 목록 조회
+    let pageSize = 12
+    let offset = (page - 1) * pageSize
+    postList = await Post.findAll({
+      attributes: ['postId', 'content', 'createdAt'],
+      include: [
+        {
+          model: User,
+          required: true,
+          attributes: ['userId', 'name', 'username', 'profileImageId'],
+          include: [
+            {
+              model: Image,
+              required: false,
+              attributes: ['imageName', 'imageExt'],
+            },
+          ],
+        },
+        {
+          model: PostImage,
+          required: false,
+          attributes: ['imageId'],
+          include: [
+            {
+              model: Image,
+              required: false,
+              attributes: ['imageName', 'imageExt'],
+            },
+          ],
+        },
+        {
+          model: PostLike,
+          required: false,
+          where: {
+            userId: data.userId,
+          },
+        },
+        {
+          model: PostBookmark,
+          required: false,
+          where: {
+            userId: data.userId,
+          },
+        },
+      ],
+      where: {
+        userId: data.postUserId,
+      },
+      offset: offset,
+      limit: pageSize,
+      order: [['createdAt', 'DESC']],
+    })
+  } else {
+    // 팔로우 유저들 포스트 목록 조회
+    let pageSize = 10
+    let offset = (page - 1) * pageSize
+    postList = await Post.findAll({
+      attributes: ['postId', 'content', 'createdAt'],
+      include: [
+        {
+          model: User,
+          required: true,
+          attributes: ['userId', 'name', 'username', 'profileImageId'],
+          include: [
+            {
+              model: UserFollow,
+              required: true,
+              attributes: ['fromUserId', 'toUserId'],
+              where: {
+                fromUserId: data.userId,
+              },
+            },
+            {
+              model: Image,
+              required: false,
+              attributes: ['imageName', 'imageExt'],
+            },
+          ],
+        },
+        {
+          model: PostImage,
+          required: false,
+          attributes: ['imageId'],
+          include: [
+            {
+              model: Image,
+              required: false,
+              attributes: ['imageName', 'imageExt'],
+            },
+          ],
+        },
+        {
+          model: PostLike,
+          required: false,
+          where: {
+            userId: data.userId,
+          },
+        },
+        {
+          model: PostBookmark,
+          required: false,
+          where: {
+            userId: data.userId,
+          },
+        },
+      ],
+      offset: offset,
+      limit: pageSize,
+      order: [['createdAt', 'DESC']],
+    })
   }
-
-  page = !page || page <= 0 ? (page = 1) : page
-
-  let pageSize = 10
-  let offset = (page - 1) * pageSize
-  let postList = await Post.findAll({
-    attributes: ['postId', 'content', 'createdAt'],
-    include: [
-      {
-        model: User,
-        required: true,
-        attributes: ['userId', 'name', 'username', 'profileImageId'],
-        include: [
-          {
-            model: Image,
-            required: false,
-            attributes: ['imageName', 'imageExt'],
-          },
-        ],
-      },
-      {
-        model: PostImage,
-        required: false,
-        attributes: ['imageId'],
-        include: [
-          {
-            model: Image,
-            required: false,
-            attributes: ['imageName', 'imageExt'],
-          },
-        ],
-      },
-      {
-        model: PostLike,
-        required: false,
-        where: {
-          userId: userId,
-        },
-      },
-      {
-        model: PostBookmark,
-        required: false,
-        where: {
-          userId: userId,
-        },
-      },
-    ],
-    offset: offset,
-    limit: pageSize,
-    order: [['createdAt', 'DESC']],
-  })
 
   postList = await Promise.all(
     postList.map(async (post) => {
@@ -493,7 +549,6 @@ const updateComment = async (data) => {
 }
 
 const deleteComment = async (data) => {
-  // await commonService.checkValueIsEmpty(data.commentId, 'commentId')
   data.postId = !data.postId ? null : data.postId
   data.commentId = !data.commentId ? null : data.commentId
 
@@ -527,21 +582,13 @@ const likeComment = async (data) => {
   }
 }
 
-const getCommentList = async (req, postId, parentCommentId, page = 1) => {
-  await commonService.checkValueIsEmpty(postId, 'postId')
-  await commonService.checkValueIsEmpty(page, 'page')
+const getCommentList = async (req, data) => {
+  await commonService.checkValueIsEmpty(data.postId, 'postId')
+  await commonService.checkValueIsEmpty(data.page, 'page')
 
-  let token = req.headers['authorization']
-  let userId = null
-  if (token) {
-    let payload = await authService.verifyToken(token)
-    if (payload) {
-      userId = payload.sub
-    }
-  }
-
-  page = !page || page <= 0 ? (page = 1) : page
-  parentCommentId = !parentCommentId ? null : parentCommentId
+  let page = data.page <= 0 ? 1 : data.page
+  let parentCommentId = !data.parentCommentId ? null : data.parentCommentId
+  let postId = data.postId
 
   let pageSize = !parentCommentId ? 20 : 10
   let offset = (page - 1) * pageSize
@@ -564,7 +611,7 @@ const getCommentList = async (req, postId, parentCommentId, page = 1) => {
         model: CommentLike,
         required: false,
         where: {
-          userId: userId,
+          userId: data.userId,
         },
       },
     ],

@@ -65,6 +65,16 @@ const checkToken = catchAsync(async (req, res, next) => {
   next()
 })
 
+const convertParamToRequestBody = catchAsync(async (req, res, next) => {
+  req.body = Object.assign(req.body, req.params)
+  next()
+})
+
+const convertQueryToRequestBody = catchAsync(async (req, res, next) => {
+  req.body = Object.assign(req.body, req.query)
+  next()
+})
+
 const convertFormDataToRequestBody = catchAsync(async (req, res, next) => {
   let form = formidable({ multiples: true })
   await new Promise((resolve, reject) => {
@@ -89,4 +99,6 @@ module.exports = {
   errorHandler,
   checkToken,
   convertFormDataToRequestBody,
+  convertQueryToRequestBody,
+  convertParamToRequestBody,
 }

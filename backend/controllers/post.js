@@ -21,8 +21,8 @@ const getPost = catchAsync(async (req, res) => {
 })
 
 const deletePost = catchAsync(async (req, res) => {
-  console.log('param:', req.params)
-  await postService.deletePost(req.params.postId)
+  console.log('param:', req.body)
+  await postService.deletePost(req.body)
   res.status(httpStatus.OK).send(Object.assign({ code: 0, message: 'success' }))
 })
 
@@ -39,8 +39,8 @@ const bookmarkPost = catchAsync(async (req, res) => {
 })
 
 const getPostList = catchAsync(async (req, res) => {
-  console.log('param:', req.query)
-  let result = await postService.getPostList(req, req.query.page)
+  console.log('param:', req.body)
+  let result = await postService.getPostList(req, req.body)
   res.status(httpStatus.OK).send(Object.assign({ code: 0, message: 'success' }, result))
 })
 
@@ -69,8 +69,8 @@ const likeComment = catchAsync(async (req, res) => {
 })
 
 const getCommentList = catchAsync(async (req, res) => {
-  console.log('param:', req.query)
-  let result = await postService.getCommentList(req, req.query.postId, req.query.parentCommentId, req.query.page)
+  console.log('param:', req.body)
+  let result = await postService.getCommentList(req, req.body)
   res.status(httpStatus.OK).send(Object.assign({ code: 0, message: 'success' }, result))
 })
 

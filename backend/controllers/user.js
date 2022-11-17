@@ -35,8 +35,20 @@ const changePassword = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send({ code: 0, message: 'success' })
 })
 
+const followUser = catchAsync(async (req, res) => {
+  await userService.followUser(req.body)
+  res.status(httpStatus.OK).send({ code: 0, message: 'success' })
+})
+
+const getFollowerList = catchAsync(async (req, res) => {
+  let followerUserList = await userService.getFollowerList(req, req.body)
+  res.status(httpStatus.OK).send(Object.assign({ code: 0, message: 'success' }, followerUserList))
+})
+
 module.exports = {
   checkEmail,
   checkUsername,
   changePassword,
+  followUser,
+  getFollowerList,
 }

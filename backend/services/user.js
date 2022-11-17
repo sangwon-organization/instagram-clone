@@ -1,9 +1,14 @@
-const { User } = require('../models')
 const regex = require('../utils/regex')
 const ApiError = require('../utils/ApiError')
 const httpStatus = require('http-status')
+const Image = require('../models/image')
+const User = require('../models/user')
+const UserFollow = require('../models/userFollow')
 const { decryptAES256, encryptSHA256 } = require('../utils/encryption')
 const commonService = require('../services/common')
+const env = process.env.NODE_ENV || 'local'
+const config = require('../config/config.json')[env]
+const { dateFormat } = require('../utils/regex')
 
 const createUser = async (body) => {
   return await User.create(body)
@@ -66,6 +71,92 @@ const changePassword = async (email, oldPassword, newPassword) => {
   User.update({ password: encryptNewPassword, updatedAt: new Date() }, { where: { email: email, password: encryptOldPassword } })
 }
 
+const followUser = async (data) => {
+  if (data.userId == data.followUserId) {
+    throw new ApiError(httpStatus.BAD_REQUEST, '자기 자신을 팔로우 할 수 없습니다. 다시 시도해 주세요.')
+  }
+
+  if (data.followYn == 'Y') {
+    UserFollow.upsert({ fromUserId: data.userId, toUserId: data.followUserId })
+  } else {
+    UserFollow.destroy({ where: { fromUserId: data.userId, toUserId: data.followUserId } })
+  }
+}
+
+const getFollowerList = async (req, data) => {
+  /*
+  let page = data.page <= 0 ? 1 : data.page
+  let pageSize = 20
+  let offset = (page - 1) * pageSize
+  let followerList = await UserFollow.findAll({
+    attributes: ['fromUserId', 'toUserId', 'createdAt'],
+    as: 'FromUserFollow',
+    include: [
+      {
+        model: User,
+        as: 'FromUser',
+        required: true,
+        attributes: ['userId', 'name', 'username', 'profileImageId'],
+        include: [
+          {
+            model: Image,
+            required: false,
+            attributes: ['imageName', 'imageExt'],
+          },
+          {
+            model: UserFollow,
+            required: false,
+            attributes: ['fromUserId', 'toUserId'],
+            where: {
+              toUserId: FromUser.userId,
+              fromUserId: data.userId,
+            },
+          },
+        ],
+        where: {
+          userId: FromUserFollow.fromUserId,
+        },
+      },
+    ],
+    where: { toUserId: data.followerTargetUserId },
+    offset: offset,
+    limit: pageSize,
+    order: [['createdAt', 'DESC']],
+  })
+
+  followerList = await Promise.all(
+    followerList.map(async (follower) => {
+      let serviceUrl = env != 'production' ? req.protocol + '://' + req.get('host') : ''
+
+      let userId = follower.FromUser.userId
+      let name = follower.FromUser.name
+      let username = follower.FromUser.username
+      let createdAt = dateFormat(follower.createdAt)
+      let profileImage = ''
+      if (!follower.FromUser.Image) {
+        profileImage = serviceUrl + config.commonImagePath.split('public')[1] + 'profile.png'
+      } else {
+        let imagePath = config.commonImagePath.split('public')[1]
+        let imageName = follower.FromUser.Image.imageName
+        let imageExt = follower.FromUser.Image.imageExt
+        profileImage = serviceUrl + imagePath + imageName + '.' + imageExt
+      }
+
+      return {
+        userId,
+        name,
+        username,
+        createdAt,
+        profileImage,
+      }
+    })
+  )
+  
+  return { page: page, followerList: followerList }
+  */
+  return {}
+}
+
 module.exports = {
   createUser,
   findUser,
@@ -73,4 +164,6 @@ module.exports = {
   checkUsername,
   checkPassword,
   changePassword,
+  followUser,
+  getFollowerList,
 }

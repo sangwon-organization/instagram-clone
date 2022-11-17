@@ -1,3 +1,4 @@
+const http = require('http')
 const https = require('https')
 const express = require('express')
 const morgan = require('morgan')
@@ -26,10 +27,10 @@ sequelize
 // 이미지를 담아 둘 디렉토리 생성
 if (env != 'production') {
   if (!fs.existsSync(config.postImagePath)) {
-    fs.mkdirSync(config.postImagePath, { recursive: true })
+    fs.mkdirSync(__dirname + config.postImagePath, { recursive: true })
   }
   if (!fs.existsSync(config.profileImagePath)) {
-    fs.mkdirSync(config.profileImagePath, { recursive: true })
+    fs.mkdirSync(__dirname + config.profileImagePath, { recursive: true })
   }
 }
 
@@ -47,12 +48,13 @@ app.use(notFoundConverter)
 app.use(errorConverter)
 app.use(errorHandler)
 
-console.log(__dirname + '/keys/instagram_clone_private.key')
-console.log(__dirname + '/keys/instagram_clone_public.crt')
-const privateKey = fs.readFileSync(__dirname + '/keys/instagram_clone_private.key')
-const certificate = fs.readFileSync(__dirname + '/keys/instagram_clone_public.crt')
-const httpsOptions = { key: privateKey, cert: certificate }
-const httpsServer = https.createServer(httpsOptions, app)
+//console.log(__dirname + '/keys/instagram_clone_private.key')
+//console.log(__dirname + '/keys/instagram_clone_public.crt')
+//const privateKey = fs.readFileSync(__dirname + '/keys/instagram_clone_private.key')
+//const certificate = fs.readFileSync(__dirname + '/keys/instagram_clone_public.crt')
+//const httpsOptions = { key: privateKey, cert: certificate }
+const httpsOptions = {}
+const httpsServer = http.createServer(httpsOptions, app)
 httpsServer.listen(port, () => {
   console.log('listen on port', port)
 })
