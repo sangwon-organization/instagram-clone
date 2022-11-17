@@ -30,7 +30,7 @@ const createPost = async (data) => {
   }
 
   // 이미지 등록
-  for await (const [key, file] of Object.entries(data.files)) {
+  for await (const [key, file] of Object.entries(data.files.postImage)) {
     const oldFilePath = file.filepath
     const imageExt = file.originalFilename.split('.')[1]
     const originalImageName = file.originalFilename.split('.')[0]
@@ -40,7 +40,6 @@ const createPost = async (data) => {
     const imageWidth = dimensions.width
     const imageHeight = dimensions.height
 
-    console.log(__dirname, config.postImagePath)
     fs.rename(oldFilePath, __dirname + '/../' + config.postImagePath + imageName + '.' + imageExt, async (err) => {
       if (err) {
         throw err
@@ -117,7 +116,7 @@ const updatePost = async (data) => {
   }
 
   // 이미지 등록
-  for await (const [key, file] of Object.entries(data.files)) {
+  for await (const [key, file] of Object.entries(data.files.postImage)) {
     const oldFilePath = file.filepath
     const imageExt = file.originalFilename.split('.')[1]
     const originalImageName = file.originalFilename.split('.')[0]
