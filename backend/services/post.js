@@ -331,7 +331,7 @@ const getPostList = async (req, data) => {
   let page = data.page <= 0 ? 1 : data.page
   let postList = []
 
-  if (data.postUserId) {
+  if (data.targetUserId) {
     // 특정 유저 포스트 목록 조회
     let pageSize = 12
     let offset = (page - 1) * pageSize
@@ -378,7 +378,7 @@ const getPostList = async (req, data) => {
         },
       ],
       where: {
-        userId: data.postUserId,
+        userId: data.targetUserId,
       },
       offset: offset,
       limit: pageSize,
