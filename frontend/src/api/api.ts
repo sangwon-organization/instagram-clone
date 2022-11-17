@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://59.187.205.70:3000',
+  baseURL: 'http://59.187.205.70:3000',
   headers: {
     'Content-Type': 'application/json; charset=UTF-8',
     accept: 'application/json',
@@ -9,7 +9,7 @@ const api = axios.create({
 });
 
 const multipartFormDataApi = axios.create({
-  baseURL: 'https://59.187.205.70:3000',
+  baseURL: 'http://59.187.205.70:3000',
   headers: {
     'Content-Type': 'multipart/form-data',
     Authorization: 'Bearer ' + localStorage.getItem('accessToken'),
