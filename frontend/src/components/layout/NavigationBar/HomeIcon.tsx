@@ -33,8 +33,8 @@ const HomeIcon = () => {
   const navigate = useNavigate();
   // const result = pathName === '/home';
   return (
-    <HomeIconBox onClick={() => navigate('/home')}>
-      {pathName === '/home' ? <HomeFilledIcon /> : <HomeBorderIcon />}
+    <HomeIconBox onClick={() => navigate('/')}>
+      {pathName === '/' ? <HomeFilledIcon /> : <HomeBorderIcon />}
     </HomeIconBox>
   );
 };

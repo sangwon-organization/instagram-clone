@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import styled from 'styled-components';
 import { GoKebabHorizontal } from 'react-icons/go';
 import Post from '../../components/feature/Profile/Post';
@@ -10,6 +10,8 @@ import { RiAccountPinBoxLine } from 'react-icons/ri';
 import { BiMoviePlay } from 'react-icons/bi';
 import { IoAppsSharp } from 'react-icons/io5';
 import Footer from '../../components/layout/footer/Footer';
+import { useQuery } from '@tanstack/react-query';
+import { getPostsList } from '../../api/api';
 
 const MainContainer = styled.div`
   width: 100%;
@@ -244,6 +246,12 @@ const PostsWrapper = styled.article`
 `;
 
 const ProfilePresenter = () => {
+  const { data } = useQuery(['getLists'], () =>
+    getPostsList({ page: 1, targetUserId: 1 }),
+  );
+  useEffect(() => {
+    console.log(data?.data);
+  });
   return (
     <>
       <NavigationBar />

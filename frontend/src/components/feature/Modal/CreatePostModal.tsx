@@ -6,6 +6,7 @@ import userAvatar from '../../../assets/image/userAvatar.png';
 import { addPost } from '../../../api/api';
 import { URL } from 'url';
 import { useMutation } from '@tanstack/react-query';
+import { useForm } from 'react-hook-form';
 
 const Container = styled.div<{ nextmodal: boolean }>`
   width: ${({ nextmodal }) => (nextmodal ? '1120px' : '768px')};
@@ -190,7 +191,7 @@ const CreatePostModal = () => {
       console.log(err.response.data);
     },
     onSuccess: (userInfo: any) => {
-      console.log('로그인 성공!');
+      console.log('포스트 등록 성공!');
       console.log(data);
     },
   });
@@ -208,7 +209,9 @@ const CreatePostModal = () => {
           <NextButton onClick={() => setNextModal(true)}>Next</NextButton>
         )}
         {imageSrc && nextModal && (
-          <NextButton onClick={submitFormData}>Share</NextButton>
+          <NextButton type="submit" onClick={submitFormData}>
+            Share
+          </NextButton>
         )}
       </Title>
       <Wrapper>
