@@ -8,7 +8,10 @@ const { decryptAES256, encryptSHA256 } = require('../utils/encryption')
 const commonService = require('../services/common')
 const env = process.env.NODE_ENV || 'local'
 const config = require('../config/config.json')[env]
-const { dateFormat } = require('../utils/regex')
+const { v4: uuidv4 } = require('uuid')
+const sizeOf = require('image-size')
+const fs = require('fs')
+const imageService = require('../services/image')
 
 const createUser = async (body) => {
   return await User.create(body)
@@ -157,6 +160,50 @@ const getFollowerList = async (req, data) => {
   return {}
 }
 
+const saveProfileImage = async (req, data) => {
+  let user = await User.findOne({ include: { model: Image, required: false }, where: { userId: data.userId } })
+  if (user == 0) {
+    throw new ApiError(httpStatus.BAD_REQUEST, '해당하는 유저가 존재하지 않습니다.')
+  }
+
+  for await (const [key, file] of Object.entries(data.files)) {
+    const oldFilePath = file.filepath
+    const imageExt = file.originalFilename.split('.')[1]
+    const originalImageName = file.originalFilename.split('.')[0]
+    const imageName = uuidv4()
+    const dimensions = sizeOf(oldFilePath)
+    const imageSize = file.size
+    const imageWidth = dimensions.width
+    const imageHeight = dimensions.height
+
+    fs.rename(oldFilePath, __dirname + '/../' + config.profileImagePath + imageName + '.' + imageExt, async (err) => {
+      if (err) {
+        throw err
+      }
+      const image = await imageService.createImage({
+        originalImageName,
+        imageName,
+        imageExt,
+        imageSize,
+        imageWidth,
+        imageHeight,
+      })
+      await User.upsert({ userId: data.userId, profileImageId: image.imageId, updatedAt: new Date() }, { where: { userId: data.userId } })
+    })
+
+    if (user.Image) {
+      let deleteImagePath = __dirname + '/../' + config.profileImagePath + user.Image.imageName + '.' + user.Image.imageExt
+      fs.unlink(deleteImagePath, (err) => {
+        if (!err) {
+          console.log(`이미지 파일 삭제 >> ${deleteImagePath}`)
+        } else {
+          console.log(`이미지 파일이 존재하지 않음 >> ${deleteImagePath}`)
+        }
+      })
+    }
+  }
+}
+
 module.exports = {
   createUser,
   findUser,
@@ -166,4 +213,5 @@ module.exports = {
   changePassword,
   followUser,
   getFollowerList,
+  saveProfileImage,
 }
