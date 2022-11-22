@@ -15,8 +15,8 @@ const updatePost = catchAsync(async (req, res) => {
 })
 
 const getPost = catchAsync(async (req, res) => {
-  console.log('param:', req.params)
-  let post = await postService.getPost(req, req.params.postId)
+  console.log('param:', req.body)
+  let post = await postService.getPost(req, req.body)
   res.status(httpStatus.OK).send(Object.assign({ code: 0, message: 'success' }, post))
 })
 

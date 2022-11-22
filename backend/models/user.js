@@ -12,7 +12,6 @@ module.exports = class User extends Sequelize.Model {
         email: {
           type: Sequelize.STRING(100),
           allowNull: true,
-          unique: true,
         },
         password: {
           type: Sequelize.STRING(100),
@@ -54,13 +53,14 @@ module.exports = class User extends Sequelize.Model {
         paranoid: false,
         charset: 'utf8',
         collate: 'utf8_general_ci',
+        indexes: [{ unique: true, fields: ['email'] }],
       }
     )
   }
   static associate(db) {
     db.User.hasMany(db.Post, { foreignKey: 'userId', sourceKey: 'userId' })
-    db.User.hasMany(db.UserFollow, { foreignKey: 'fromUserId', sourceKey: 'userId' })
-    db.User.hasMany(db.UserFollow, { foreignKey: 'toUserId', sourceKey: 'userId' })
+    db.User.hasMany(db.UserFollow, { as: 'FromUserFollow', foreignKey: 'fromUserId', sourceKey: 'userId' })
+    db.User.hasMany(db.UserFollow, { as: 'ToUserFollow', foreignKey: 'toUserId', sourceKey: 'userId' })
     db.User.hasMany(db.PostLike, { foreignKey: 'userId', sourceKey: 'userId' })
     db.User.hasMany(db.Comment, { foreignKey: 'userId', sourceKey: 'userId' })
     db.User.hasMany(db.CommentLike, { foreignKey: 'userId', sourceKey: 'userId' })

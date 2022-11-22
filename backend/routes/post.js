@@ -3,6 +3,7 @@ const router = express.Router()
 const postController = require('../controllers/post')
 const { checkToken, convertFormDataToRequestBody, convertQueryToRequestBody, convertParamToRequestBody } = require('../middlewares')
 
+router.route('').get(checkToken, convertQueryToRequestBody, postController.getPost)
 router.route('').post(checkToken, convertFormDataToRequestBody, postController.createPost)
 router.route('').put(checkToken, convertFormDataToRequestBody, postController.updatePost)
 router.route('/comment').post(checkToken, postController.createComment)

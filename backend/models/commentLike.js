@@ -38,5 +38,6 @@ module.exports = class CommentLike extends Sequelize.Model {
   static associate(db) {
     db.CommentLike.belongsTo(db.User, { foreignKey: 'userId', targetKey: 'userId' })
     db.CommentLike.belongsTo(db.Comment, { foreignKey: 'commentId', targetKey: 'commentId' })
+    db.CommentLike.belongsTo(db.Comment, { as: 'LoginUserCommentLike', foreignKey: 'commentId', targetKey: 'commentId' })
   }
 }

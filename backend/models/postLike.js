@@ -38,5 +38,6 @@ module.exports = class PostLike extends Sequelize.Model {
   static associate(db) {
     db.PostLike.belongsTo(db.User, { foreignKey: 'userId', targetKey: 'userId' })
     db.PostLike.belongsTo(db.Post, { foreignKey: 'postId', targetKey: 'postId' })
+    db.PostLike.belongsTo(db.Post, { as: 'LoginUserPostLike', foreignKey: 'postId', targetKey: 'postId' })
   }
 }

@@ -15,8 +15,7 @@ const PostImage = require('../models/postImage')
 const PostLike = require('../models/postLike')
 const PostBookmark = require('../models/postBookmark')
 const { dateFormat } = require('../utils/regex')
-const authService = require('../services/auth')
-const { Op } = require('sequelize')
+const { Op, where } = require('sequelize')
 const fs = require('fs')
 const { UserFollow } = require('../models')
 
@@ -148,47 +147,81 @@ const createPostImage = async (data) => {
   return await PostImage.create(data)
 }
 
-const getPost = async (req, postId) => {
-  await commonService.checkValueIsEmpty(postId, 'postId')
+const getPost = async (req, data) => {
+  await commonService.checkValueIsEmpty(data.postId, 'postId')
+  let serviceUrl = env != 'production' ? req.protocol + '://' + req.get('host') : ''
+  let commonImagePath = config.commonImagePath.split('public')[1]
+  let postImagePath = config.postImagePath.split('public')[1]
+  let profileImagePath = config.profileImagePath.split('public')[1]
 
   let post = await Post.findOne({
     include: [
       {
-        model: PostImage,
+        model: User,
+        require: true,
         include: [
-          {
-            model: Image,
-          },
+          { model: Image, required: false },
+          { model: UserFollow, as: 'ToUserFollow', required: false, where: { fromUserId: data.userId } },
         ],
       },
+      { model: PostImage, required: false, include: [{ model: Image, require: true }] },
+      { model: PostLike, required: false },
+      { model: PostLike, required: false, as: 'LoginUserPostLike', where: { userId: data.userId } },
+      { model: PostBookmark, required: false, where: { userId: data.userId } },
     ],
-    where: { postId: postId },
+    where: { postId: data.postId },
   })
+
   if (!post) {
     throw new ApiError(httpStatus.BAD_REQUEST, '해당 포스트가 존재하지 않습니다.')
   }
 
-  let postImages = []
-  let promises = post.PostImages.map((PostImage) => {
-    if (env != 'production') {
-      // storage 서버가 따로 없는 경우
-      let serviceUrl = req.protocol + '://' + req.get('host')
-      let imagePath = config.postImagePath.split('public')[1]
-      let imageName = PostImage.Image.imageName
-      let imageExt = PostImage.Image.imageExt
-      postImages.push(serviceUrl + imagePath + imageName + '.' + imageExt)
-    } else {
-      // storage 서버가 따로 있는 경우
-    }
-  })
-  await Promise.all(promises)
-
   post = {
+    userId: post.userId,
+    username: post.User.username,
+    name: post.User.name,
     postId: post.postId,
     content: post.content,
     createdAt: dateFormat(post.createdAt),
-    postImages: postImages,
+    updatedAt: dateFormat(post.updatedAt),
+    bookmarkYn: post.PostBookmarks.length > 0 ? 'Y' : 'N',
+    followYn: post.User.ToUserFollow.length > 0 ? 'Y' : 'N',
+    likeYn: post.LoginUserPostLike.length > 0 ? 'Y' : 'N',
+    likeCount: post.PostLikes.length,
+    profileImage: post.User.Image ? serviceUrl + profileImagePath + post.User.Image.imageName + '.' + post.User.Image.imageExt : serviceUrl + commonImagePath + 'profile.png',
+    postImageList: post.PostImages.map((postImage) => {
+      return serviceUrl + postImagePath + postImage.Image.imageName + '.' + postImage.Image.imageExt
+    }),
   }
+
+  let comments = await Comment.findAll({
+    include: [
+      { model: User, require: true, include: { model: Image, required: false } },
+      { model: CommentLike, required: false },
+      { model: CommentLike, required: false, as: 'LoginUserCommentLike', where: { userId: data.userId } },
+    ],
+    where: { postId: data.postId },
+    offset: 0,
+    limit: 20,
+    order: [['createdAt', 'asc']],
+  })
+
+  comments = comments.map((comment) => {
+    return {
+      userId: comment.userId,
+      username: comment.User.username,
+      name: comment.User.name,
+      commentId: comment.commentId,
+      parentCommentId: comment.parentCommentId,
+      content: comment.content,
+      createdAt: dateFormat(comment.createdAt),
+      updatedAt: dateFormat(comment.updatedAt),
+      likeYn: comment.LoginUserCommentLike.length > 0 ? 'Y' : 'N',
+      likeCount: comment.CommentLikes.length,
+      profileImage: comment.User.Image ? serviceUrl + profileImagePath + comment.User.Image.imageName + '.' + comment.User.Image.imageExt : serviceUrl + commonImagePath + 'profile.png',
+    }
+  })
+  post.commentList = comments
 
   return post
 }
