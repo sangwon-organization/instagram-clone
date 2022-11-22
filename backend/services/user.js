@@ -204,6 +204,26 @@ const saveProfileImage = async (req, data) => {
   }
 }
 
+const deleteProfileImage = async (req, data) => {
+  let user = await User.findOne({ include: { model: Image, required: false }, where: { userId: data.userId } })
+  if (user == 0) {
+    throw new ApiError(httpStatus.BAD_REQUEST, '해당하는 유저가 존재하지 않습니다.')
+  }
+
+  if (user.Image) {
+    User.upsert({ userId: data.userId, profileImageId: null }, { where: { userId: data.userId } })
+    Image.destroy({ where: { imageId: user.Image.imageId } })
+    let deleteImagePath = __dirname + '/../' + config.profileImagePath + user.Image.imageName + '.' + user.Image.imageExt
+    fs.unlink(deleteImagePath, (err) => {
+      if (!err) {
+        console.log(`이미지 파일 삭제 >> ${deleteImagePath}`)
+      } else {
+        console.log(`이미지 파일이 존재하지 않음 >> ${deleteImagePath}`)
+      }
+    })
+  }
+}
+
 module.exports = {
   createUser,
   findUser,
@@ -214,4 +234,5 @@ module.exports = {
   followUser,
   getFollowerList,
   saveProfileImage,
+  deleteProfileImage,
 }
