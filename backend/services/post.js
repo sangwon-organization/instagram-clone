@@ -17,7 +17,7 @@ const PostBookmark = require('../models/postBookmark')
 const { dateFormat } = require('../utils/regex')
 const { Op, where } = require('sequelize')
 const fs = require('fs')
-const { UserFollow } = require('../models')
+const { UserFollow, sequelize } = require('../models')
 
 const createPost = async (data) => {
   await commonService.checkValueIsEmpty(data.content, '내용')
@@ -168,6 +168,7 @@ const getPost = async (req, data) => {
       { model: PostLike, required: false },
       { model: PostLike, required: false, as: 'LoginUserPostLike', where: { userId: data.userId } },
       { model: PostBookmark, required: false, where: { userId: data.userId } },
+      { model: Comment, required: false, attributes: ['commentId'] },
     ],
     where: { postId: data.postId },
   })
@@ -188,6 +189,7 @@ const getPost = async (req, data) => {
     followYn: post.User.ToUserFollow.length > 0 ? 'Y' : 'N',
     likeYn: post.LoginUserPostLike.length > 0 ? 'Y' : 'N',
     likeCount: post.PostLikes.length,
+    commentCount: post.Comments.length,
     profileImage: post.User.Image ? serviceUrl + profileImagePath + post.User.Image.imageName + '.' + post.User.Image.imageExt : serviceUrl + commonImagePath + 'profile.png',
     postImageList: post.PostImages.map((postImage) => {
       return serviceUrl + postImagePath + postImage.Image.imageName + '.' + postImage.Image.imageExt
