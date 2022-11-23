@@ -13,6 +13,7 @@ const sizeOf = require('image-size')
 const fs = require('fs')
 const imageService = require('../services/image')
 const { Sequelize, Op, where } = require('sequelize')
+const { UserSearchLog } = require('../models')
 
 const createUser = async (body) => {
   return await User.create(body)
@@ -257,6 +258,14 @@ const searchUsers = async (req, data) => {
   return users
 }
 
+const addUserSearchLog = async (data) => {
+  await UserSearchLog.create({
+    fromUserId: data.userId,
+    toUserId: data.toUserId,
+    keyword: data.keyword,
+  })
+}
+
 module.exports = {
   createUser,
   findUser,
@@ -269,4 +278,5 @@ module.exports = {
   saveProfileImage,
   deleteProfileImage,
   searchUsers,
+  addUserSearchLog,
 }

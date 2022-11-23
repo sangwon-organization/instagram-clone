@@ -16,6 +16,7 @@ const Token = require('./token')
 const Image = require('./image')
 const PostImage = require('./postImage')
 const PostBookmark = require('./postBookmark')
+const UserSearchLog = require('./userSearchLog')
 
 let sequelize = new Sequelize(config.database, config.username, config.password, config)
 
@@ -30,6 +31,7 @@ db.Token = Token
 db.Image = Image
 db.PostImage = PostImage
 db.PostBookmark = PostBookmark
+db.UserSearchLog = UserSearchLog
 
 User.init(sequelize)
 Post.init(sequelize)
@@ -41,6 +43,7 @@ Token.init(sequelize)
 Image.init(sequelize)
 PostImage.init(sequelize)
 PostBookmark.init(sequelize)
+UserSearchLog.init(sequelize)
 
 User.associate(db)
 Post.associate(db)
@@ -52,5 +55,6 @@ Token.associate(db)
 Image.associate(db)
 PostImage.associate(db)
 PostBookmark.associate(db)
+UserSearchLog.associate(db)
 
 module.exports = db

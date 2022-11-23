@@ -60,6 +60,11 @@ const searchUsers = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send(Object.assign({ code: 0, message: 'success' }, { userList: users }))
 })
 
+const addUserSearchLog = catchAsync(async (req, res) => {
+  await userService.addUserSearchLog(req.body)
+  res.status(httpStatus.OK).send({ code: 0, message: 'success' })
+})
+
 module.exports = {
   checkEmail,
   checkUsername,
@@ -69,4 +74,5 @@ module.exports = {
   saveProfileImage,
   deleteProfileImage,
   searchUsers,
+  addUserSearchLog,
 }
