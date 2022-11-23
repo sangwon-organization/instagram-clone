@@ -362,6 +362,10 @@ const bookmarkPost = async (userId, postId, bookmarkYn) => {
 
 const getPostList = async (req, data) => {
   await commonService.checkValueIsEmpty(data.page, 'page')
+  let serviceUrl = env != 'production' ? req.protocol + '://' + req.get('host') : ''
+  let commonImagePath = config.commonImagePath.split('public')[1]
+  let postImagePath = config.postImagePath.split('public')[1]
+  let profileImagePath = config.profileImagePath.split('public')[1]
 
   let page = data.page <= 0 ? 1 : data.page
   let postList = []
@@ -371,126 +375,55 @@ const getPostList = async (req, data) => {
     let pageSize = 12
     let offset = (page - 1) * pageSize
     postList = await Post.findAll({
-      attributes: ['postId', 'content', 'createdAt'],
       include: [
         {
           model: User,
-          as: 'Follower',
           required: true,
-          attributes: ['userId', 'name', 'username', 'profileImageId'],
           include: [
-            {
-              model: UserFollow,
-              required: false,
-              attributes: ['fromUserId', 'toUserId'],
-              where: {
-                fromUserId: data.userId,
-              },
-            },
-            {
-              model: Image,
-              required: false,
-              attributes: ['imageName', 'imageExt'],
-            },
+            { model: Image, required: false },
+            { model: UserFollow, as: 'ToUserFollow', required: false, where: { fromUserId: data.userId } },
           ],
         },
-        {
-          model: PostImage,
-          required: false,
-          attributes: ['imageId'],
-          include: [
-            {
-              model: Image,
-              required: false,
-              attributes: ['imageName', 'imageExt'],
-            },
-          ],
-        },
-        {
-          model: PostLike,
-          required: false,
-          where: {
-            userId: data.userId,
-          },
-        },
-        {
-          model: PostBookmark,
-          required: false,
-          where: {
-            userId: data.userId,
-          },
-        },
+        { model: PostImage, required: false, include: [{ model: Image, required: true }] },
+        { model: PostLike, required: false },
+        { model: PostLike, required: false, as: 'LoginUserPostLike', where: { userId: data.userId } },
+        { model: PostBookmark, required: false, where: { userId: data.userId } },
+        { model: Comment, required: false, attributes: ['commentId'] },
       ],
-      where: {
-        userId: data.targetUserId,
-      },
+      where: { userId: data.targetUserId },
       offset: offset,
       limit: pageSize,
-      order: [['createdAt', 'DESC']],
+      order: [['createdAt', 'desc']],
     })
   } else {
     // 팔로우 유저들 포스트 목록 조회
     let pageSize = 10
     let offset = (page - 1) * pageSize
     postList = await Post.findAll({
-      attributes: ['postId', 'content', 'createdAt'],
       include: [
         {
           model: User,
-          as: 'Follower',
           required: true,
-          attributes: ['userId', 'name', 'username', 'profileImageId'],
           include: [
-            {
-              model: UserFollow,
-              required: true,
-              attributes: ['fromUserId', 'toUserId'],
-              where: {
-                fromUserId: data.userId,
-              },
-            },
-            {
-              model: Image,
-              required: false,
-              attributes: ['imageName', 'imageExt'],
-            },
+            { model: Image, required: false },
+            { model: UserFollow, as: 'ToUserFollow', required: true, where: { fromUserId: data.userId } },
           ],
         },
-        {
-          model: PostImage,
-          required: false,
-          attributes: ['imageId'],
-          include: [
-            {
-              model: Image,
-              required: false,
-              attributes: ['imageName', 'imageExt'],
-            },
-          ],
-        },
-        {
-          model: PostLike,
-          required: false,
-          where: {
-            userId: data.userId,
-          },
-        },
-        {
-          model: PostBookmark,
-          required: false,
-          where: {
-            userId: data.userId,
-          },
-        },
+        { model: PostImage, required: false, include: [{ model: Image, require: true }] },
+        { model: PostLike, required: false },
+        { model: PostLike, required: false, as: 'LoginUserPostLike', where: { userId: data.userId } },
+        { model: PostBookmark, required: false, where: { userId: data.userId } },
+        { model: Comment, required: false, attributes: ['commentId'] },
       ],
       offset: offset,
       limit: pageSize,
-      order: [['createdAt', 'DESC']],
+      order: [['createdAt', 'desc']],
     })
   }
 
   postList = await Promise.all(
     postList.map(async (post) => {
+      /*
       let serviceUrl = env != 'production' ? req.protocol + '://' + req.get('host') : ''
 
       let postId = post.postId
@@ -520,21 +453,25 @@ const getPostList = async (req, data) => {
 
         return serviceUrl + imagePath + imageName + '.' + imageExt
       })
+      */
 
       return {
-        postId,
-        name,
-        username,
-        userId,
-        content,
-        createdAt,
-        followYn,
-        bookmarkYn,
-        likeYn,
-        likeCount,
-        commentCount,
-        profileImage,
-        postImageList,
+        userId: post.userId,
+        username: post.User.username,
+        name: post.User.name,
+        postId: post.postId,
+        content: post.content,
+        createdAt: dateFormat(post.createdAt),
+        updatedAt: dateFormat(post.updatedAt),
+        bookmarkYn: post.PostBookmarks.length > 0 ? 'Y' : 'N',
+        followYn: post.User.ToUserFollow.length > 0 ? 'Y' : 'N',
+        likeYn: post.LoginUserPostLike.length > 0 ? 'Y' : 'N',
+        likeCount: post.PostLikes.length,
+        commentCount: post.Comments.length,
+        profileImage: post.User.Image ? serviceUrl + profileImagePath + post.User.Image.imageName + '.' + post.User.Image.imageExt : serviceUrl + commonImagePath + 'profile.png',
+        postImageList: post.PostImages.map((postImage) => {
+          return serviceUrl + postImagePath + postImage.Image.imageName + '.' + postImage.Image.imageExt
+        }),
       }
     })
   )
