@@ -70,6 +70,11 @@ const deleteUserSearchLog = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send({ code: 0, message: 'success' })
 })
 
+const getUserSearchLogs = catchAsync(async (req, res) => {
+  let userSearchLogs = await userService.getUserSearchLogs(req)
+  res.status(httpStatus.OK).send(Object.assign({ code: 0, message: 'success' }, { userSearchLogList: userSearchLogs }))
+})
+
 module.exports = {
   checkEmail,
   checkUsername,
@@ -81,4 +86,5 @@ module.exports = {
   searchUsers,
   addUserSearchLog,
   deleteUserSearchLog,
+  getUserSearchLogs,
 }

@@ -13,5 +13,6 @@ router.route('/profileImage').delete(checkToken, userController.deleteProfileIma
 router.route('/search').get(checkToken, convertQueryToRequestBody, userController.searchUsers)
 router.route('/search/log').post(checkToken, userController.addUserSearchLog)
 router.route('/search/log').delete(checkToken, userController.deleteUserSearchLog)
+router.route('/search/log').get(checkToken, userController.getUserSearchLogs)
 
 module.exports = router

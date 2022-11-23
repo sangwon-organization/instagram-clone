@@ -67,7 +67,7 @@ module.exports = class User extends Sequelize.Model {
     db.User.hasMany(db.Token, { foreignKey: 'userId', sourceKey: 'userId' })
     db.User.hasMany(db.PostBookmark, { foreignKey: 'userId', sourceKey: 'userId' })
     db.User.belongsTo(db.Image, { foreignKey: 'profileImageId', targetKey: 'imageId' })
-    db.User.hasMany(db.UserSearchLog, { as: 'FromUserSearchLog', foreignKey: 'fromUserId', sourceKey: 'userId' })
-    db.User.hasMany(db.UserSearchLog, { as: 'ToUserSearchLog', foreignKey: 'toUserId', sourceKey: 'userId' })
+    db.User.hasMany(db.UserSearchLog, { foreignKey: 'fromUserId', sourceKey: 'userId' })
+    db.User.hasMany(db.UserSearchLog, { foreignKey: 'toUserId', sourceKey: 'userId' })
   }
 }

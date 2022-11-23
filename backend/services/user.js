@@ -270,6 +270,36 @@ const deleteUserSearchLog = async (data) => {
   await UserSearchLog.destroy({ where: { fromUserId: data.userId, toUserId: data.toUserId } })
 }
 
+const getUserSearchLogs = async (req) => {
+  let serviceUrl = env != 'production' ? req.protocol + '://' + req.get('host') : ''
+  let commonImagePath = config.commonImagePath.split('public')[1]
+  let profileImagePath = config.profileImagePath.split('public')[1]
+
+  let page = 1
+  let pageSize = 10
+  let offset = (page - 1) * pageSize
+
+  let userSearchLogs = await UserSearchLog.findAll({
+    include: { model: User, required: true, include: { model: Image, required: false } },
+    order: [['updatedAt', 'desc']],
+    offset: offset,
+    limit: pageSize,
+  })
+
+  userSearchLogs = userSearchLogs.map((userSearchLog) => {
+    return {
+      userId: userSearchLog.User.userId,
+      username: userSearchLog.User.username,
+      name: userSearchLog.User.name,
+      profileImage: userSearchLog.User.Image
+        ? serviceUrl + profileImagePath + userSearchLog.User.Image.imageName + '.' + userSearchLog.User.Image.imageExt
+        : serviceUrl + commonImagePath + 'profile.png',
+    }
+  })
+
+  return userSearchLogs
+}
+
 module.exports = {
   createUser,
   findUser,
@@ -284,4 +314,5 @@ module.exports = {
   searchUsers,
   addUserSearchLog,
   deleteUserSearchLog,
+  getUserSearchLogs,
 }

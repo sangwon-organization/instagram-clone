@@ -36,7 +36,7 @@ module.exports = class UserSearchLog extends Sequelize.Model {
     )
   }
   static associate(db) {
-    db.UserSearchLog.belongsTo(db.User, { as: 'FromUserSearchLog', foreignKey: 'fromUserId', targetKey: 'userId' })
-    db.UserSearchLog.belongsTo(db.User, { as: 'ToUserSearchLog', foreignKey: 'toUserId', targetKey: 'userId' })
+    db.UserSearchLog.belongsTo(db.User, { foreignKey: 'fromUserId', targetKey: 'userId' })
+    db.UserSearchLog.belongsTo(db.User, { foreignKey: 'toUserId', targetKey: 'userId' })
   }
 }
