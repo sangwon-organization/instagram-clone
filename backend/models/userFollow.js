@@ -12,20 +12,10 @@ module.exports = class UserFollow extends Sequelize.Model {
           type: Sequelize.INTEGER,
           primaryKey: true,
         },
-        createdAt: {
-          type: Sequelize.DATE(3),
-          allowNull: true,
-          defaultValue: Sequelize.NOW,
-        },
-        updatedAt: {
-          type: Sequelize.DATE(3),
-          allowNull: true,
-          defaultValue: Sequelize.NOW,
-        },
       },
       {
         sequelize,
-        timestamps: false,
+        timestamps: true,
         underscored: true,
         modelName: 'UserFollow',
         tableName: 'tb_user_follow',

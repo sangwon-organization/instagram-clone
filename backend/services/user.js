@@ -259,19 +259,15 @@ const searchUsers = async (req, data) => {
 }
 
 const addUserSearchLog = async (data) => {
-  await UserSearchLog.create({
-    fromUserId: data.userId,
-    toUserId: data.toUserId,
-    keyword: data.keyword,
-  })
+  if ((await UserSearchLog.count({ where: { fromUserId: data.userId, toUserId: data.toUserId } })) == 0) {
+    await UserSearchLog.create({ fromUserId: data.userId, toUserId: data.toUserId })
+  } else {
+    await UserSearchLog.update({ updatedAt: new Date() }, { where: { fromUserId: data.userId, toUserId: data.toUserId } })
+  }
 }
 
 const deleteUserSearchLog = async (data) => {
-  let count = await UserSearchLog.count({ where: { userSearchLogId: data.userSearchLogId } })
-  if (count == 0) {
-    throw new ApiError(httpStatus.BAD_REQUEST, '일치하는 최근 유저 검색 정보가 없습니다. 다시 시도해 주세요.')
-  }
-  await UserSearchLog.destroy({ where: { userSearchLogId: data.userSearchLogId } })
+  await UserSearchLog.destroy({ where: { fromUserId: data.userId, toUserId: data.toUserId } })
 }
 
 module.exports = {

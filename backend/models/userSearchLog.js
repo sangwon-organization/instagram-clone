@@ -4,20 +4,13 @@ module.exports = class UserSearchLog extends Sequelize.Model {
   static init(sequelize) {
     return super.init(
       {
-        userSearchLogId: {
-          type: Sequelize.INTEGER,
-          autoIncrement: true,
-          primaryKey: true,
-        },
         fromUserId: {
           type: Sequelize.INTEGER,
+          primaryKey: true,
         },
         toUserId: {
           type: Sequelize.INTEGER,
-        },
-        keyword: {
-          type: Sequelize.STRING,
-          allowNull: true,
+          primaryKey: true,
         },
         createdAt: {
           type: Sequelize.DATE(3),
