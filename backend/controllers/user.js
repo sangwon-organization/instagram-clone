@@ -65,6 +65,11 @@ const addUserSearchLog = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send({ code: 0, message: 'success' })
 })
 
+const deleteUserSearchLog = catchAsync(async (req, res) => {
+  await userService.deleteUserSearchLog(req.body)
+  res.status(httpStatus.OK).send({ code: 0, message: 'success' })
+})
+
 module.exports = {
   checkEmail,
   checkUsername,
@@ -75,4 +80,5 @@ module.exports = {
   deleteProfileImage,
   searchUsers,
   addUserSearchLog,
+  deleteUserSearchLog,
 }
