@@ -12,6 +12,7 @@ const { v4: uuidv4 } = require('uuid')
 const sizeOf = require('image-size')
 const fs = require('fs')
 const imageService = require('../services/image')
+const { Sequelize, Op, where } = require('sequelize')
 
 const createUser = async (body) => {
   return await User.create(body)
@@ -224,6 +225,38 @@ const deleteProfileImage = async (req, data) => {
   }
 }
 
+const searchUsers = async (req, data) => {
+  if (!data.keyword) {
+    throw new ApiError(httpStatus.BAD_REQUEST, '검색어를 입력해 주세요.')
+  }
+  let serviceUrl = env != 'production' ? req.protocol + '://' + req.get('host') : ''
+  let commonImagePath = config.commonImagePath.split('public')[1]
+  let profileImagePath = config.profileImagePath.split('public')[1]
+
+  let page = !data.page ? 1 : data.page
+  let pageSize = 30
+  let offset = (page - 1) * pageSize
+
+  let users = await User.findAll({
+    include: { model: Image, required: false },
+    where: { username: { [Op.like]: '%' + data.keyword + '%' } },
+    order: [['createdAt', 'desc']],
+    offset: offset,
+    limit: pageSize,
+  })
+
+  users = users.map((user) => {
+    return {
+      userId: user.userId,
+      username: user.username,
+      name: user.name,
+      profileImage: user.Image ? serviceUrl + profileImagePath + user.Image.imageName + '.' + user.Image.imageExt : serviceUrl + commonImagePath + 'profile.png',
+    }
+  })
+
+  return users
+}
+
 module.exports = {
   createUser,
   findUser,
@@ -235,4 +268,5 @@ module.exports = {
   getFollowerList,
   saveProfileImage,
   deleteProfileImage,
+  searchUsers,
 }

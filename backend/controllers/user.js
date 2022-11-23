@@ -55,6 +55,11 @@ const deleteProfileImage = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send({ code: 0, message: 'success' })
 })
 
+const searchUsers = catchAsync(async (req, res) => {
+  let users = await userService.searchUsers(req, req.body)
+  res.status(httpStatus.OK).send(Object.assign({ code: 0, message: 'success' }, { userList: users }))
+})
+
 module.exports = {
   checkEmail,
   checkUsername,
@@ -63,4 +68,5 @@ module.exports = {
   getFollowerList,
   saveProfileImage,
   deleteProfileImage,
+  searchUsers,
 }

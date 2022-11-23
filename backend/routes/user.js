@@ -10,5 +10,6 @@ router.route('/followUser').post(checkToken, userController.followUser)
 router.route('/followerList').get(checkToken, convertParamToRequestBody, convertQueryToRequestBody, userController.getFollowerList)
 router.route('/profileImage').post(checkToken, convertFormDataToRequestBody, userController.saveProfileImage)
 router.route('/profileImage').delete(checkToken, userController.deleteProfileImage)
+router.route('/search').get(checkToken, convertQueryToRequestBody, userController.searchUsers)
 
 module.exports = router
