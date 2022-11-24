@@ -33,6 +33,11 @@ module.exports = class User extends Sequelize.Model {
           type: Sequelize.INTEGER,
           allowNull: true,
         },
+        lastLoginAt: {
+          type: Sequelize.DATE(3),
+          allowNull: true,
+          defaultValue: Sequelize.NOW,
+        },
         createdAt: {
           type: Sequelize.DATE(3),
           allowNull: true,

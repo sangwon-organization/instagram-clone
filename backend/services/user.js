@@ -88,12 +88,44 @@ const followUser = async (data) => {
   }
 }
 
-const getFollowerList = async (req, data) => {
-  /*
-  let page = data.page <= 0 ? 1 : data.page
+const getFollowingList = async (req, data) => {
+  let serviceUrl = env != 'production' ? req.protocol + '://' + req.get('host') : ''
+  let commonImagePath = config.commonImagePath.split('public')[1]
+  let profileImagePath = config.profileImagePath.split('public')[1]
+
+  let page = !data.page ? 1 : data.page
   let pageSize = 20
   let offset = (page - 1) * pageSize
-  let followerList = await UserFollow.findAll({
+
+  let followingList = await User.findAll({
+    include: [
+      { model: UserFollow, as: 'ToUserFollow', required: true, where: { fromUserId: data.userId } },
+      { model: Image, required: false },
+    ],
+    order: [
+      ['lastLoginAt', 'desc'],
+      ['createdAt', 'desc'],
+    ],
+    offset: offset,
+    limit: pageSize,
+  })
+
+  followingList = followingList.map((followingUser) => {
+    return {
+      userId: followingUser.userId,
+      username: followingUser.username,
+      name: followingUser.name,
+      profileImage: followingUser.Image ? serviceUrl + profileImagePath + followingUser.Image.imageName + '.' + followingUser.Image.imageExt : serviceUrl + commonImagePath + 'profile.png',
+      followYn: followingUser.ToUserFollow.length > 0 ? 'Y' : 'N',
+    }
+  })
+
+  /*
+  let page = !data.page ? 1 : data.page
+  let pageSize = 20
+  let offset = (page - 1) * pageSize
+
+  let followingList = await UserFollow.findAll({
     attributes: ['fromUserId', 'toUserId', 'createdAt'],
     as: 'FromUserFollow',
     include: [
@@ -156,10 +188,9 @@ const getFollowerList = async (req, data) => {
       }
     })
   )
-  
-  return { page: page, followerList: followerList }
   */
-  return {}
+
+  return { page: page, followingList: followingList }
 }
 
 const saveProfileImage = async (req, data) => {
@@ -308,7 +339,7 @@ module.exports = {
   checkPassword,
   changePassword,
   followUser,
-  getFollowerList,
+  getFollowingList,
   saveProfileImage,
   deleteProfileImage,
   searchUsers,

@@ -40,9 +40,9 @@ const followUser = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send({ code: 0, message: 'success' })
 })
 
-const getFollowerList = catchAsync(async (req, res) => {
-  let followerUserList = await userService.getFollowerList(req, req.body)
-  res.status(httpStatus.OK).send(Object.assign({ code: 0, message: 'success' }, followerUserList))
+const getFollowingList = catchAsync(async (req, res) => {
+  let followingList = await userService.getFollowingList(req, req.body)
+  res.status(httpStatus.OK).send(Object.assign({ code: 0, message: 'success' }, followingList))
 })
 
 const saveProfileImage = catchAsync(async (req, res) => {
@@ -80,7 +80,7 @@ module.exports = {
   checkUsername,
   changePassword,
   followUser,
-  getFollowerList,
+  getFollowingList,
   saveProfileImage,
   deleteProfileImage,
   searchUsers,
