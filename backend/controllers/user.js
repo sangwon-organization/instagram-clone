@@ -40,6 +40,11 @@ const followUser = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send({ code: 0, message: 'success' })
 })
 
+const getNotFollowingList = catchAsync(async (req, res) => {
+  let notFollowingList = await userService.getNotFollowingList(req, req.body)
+  res.status(httpStatus.OK).send(Object.assign({ code: 0, message: 'success' }, notFollowingList))
+})
+
 const getFollowingList = catchAsync(async (req, res) => {
   let followingList = await userService.getFollowingList(req, req.body)
   res.status(httpStatus.OK).send(Object.assign({ code: 0, message: 'success' }, followingList))
@@ -85,6 +90,7 @@ module.exports = {
   checkUsername,
   changePassword,
   followUser,
+  getNotFollowingList,
   getFollowingList,
   getFollowerList,
   saveProfileImage,

@@ -12,9 +12,9 @@ const { v4: uuidv4 } = require('uuid')
 const sizeOf = require('image-size')
 const fs = require('fs')
 const imageService = require('../services/image')
-const { Sequelize, Op, where } = require('sequelize')
+const { Op } = require('sequelize')
 const { UserSearchLog } = require('../models')
-const { db } = require('../models/index')
+const Sequelize = require('sequelize')
 
 const createUser = async (body) => {
   return await User.create(body)
@@ -89,6 +89,37 @@ const followUser = async (data) => {
   }
 }
 
+const getNotFollowingList = async (req, data) => {
+  let serviceUrl = env != 'production' ? req.protocol + '://' + req.get('host') : ''
+  let commonImagePath = config.commonImagePath.split('public')[1]
+  let profileImagePath = config.profileImagePath.split('public')[1]
+
+  let pageSize = 5
+
+  let followingList = await User.findAll({
+    include: [
+      { model: UserFollow, as: 'ToUserFollow', required: false, where: { fromUserId: data.userId } },
+      { model: Image, required: false },
+    ],
+    where: { userId: { [Op.ne]: data.userId }, '$ToUserFollow.from_user_id$': null },
+    order: Sequelize.literal('rand()'),
+    limit: pageSize,
+    subQuery: false,
+  })
+
+  followingList = followingList.map((followingUser) => {
+    return {
+      userId: followingUser.userId,
+      username: followingUser.username,
+      name: followingUser.name,
+      profileImage: followingUser.Image ? serviceUrl + profileImagePath + followingUser.Image.imageName + '.' + followingUser.Image.imageExt : serviceUrl + commonImagePath + 'profile.png',
+      followYn: followingUser.ToUserFollow.length > 0 ? 'Y' : 'N',
+    }
+  })
+
+  return { followingList: followingList }
+}
+
 const getFollowingList = async (req, data) => {
   let serviceUrl = env != 'production' ? req.protocol + '://' + req.get('host') : ''
   let commonImagePath = config.commonImagePath.split('public')[1]
@@ -109,6 +140,7 @@ const getFollowingList = async (req, data) => {
     ],
     offset: offset,
     limit: pageSize,
+    subQuery: false,
   })
 
   followingList = followingList.map((followingUser) => {
@@ -136,6 +168,7 @@ const getFollowerList = async (req, data) => {
   let followerList = await User.findAll({
     include: [
       { model: UserFollow, as: 'FromUserFollow', required: true, where: { toUserId: data.userId } },
+      { model: UserFollow, as: 'ToUserFollow', required: false, where: { fromUserId: data.userId } },
       { model: Image, required: false },
     ],
     order: [
@@ -144,6 +177,7 @@ const getFollowerList = async (req, data) => {
     ],
     offset: offset,
     limit: pageSize,
+    subQuery: false,
   })
 
   followerList = followerList.map((followerUser) => {
@@ -152,7 +186,7 @@ const getFollowerList = async (req, data) => {
       username: followerUser.username,
       name: followerUser.name,
       profileImage: followerUser.Image ? serviceUrl + profileImagePath + followerUser.Image.imageName + '.' + followerUser.Image.imageExt : serviceUrl + commonImagePath + 'profile.png',
-      followYn: followerUser.FromUserFollow.length > 0 ? 'Y' : 'N',
+      followYn: followerUser.ToUserFollow.length > 0 ? 'Y' : 'N',
     }
   })
 
@@ -305,6 +339,7 @@ module.exports = {
   checkPassword,
   changePassword,
   followUser,
+  getNotFollowingList,
   getFollowingList,
   getFollowerList,
   saveProfileImage,
