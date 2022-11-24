@@ -14,6 +14,7 @@ const fs = require('fs')
 const imageService = require('../services/image')
 const { Sequelize, Op, where } = require('sequelize')
 const { UserSearchLog } = require('../models')
+const { db } = require('../models/index')
 
 const createUser = async (body) => {
   return await User.create(body)
@@ -103,8 +104,8 @@ const getFollowingList = async (req, data) => {
       { model: Image, required: false },
     ],
     order: [
-      ['lastLoginAt', 'desc'],
-      ['createdAt', 'desc'],
+      ['lastLoginAt', 'DESC'],
+      ['createdAt', 'DESC'],
     ],
     offset: offset,
     limit: pageSize,
@@ -120,77 +121,42 @@ const getFollowingList = async (req, data) => {
     }
   })
 
-  /*
+  return { page: page, followingList: followingList }
+}
+
+const getFollowerList = async (req, data) => {
+  let serviceUrl = env != 'production' ? req.protocol + '://' + req.get('host') : ''
+  let commonImagePath = config.commonImagePath.split('public')[1]
+  let profileImagePath = config.profileImagePath.split('public')[1]
+
   let page = !data.page ? 1 : data.page
   let pageSize = 20
   let offset = (page - 1) * pageSize
 
-  let followingList = await UserFollow.findAll({
-    attributes: ['fromUserId', 'toUserId', 'createdAt'],
-    as: 'FromUserFollow',
+  let followerList = await User.findAll({
     include: [
-      {
-        model: User,
-        as: 'FromUser',
-        required: true,
-        attributes: ['userId', 'name', 'username', 'profileImageId'],
-        include: [
-          {
-            model: Image,
-            required: false,
-            attributes: ['imageName', 'imageExt'],
-          },
-          {
-            model: UserFollow,
-            required: false,
-            attributes: ['fromUserId', 'toUserId'],
-            where: {
-              toUserId: FromUser.userId,
-              fromUserId: data.userId,
-            },
-          },
-        ],
-        where: {
-          userId: FromUserFollow.fromUserId,
-        },
-      },
+      { model: UserFollow, as: 'FromUserFollow', required: true, where: { toUserId: data.userId } },
+      { model: Image, required: false },
     ],
-    where: { toUserId: data.followerTargetUserId },
+    order: [
+      ['lastLoginAt', 'DESC'],
+      ['createdAt', 'DESC'],
+    ],
     offset: offset,
     limit: pageSize,
-    order: [['createdAt', 'DESC']],
   })
 
-  followerList = await Promise.all(
-    followerList.map(async (follower) => {
-      let serviceUrl = env != 'production' ? req.protocol + '://' + req.get('host') : ''
+  followerList = followerList.map((followerUser) => {
+    return {
+      userId: followerUser.userId,
+      username: followerUser.username,
+      name: followerUser.name,
+      profileImage: followerUser.Image ? serviceUrl + profileImagePath + followerUser.Image.imageName + '.' + followerUser.Image.imageExt : serviceUrl + commonImagePath + 'profile.png',
+      followYn: followerUser.FromUserFollow.length > 0 ? 'Y' : 'N',
+    }
+  })
 
-      let userId = follower.FromUser.userId
-      let name = follower.FromUser.name
-      let username = follower.FromUser.username
-      let createdAt = dateFormat(follower.createdAt)
-      let profileImage = ''
-      if (!follower.FromUser.Image) {
-        profileImage = serviceUrl + config.commonImagePath.split('public')[1] + 'profile.png'
-      } else {
-        let imagePath = config.commonImagePath.split('public')[1]
-        let imageName = follower.FromUser.Image.imageName
-        let imageExt = follower.FromUser.Image.imageExt
-        profileImage = serviceUrl + imagePath + imageName + '.' + imageExt
-      }
-
-      return {
-        userId,
-        name,
-        username,
-        createdAt,
-        profileImage,
-      }
-    })
-  )
-  */
-
-  return { page: page, followingList: followingList }
+  return { page: page, followerList: followerList }
 }
 
 const saveProfileImage = async (req, data) => {
@@ -340,6 +306,7 @@ module.exports = {
   changePassword,
   followUser,
   getFollowingList,
+  getFollowerList,
   saveProfileImage,
   deleteProfileImage,
   searchUsers,
