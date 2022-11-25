@@ -204,10 +204,12 @@ interface deleteCommentType {
   commentId: string;
 }
 
-// export const deleteComment = async (requestParam: deleteCommentType) => {
-//   const data = await bearerTokenApi.delete('/post/comment', requestParam);
-//   return data;
-// };
+export const deleteComment = async (requestParam: deleteCommentType) => {
+  const data = await bearerTokenApi.delete('/post/comment', {
+    data: { commentId: requestParam },
+  });
+  return data;
+};
 
 interface likeCommentType {
   commentId: string;
@@ -237,4 +239,85 @@ export const getCommentsList = async (requestParam: getCommentsListType) => {
     );
     return data;
   }
+};
+
+interface setUserProfileImageType {
+  postImage: File;
+}
+
+export const setUserProfileImage = async (requestParam: FormData) => {
+  const data = await multipartFormDataApi.post(
+    '/user/profileImage',
+    requestParam,
+  );
+  return data;
+};
+
+export const removeUserProfileImage = async () => {
+  const data = await multipartFormDataApi.delete('/user/profileImage');
+  return data;
+};
+
+interface searchUserType {
+  page: number;
+  keyword: string;
+}
+
+export const searchUser = async ({ page, keyword }: searchUserType) => {
+  const data = await bearerTokenApi.get(
+    `/user/search?page=${page}&keyword=${keyword}`,
+  );
+  return data;
+};
+
+interface addRecentSearchUserType {
+  toUserId: number;
+}
+
+export const addRecentSearchUser = async (
+  requestParam: addRecentSearchUserType,
+) => {
+  const data = await bearerTokenApi.post('/user/search/log', requestParam);
+  return data;
+};
+
+interface deleteRecentSearchUserType {
+  toUserId: number;
+}
+
+export const deleteRecentSearchUser = async (
+  requestParam: deleteRecentSearchUserType,
+) => {
+  const data = await bearerTokenApi.delete('/user/search/log', {
+    data: { toUserId: requestParam },
+  });
+  return data;
+};
+
+export const getRecentSearchUsersList = async () => {
+  const data = await bearerTokenApi.get('/user/search/log');
+  return data;
+};
+
+interface getFollowingListType {
+  page: number;
+}
+
+export const getFollowingList = async ({ page }: getFollowingListType) => {
+  const data = await bearerTokenApi.get(`/user/followingList?page=${page}`);
+  return data;
+};
+
+interface getFollowerListType {
+  page: number;
+}
+
+export const getFollowerList = async ({ page }: getFollowerListType) => {
+  const data = await bearerTokenApi.get(`/user/followerList?page=${page}`);
+  return data;
+};
+
+export const getNotFollowingList = async () => {
+  const data = await bearerTokenApi.get('/user/notFollowingList');
+  return data;
 };

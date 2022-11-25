@@ -24,6 +24,7 @@ import {
   likePost,
 } from '../../../api/api';
 import Loader from 'react-loader';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 
 const FeedCardContainer = styled.div`
   width: 470px;
@@ -472,6 +473,10 @@ const FeedCard = ({
   const textareaRef = useRef(null);
   const postButtonRef = useRef(null);
 
+  const navigate = useNavigate();
+
+  const location = useLocation();
+
   const NextSlide = () => {
     if (currentSlide >= TOTAL_SLIDES) {
       // setCurrentSlide(0);
@@ -644,7 +649,10 @@ const FeedCard = ({
             ) : (
               <HeartIcon onClick={likePostFunction} />
             )}
-            <ChatIcon />
+            <Link to={`/post/${postId}`} state={{ background: location }}>
+              <ChatIcon />
+              <Outlet />
+            </Link>
             <LocationIcon />
           </LeftIconBox>
           <MeatballIconBox ref={circleRef}>
@@ -669,10 +677,10 @@ const FeedCard = ({
         </ViewAllCommentsBox>
         <CommentsListBox>
           <CommentText>
-            <div>{getCommentsListQuery.data.data.commentList[0].username}</div>
+            <div>{getCommentsListQuery.data?.data.commentList[0].username}</div>
             <p>
               <span>@minimal__0</span>
-              {getCommentsListQuery.data.data.commentList[0].content}
+              {getCommentsListQuery.data?.data.commentList[0].content}
             </p>
           </CommentText>
           <SmallHeartIcon />

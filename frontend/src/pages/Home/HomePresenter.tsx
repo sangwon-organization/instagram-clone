@@ -7,6 +7,7 @@ import HomeAside from '../../components/feature/Home/HomeAside';
 import StoryBox from '../../components/feature/Home/StoryBox';
 import BottomNavigationBar from '../../components/layout/NavigationBar/BottomNavigationBar';
 import NavigationBar from '../../components/layout/NavigationBar/NavigationBar';
+import { useLocation } from 'react-router-dom';
 
 const MainContainer = styled.div`
   width: 100vw;
@@ -84,6 +85,8 @@ const HomePresenter = () => {
   useEffect(() => {
     console.log(data?.data.postList);
   });
+  const location = useLocation();
+  console.log(location);
   return (
     <>
       <NavigationBar />

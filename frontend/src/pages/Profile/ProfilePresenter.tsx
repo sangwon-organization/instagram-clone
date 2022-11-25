@@ -1,17 +1,17 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { GoKebabHorizontal } from 'react-icons/go';
 import Post from '../../components/feature/Profile/Post';
 import NavigationBar from '../../components/layout/NavigationBar/NavigationBar';
-import userAvatar from '../../assets/image/userAvatar.png';
+import userProfile from '../../assets/image/userProfile.png';
 import { SlArrowDown } from 'react-icons/sl';
 import { FaUserCheck } from 'react-icons/fa';
 import { RiAccountPinBoxLine } from 'react-icons/ri';
 import { BiMoviePlay } from 'react-icons/bi';
 import { IoAppsSharp } from 'react-icons/io5';
 import Footer from '../../components/layout/footer/Footer';
-import { useQuery } from '@tanstack/react-query';
-import { getPostsList } from '../../api/api';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { getPostsList, setUserProfileImage } from '../../api/api';
 
 const MainContainer = styled.div`
   width: 100%;
@@ -72,6 +72,9 @@ const UserAvatar = styled.div`
     height: 150px;
     border-radius: 50%;
     z-index: 100;
+  }
+  input {
+    display: none;
   }
 `;
 const UserInfo = styled.section`
@@ -246,12 +249,53 @@ const PostsWrapper = styled.article`
 `;
 
 const ProfilePresenter = () => {
+  const imageInput = useRef(null);
+  const [imageSrc, setImageSrc] = useState<string>('');
+
   const { data } = useQuery(['getLists'], () =>
     getPostsList({ page: 1, targetUserId: 1 }),
   );
   useEffect(() => {
     console.log(data?.data);
   });
+
+  const setUserImage = () => {};
+  const encodeFileToBase64 = (fileBlob: any) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(fileBlob);
+    return new Promise((resolve: any) => {
+      reader.onload = () => {
+        const csv: string = reader.result as string;
+        setImageSrc(csv);
+        const formData = new FormData();
+        formData.append('postImage', imageSrc);
+        postUserProfileImage.mutate(formData);
+        resolve();
+      };
+    });
+  };
+
+  const submitFormData = async (e: any) => {
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append('postImage', imageSrc);
+    postUserProfileImage.mutate(formData);
+  };
+
+  const postUserProfileImage = useMutation(setUserProfileImage, {
+    onError: (err: any) => {
+      console.log(err.response.data);
+    },
+    onSuccess: (userInfo: any) => {
+      console.log('유저이미지 등록 성공!');
+      console.log(data);
+    },
+  });
+
+  const onImageInputButtonClick = (event: any) => {
+    event.preventDefault();
+    imageInput.current.click();
+  };
   return (
     <>
       <NavigationBar />
@@ -260,7 +304,19 @@ const ProfilePresenter = () => {
           <UserInfoHeader>
             <AvatarWrapper>
               <UserAvatar>
-                <img src={userAvatar} alt="" />
+                <img
+                  src={userProfile}
+                  alt="기본이미지"
+                  onClick={onImageInputButtonClick}
+                />
+                <input
+                  type="file"
+                  accept="image/*"
+                  ref={imageInput}
+                  onChange={(e) => {
+                    encodeFileToBase64(e.target.files[0]);
+                  }}
+                />
               </UserAvatar>
             </AvatarWrapper>
             <UserInfo>

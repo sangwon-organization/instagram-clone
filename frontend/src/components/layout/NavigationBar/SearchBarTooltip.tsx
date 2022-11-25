@@ -3,6 +3,9 @@ import styled from 'styled-components';
 import { IoClose } from 'react-icons/io5';
 import userAvatar from '../../../assets/image/userAvatar.png';
 import useOutsideClick from '../../../hooks/useOutsideClick';
+import { useNavigate } from 'react-router-dom';
+import { useMutation } from '@tanstack/react-query';
+import { addRecentSearchUser, deleteRecentSearchUser } from '../../../api/api';
 
 const SearchBarTooltipContainer = styled.div<{
   showTooltip: boolean;
@@ -147,6 +150,7 @@ const CloseIcon = styled(IoClose)`
   width: 25px;
   height: 25px;
   color: ${({ theme }) => theme.greyTextColor};
+  z-index: 200;
 `;
 
 const EmptyRecentSearch = styled.div`
@@ -166,19 +170,48 @@ interface SearchBarTooltipProps {
   showTooltip: boolean;
   setShowTooltip: Function;
   setSearchBarClicked: Function;
+  userList: [];
+  searchUserQuery: any;
+  getRecentSearchUserListQuery: [];
 }
 
 const SearchBarTooltip = ({
   showTooltip,
   setShowTooltip,
   setSearchBarClicked,
+  userList,
+  searchUserQuery,
+  getRecentSearchUserListQuery,
 }: SearchBarTooltipProps) => {
   const outsideRef = useRef();
   const [recentSearch, setRecentSearch] = useState(true);
+  const navigate = useNavigate();
 
   useOutsideClick(outsideRef, () => {
     setShowTooltip(false);
     setSearchBarClicked(false);
+    searchUserQuery.remove();
+  });
+  console.log(getRecentSearchUserListQuery);
+
+  const addSearchUserQuery = useMutation(addRecentSearchUser, {
+    onError: (err: any) => {
+      console.log(err.response.data);
+    },
+    onSuccess: (userInfo: any) => {
+      console.log('최근 검색 유저 추가 성공!');
+      console.log(addSearchUserQuery.data);
+    },
+  });
+
+  const deleteSearchUserQuery = useMutation(deleteRecentSearchUser, {
+    onError: (err: any) => {
+      console.log(err.response.data);
+    },
+    onSuccess: (userInfo: any) => {
+      console.log('최근 검색 유저 삭제 성공!');
+      console.log(deleteSearchUserQuery.data);
+    },
   });
   return (
     <SearchBarTooltipContainer showTooltip={showTooltip} ref={outsideRef}>
@@ -187,69 +220,53 @@ const SearchBarTooltip = ({
           <p>Recent</p>
           <button>Clear all</button>
         </TooltipHeader>
-        {recentSearch ? (
-          <>
-            <RecentSearchItem>
-              <UserAvatar>
-                <img src={userAvatar} alt="유저아바타" />
-              </UserAvatar>
-              <UserInfo>
-                <p>username</p>
-                <p>userDescription</p>
-              </UserInfo>
-              <CloseIcon />
-            </RecentSearchItem>
-            <RecentSearchItem>
-              <UserAvatar>
-                <img src={userAvatar} alt="유저아바타" />
-              </UserAvatar>
-              <UserInfo>
-                <p>username</p>
-                <p>userDescription</p>
-              </UserInfo>
-              <CloseIcon />
-            </RecentSearchItem>
-            <RecentSearchItem>
-              <UserAvatar>
-                <img src={userAvatar} alt="유저아바타" />
-              </UserAvatar>
-              <UserInfo>
-                <p>username</p>
-                <p>userDescription</p>
-              </UserInfo>
-              <CloseIcon />
-            </RecentSearchItem>
-            <RecentSearchItem>
-              <UserAvatar>
-                <img src={userAvatar} alt="유저아바타" />
-              </UserAvatar>
-              <UserInfo>
-                <p>username</p>
-                <p>userDescription</p>
-              </UserInfo>
-              <CloseIcon />
-            </RecentSearchItem>
-            <RecentSearchItem>
-              <UserAvatar>
-                <img src={userAvatar} alt="유저아바타" />
-              </UserAvatar>
-              <UserInfo>
-                <p>username</p>
-                <p>userDescription</p>
-              </UserInfo>
-              <CloseIcon />
-            </RecentSearchItem>
-            <RecentSearchItem>
-              <UserAvatar>
-                <img src={userAvatar} alt="유저아바타" />
-              </UserAvatar>
-              <UserInfo>
-                <p>username</p>
-                <p>userDescription</p>
-              </UserInfo>
-              <CloseIcon />
-            </RecentSearchItem>
-          </>
+        {userList?.length > 0 ? (
+          userList.map((list: any) => (
+            <>
+              <RecentSearchItem
+                onClick={() => {
+                  navigate(`/${list.username}`);
+                  addSearchUserQuery.mutate({ toUserId: list.userId });
+                }}>
+                <UserAvatar>
+                  <img src={list.profileImage} alt="유저아바타" />
+                </UserAvatar>
+                <UserInfo>
+                  <p>{list.username}</p>
+                  <p>userDescription</p>
+                </UserInfo>
+                <CloseIcon
+                  onClick={() =>
+                    deleteSearchUserQuery.mutate({ toUserId: list.userId })
+                  }
+                />
+              </RecentSearchItem>
+            </>
+          ))
+        ) : getRecentSearchUserListQuery?.length > 0 ? (
+          getRecentSearchUserListQuery.map((list: any) => (
+            <>
+              <RecentSearchItem
+                onClick={() => {
+                  navigate(`/${list.username}`);
+                  addSearchUserQuery.mutate({ toUserId: list.userId });
+                }}>
+                <UserAvatar>
+                  <img src={list.profileImage} alt="유저아바타" />
+                </UserAvatar>
+                <UserInfo>
+                  <p>{list.username}</p>
+                  <p>userDescription</p>
+                </UserInfo>
+                <CloseIcon
+                  onClick={(e: any) => {
+                    e.stopPropagation();
+                    deleteSearchUserQuery.mutate({ toUserId: list.userId });
+                  }}
+                />
+              </RecentSearchItem>
+            </>
+          ))
         ) : (
           <EmptyRecentSearch>
             <p>No recent searches.</p>
