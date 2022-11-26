@@ -90,7 +90,7 @@ const ImageWrapper = styled.div`
   align-items: center;
   img {
     width: 100%;
-    height: fit-content;
+    height: 585px;
     object-fit: cover;
     background: black;
     flex: none;
@@ -410,6 +410,7 @@ const LeftArrowIcon = styled(IoIosArrowDropleftCircle)<{
 
 const RightArrowIcon = styled(IoIosArrowDroprightCircle)<{
   currentslide: number;
+  totalslide: number;
 }>`
   width: 30px;
   height: 30px;
@@ -420,7 +421,8 @@ const RightArrowIcon = styled(IoIosArrowDroprightCircle)<{
   right: 15px;
   opacity: 0.6;
   cursor: pointer;
-  ${({ currentslide }) => currentslide === TOTAL_SLIDES && 'display: none'};
+  ${({ currentslide, totalslide }) =>
+    currentslide === totalslide - 1 && 'display: none'};
 `;
 
 const MeatballIconBox = styled.div`
@@ -434,10 +436,12 @@ const MeatballIconBox = styled.div`
   margin-right: 80px;
 `;
 
-const MeatballIcon = styled(FaCircle)`
+const MeatballIcon = styled(FaCircle)<{ index: number; currentslide: number }>`
   width: 6px;
   height: 6px;
-  color: ${({ theme }) => theme.greyTextColor};
+  /* color: ${({ theme }) => theme.greyTextColor}; */
+  color: ${({ theme, index, currentslide }) =>
+    index === currentslide ? '#0095f6' : theme.greyTextColor};
 `;
 
 interface FeedCardProps {
@@ -453,7 +457,6 @@ interface FeedCardProps {
   postImageList: string[];
 }
 
-const TOTAL_SLIDES = 2;
 const FeedCard = ({
   postId,
   username,
@@ -477,6 +480,8 @@ const FeedCard = ({
 
   const location = useLocation();
 
+  const TOTAL_SLIDES = postImageList.length;
+
   const NextSlide = () => {
     if (currentSlide >= TOTAL_SLIDES) {
       // setCurrentSlide(0);
@@ -497,29 +502,10 @@ const FeedCard = ({
     }
   };
 
-  const MeatballSlide = useCallback(() => {
-    if (currentSlide === 0) {
-      circleRef.current.children[0].style.color = '#0095f6';
-      circleRef.current.children[1].style.color = '#8e8e8e';
-      circleRef.current.children[2].style.color = '#8e8e8e';
-    }
-    if (currentSlide === 1) {
-      circleRef.current.children[1].style.color = '#0095f6';
-      circleRef.current.children[0].style.color = '#8e8e8e';
-      circleRef.current.children[2].style.color = '#8e8e8e';
-    }
-    if (currentSlide === 2) {
-      circleRef.current.children[2].style.color = '#0095f6';
-      circleRef.current.children[0].style.color = '#8e8e8e';
-      circleRef.current.children[1].style.color = '#8e8e8e';
-    }
-  }, [currentSlide]);
-
   useEffect(() => {
-    MeatballSlide();
     slideRef.current.style.transition = 'all 0.5s ease-in-out';
     slideRef.current.style.transform = `translateX(-${currentSlide}00%)`;
-  }, [currentSlide, MeatballSlide]);
+  }, [currentSlide]);
 
   const { mutate, data, error, reset, isLoading } = useMutation(commentPost, {
     onError: (err: any) => {
@@ -631,11 +617,15 @@ const FeedCard = ({
       <ImageBoxWrapper onDoubleClick={() => setLikeButtonClicked(true)}>
         <LeftArrowIcon currentslide={currentSlide} onClick={PrevSlide} />
         <ImageWrapper ref={slideRef}>
-          <img src={userImage} alt="유저이미지" />
-          <img src={userImage2} alt="유저이미지" />
-          <img src={userImage3} alt="유저이미지" />
+          {postImageList.map((list: any) => (
+            <img src={list} alt="유저이미지" />
+          ))}
         </ImageWrapper>
-        <RightArrowIcon currentslide={currentSlide} onClick={NextSlide} />
+        <RightArrowIcon
+          totalslide={TOTAL_SLIDES}
+          currentslide={currentSlide}
+          onClick={NextSlide}
+        />
         <BigLikedIcon likebuttonclicked={likeYn} />
       </ImageBoxWrapper>
       <CommentBoxWrapper>
@@ -656,9 +646,9 @@ const FeedCard = ({
             <LocationIcon />
           </LeftIconBox>
           <MeatballIconBox ref={circleRef}>
-            <MeatballIcon />
-            <MeatballIcon />
-            <MeatballIcon />
+            {postImageList.map((list: any, i) => (
+              <MeatballIcon key={list} currentslide={currentSlide} index={i} />
+            ))}
           </MeatballIconBox>
           {bookmarkYn === 'Y' ? (
             <BookmarkFilledIcon onClick={bookmarkPostFunction} />
