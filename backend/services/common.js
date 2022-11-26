@@ -5,7 +5,6 @@ const checkValueIsEmpty = async (value, message) => {
   if (!value || (typeof value === 'string' && !value.trim())) {
     throw new ApiError(httpStatus.BAD_REQUEST, `${message}은(는) 필수 입력 값 입니다.`)
   }
-  console.log(`value:${value}, typeof:${typeof value}`)
 }
 
 module.exports = {

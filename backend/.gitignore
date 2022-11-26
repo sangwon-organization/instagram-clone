@@ -168,3 +168,6 @@ config/
 # images
 public/images/post
 public/images/profile
+
+# keys
+keys

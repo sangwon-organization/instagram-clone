@@ -12,7 +12,6 @@ module.exports = class Token extends Sequelize.Model {
         token: {
           type: Sequelize.STRING(255),
           allowNull: false,
-          unique: true,
         },
         type: {
           type: Sequelize.STRING,
@@ -50,6 +49,7 @@ module.exports = class Token extends Sequelize.Model {
         paranoid: false,
         charset: 'utf8',
         collate: 'utf8_general_ci',
+        indexes: [{ unique: true, fields: ['token'] }],
       }
     )
   }

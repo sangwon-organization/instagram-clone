@@ -6,9 +6,12 @@ const formidable = require('formidable')
 
 const corsConverter = (req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE')
-  res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type')
   res.setHeader('Access-Control-Allow-Credentials', true)
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'Access-Control-Allow-Headers, Origin, Accept, Authorization, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers'
+  )
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE')
   next()
 }
 
@@ -65,10 +68,21 @@ const checkToken = catchAsync(async (req, res, next) => {
   next()
 })
 
+const convertParamToRequestBody = catchAsync(async (req, res, next) => {
+  req.body = Object.assign(req.body, req.params)
+  next()
+})
+
+const convertQueryToRequestBody = catchAsync(async (req, res, next) => {
+  req.body = Object.assign(req.body, req.query)
+  next()
+})
+
 const convertFormDataToRequestBody = catchAsync(async (req, res, next) => {
   let form = formidable({ multiples: true })
   await new Promise((resolve, reject) => {
     form.parse(req, (err, fields, files) => {
+      console.log('fields:', fields)
       if (err) {
         throw err
       }
@@ -88,4 +102,6 @@ module.exports = {
   errorHandler,
   checkToken,
   convertFormDataToRequestBody,
+  convertQueryToRequestBody,
+  convertParamToRequestBody,
 }

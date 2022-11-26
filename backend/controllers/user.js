@@ -5,18 +5,21 @@ const authService = require('../services/auth')
 const commonService = require('../services/common')
 
 const checkEmail = catchAsync(async (req, res) => {
+  console.log('param:', req.body)
   await commonService.checkValueIsEmpty(req.body.email, '이메일')
   await userService.checkEmail(req.body.email)
   res.status(httpStatus.OK).send({ code: 0, message: 'success' })
 })
 
 const checkUsername = catchAsync(async (req, res) => {
+  console.log('param:', req.body)
   await commonService.checkValueIsEmpty(req.body.username, '닉네임')
   await userService.checkUsername(req.body.username)
   res.status(httpStatus.OK).send({ code: 0, message: 'success' })
 })
 
 const changePassword = catchAsync(async (req, res) => {
+  console.log('param:', req.body)
   let token = req.headers['authorization']
 
   if (!token) {
@@ -32,8 +35,68 @@ const changePassword = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send({ code: 0, message: 'success' })
 })
 
+const followUser = catchAsync(async (req, res) => {
+  await userService.followUser(req.body)
+  res.status(httpStatus.OK).send({ code: 0, message: 'success' })
+})
+
+const getNotFollowingList = catchAsync(async (req, res) => {
+  let notFollowingList = await userService.getNotFollowingList(req, req.body)
+  res.status(httpStatus.OK).send(Object.assign({ code: 0, message: 'success' }, notFollowingList))
+})
+
+const getFollowingList = catchAsync(async (req, res) => {
+  let followingList = await userService.getFollowingList(req, req.body)
+  res.status(httpStatus.OK).send(Object.assign({ code: 0, message: 'success' }, followingList))
+})
+
+const getFollowerList = catchAsync(async (req, res) => {
+  let followerList = await userService.getFollowerList(req, req.body)
+  res.status(httpStatus.OK).send(Object.assign({ code: 0, message: 'success' }, followerList))
+})
+
+const saveProfileImage = catchAsync(async (req, res) => {
+  await userService.saveProfileImage(req, req.body)
+  res.status(httpStatus.OK).send({ code: 0, message: 'success' })
+})
+
+const deleteProfileImage = catchAsync(async (req, res) => {
+  await userService.deleteProfileImage(req, req.body)
+  res.status(httpStatus.OK).send({ code: 0, message: 'success' })
+})
+
+const searchUsers = catchAsync(async (req, res) => {
+  let users = await userService.searchUsers(req, req.body)
+  res.status(httpStatus.OK).send(Object.assign({ code: 0, message: 'success' }, { userList: users }))
+})
+
+const addUserSearchLog = catchAsync(async (req, res) => {
+  await userService.addUserSearchLog(req.body)
+  res.status(httpStatus.OK).send({ code: 0, message: 'success' })
+})
+
+const deleteUserSearchLog = catchAsync(async (req, res) => {
+  await userService.deleteUserSearchLog(req.body)
+  res.status(httpStatus.OK).send({ code: 0, message: 'success' })
+})
+
+const getUserSearchLogs = catchAsync(async (req, res) => {
+  let userSearchLogs = await userService.getUserSearchLogs(req)
+  res.status(httpStatus.OK).send(Object.assign({ code: 0, message: 'success' }, { userSearchLogList: userSearchLogs }))
+})
+
 module.exports = {
   checkEmail,
   checkUsername,
   changePassword,
+  followUser,
+  getNotFollowingList,
+  getFollowingList,
+  getFollowerList,
+  saveProfileImage,
+  deleteProfileImage,
+  searchUsers,
+  addUserSearchLog,
+  deleteUserSearchLog,
+  getUserSearchLogs,
 }

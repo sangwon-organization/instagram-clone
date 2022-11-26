@@ -52,5 +52,6 @@ module.exports = class Comment extends Sequelize.Model {
     db.Comment.belongsTo(db.User, { foreignKey: 'userId', targetKey: 'userId' })
     db.Comment.belongsTo(db.Post, { foreignKey: 'postId', targetKey: 'postId' })
     db.Comment.hasMany(db.CommentLike, { foreignKey: 'commentId', sourceKey: 'commentId' })
+    db.Comment.hasMany(db.CommentLike, { as: 'LoginUserCommentLike', foreignKey: 'commentId', sourceKey: 'commentId' })
   }
 }

@@ -1,14 +1,14 @@
 const Sequelize = require('sequelize')
 
-module.exports = class PostLike extends Sequelize.Model {
+module.exports = class UserSearchLog extends Sequelize.Model {
   static init(sequelize) {
     return super.init(
       {
-        postId: {
+        fromUserId: {
           type: Sequelize.INTEGER,
           primaryKey: true,
         },
-        userId: {
+        toUserId: {
           type: Sequelize.INTEGER,
           primaryKey: true,
         },
@@ -27,8 +27,8 @@ module.exports = class PostLike extends Sequelize.Model {
         sequelize,
         timestamps: false,
         underscored: true,
-        modelName: 'PostLike',
-        tableName: 'tb_post_like',
+        modelName: 'UserSearchLog',
+        tableName: 'tb_user_search_log',
         paranoid: false,
         charset: 'utf8',
         collate: 'utf8_general_ci',
@@ -36,8 +36,7 @@ module.exports = class PostLike extends Sequelize.Model {
     )
   }
   static associate(db) {
-    db.PostLike.belongsTo(db.User, { foreignKey: 'userId', targetKey: 'userId' })
-    db.PostLike.belongsTo(db.Post, { foreignKey: 'postId', targetKey: 'postId' })
-    db.PostLike.belongsTo(db.Post, { as: 'LoginUserPostLike', foreignKey: 'postId', targetKey: 'postId' })
+    db.UserSearchLog.belongsTo(db.User, { foreignKey: 'fromUserId', targetKey: 'userId' })
+    db.UserSearchLog.belongsTo(db.User, { foreignKey: 'toUserId', targetKey: 'userId' })
   }
 }

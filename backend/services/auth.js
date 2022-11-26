@@ -7,6 +7,7 @@ const userSerivce = require('../services/user')
 const { Token } = require('../models')
 const commonService = require('../services/common')
 const { dateFormat } = require('../utils/regex')
+const User = require('../models/user')
 
 const secret = 'test1234'
 
@@ -20,6 +21,7 @@ const signup = async (body) => {
   //body.password = decryptAES256(body.password) => aes256 적용 코드
   await userSerivce.checkPassword(body.password)
   body.password = encryptSHA256(body.password)
+
   return userSerivce.createUser(body)
 }
 
@@ -32,6 +34,10 @@ const signin = async (body) => {
   if (!user) {
     throw new ApiError(httpStatus.UNAUTHORIZED, '이메일 또는 패스워드가 정확하지 않습니다. 다시 입력해 주세요.')
   }
+
+  // 최근 로그인 시간 업데이트
+  await User.update({ lastLoginAt: new Date() }, { where: { userId: user.userId } })
+
   return user
 }
 
