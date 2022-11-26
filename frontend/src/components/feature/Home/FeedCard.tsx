@@ -8,15 +8,23 @@ import { BsHeart } from 'react-icons/bs';
 import { BsHeartFill } from 'react-icons/bs';
 import { RiChat3Line } from 'react-icons/ri';
 import { TbLocation } from 'react-icons/tb';
-import { BiBookmark } from 'react-icons/bi';
 import { HiOutlineEmojiHappy } from 'react-icons/hi';
-import { FaCircle } from 'react-icons/fa';
+import { FaCircle, FaRegBookmark, FaBookmark } from 'react-icons/fa';
 import { GoKebabHorizontal } from 'react-icons/go';
 import {
   IoIosArrowDropleftCircle,
   IoIosArrowDroprightCircle,
 } from 'react-icons/io';
 import theme from '../../../styles/theme';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import {
+  bookmarkPost,
+  commentPost,
+  getCommentsList,
+  likePost,
+} from '../../../api/api';
+import Loader from 'react-loader';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 
 const FeedCardContainer = styled.div`
   width: 470px;
@@ -151,13 +159,13 @@ const HeartIcon = styled(BsHeart)`
   }
 `;
 
-const ColoredHeartIcon = styled(BsHeartFill)<{ likeButtonClicked: boolean }>`
+const ColoredHeartIcon = styled(BsHeartFill)<{ likebuttonclicked: string }>`
   width: 23px;
   height: 23px;
   color: #ed4956;
   cursor: pointer;
-  animation: ${({ likeButtonClicked }) =>
-    likeButtonClicked ? 'pop 0.2s linear' : ''};
+  animation: ${({ likebuttonclicked }) =>
+    likebuttonclicked === 'Y' ? 'pop 0.2s linear' : ''};
   @keyframes pop {
     0% {
       transform: scale(1);
@@ -198,7 +206,17 @@ const LocationIcon = styled(TbLocation)`
   }
 `;
 
-const BookmarkIcon = styled(BiBookmark)`
+const BookmarkIcon = styled(FaRegBookmark)`
+  width: 23px;
+  height: 23px;
+  cursor: pointer;
+  color: ${({ theme }) => theme.textColor};
+  &:hover {
+    color: ${({ theme }) => theme.greyTextColor};
+  }
+`;
+
+const BookmarkFilledIcon = styled(FaBookmark)`
   width: 23px;
   height: 23px;
   cursor: pointer;
@@ -314,6 +332,7 @@ const AddCommentBox = styled.form`
   justify-content: space-between;
   align-items: center;
   padding: 10px;
+  position: relative;
   textarea {
     width: 375px;
     height: 20px;
@@ -322,6 +341,7 @@ const AddCommentBox = styled.form`
     outline: none;
     margin-left: 10px;
     background: transparent;
+    font-family: 'RobotoFont';
   }
   button {
     font-size: 14px;
@@ -329,6 +349,10 @@ const AddCommentBox = styled.form`
     color: #0095f6;
     background: transparent;
     border: none;
+    &:disabled {
+      pointer-events: none;
+      opacity: 0.4;
+    }
   }
 `;
 
@@ -346,7 +370,7 @@ const KebabMenuIcon = styled(GoKebabHorizontal)`
   color: ${({ theme }) => theme.textColor};
 `;
 
-const BigLikedIcon = styled(BsHeartFill)<{ likeButtonClicked: boolean }>`
+const BigLikedIcon = styled(BsHeartFill)<{ likebuttonclicked: string }>`
   width: 80px;
   height: 80px;
   color: #fff;
@@ -357,8 +381,8 @@ const BigLikedIcon = styled(BsHeartFill)<{ likeButtonClicked: boolean }>`
   transform-origin: center center;
   filter: drop-shadow(5px 5px 30px rgba(0, 0, 0, 0.7));
   opacity: 0.7;
-  animation: ${({ likeButtonClicked }) =>
-    likeButtonClicked && 'popIcon 0.2s linear 0s 1 alternate'};
+  animation: ${({ likebuttonclicked }) =>
+    likebuttonclicked === 'Y ' && 'popIcon 0.2s linear 0s 1 alternate'};
   @keyframes popIcon {
     0% {
       transform: scale(0.1);
@@ -416,12 +440,42 @@ const MeatballIcon = styled(FaCircle)`
   color: ${({ theme }) => theme.greyTextColor};
 `;
 
+interface FeedCardProps {
+  postId: number;
+  username: string;
+  profileImage: string;
+  likeYn: string;
+  likeCount: number;
+  createdAt: string;
+  commentCount: number;
+  bookmarkYn: string;
+  content: string;
+  postImageList: string[];
+}
+
 const TOTAL_SLIDES = 2;
-const FeedCard = () => {
+const FeedCard = ({
+  postId,
+  username,
+  profileImage,
+  likeYn,
+  likeCount,
+  createdAt,
+  commentCount,
+  bookmarkYn,
+  content,
+  postImageList,
+}: FeedCardProps) => {
   const [likeButtonClicked, setLikeButtonClicked] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const slideRef = useRef(null);
   const circleRef = useRef(null);
+  const textareaRef = useRef(null);
+  const postButtonRef = useRef(null);
+
+  const navigate = useNavigate();
+
+  const location = useLocation();
 
   const NextSlide = () => {
     if (currentSlide >= TOTAL_SLIDES) {
@@ -467,14 +521,110 @@ const FeedCard = () => {
     slideRef.current.style.transform = `translateX(-${currentSlide}00%)`;
   }, [currentSlide, MeatballSlide]);
 
+  const { mutate, data, error, reset, isLoading } = useMutation(commentPost, {
+    onError: (err: any) => {
+      console.log(err.response.data);
+    },
+    onSuccess: (e: any) => {
+      console.log('댓글 등록 성공!');
+      textareaRef.current.value = '';
+      textareaRef.current.focus();
+    },
+  });
+
+  const mutateLikePost = useMutation(likePost, {
+    onError: (err: any) => {
+      console.log(err.response.data);
+    },
+    onSuccess: (e: any) => {
+      console.log('포스트 좋아요 성공!');
+    },
+  });
+
+  const mutateBookmarkPost = useMutation(bookmarkPost, {
+    onError: (err: any) => {
+      console.log(err.response.data);
+    },
+    onSuccess: (e: any) => {
+      console.log('북마크 성공!');
+    },
+  });
+
+  const getCommentsListQuery = useQuery(['getCommentsList'], () =>
+    getCommentsList({ page: 1, postId: postId }),
+  );
+
+  const registerComment = (e: any) => {
+    e.preventDefault();
+    mutate({
+      postId: postId,
+      parentCommentId: '',
+      content: textareaRef.current.value,
+    });
+    if (isLoading) {
+      postButtonRef.current.disabled = true;
+    }
+  };
+
+  const likePostFunction = (e: any) => {
+    e.preventDefault();
+    if (likeYn === 'Y') {
+      mutateLikePost.mutate({ postId: postId, likeYn: 'N' });
+    } else {
+      mutateLikePost.mutate({ postId: postId, likeYn: 'Y' });
+    }
+  };
+
+  const bookmarkPostFunction = (e: any) => {
+    e.preventDefault();
+    if (bookmarkYn === 'Y') {
+      mutateBookmarkPost.mutate({ postId: postId, bookmarkYn: 'N' });
+    } else {
+      mutateBookmarkPost.mutate({ postId: postId, bookmarkYn: 'Y' });
+    }
+  };
+
+  const isDisabled = (e: any) => {
+    if (e.target.value === '') {
+      postButtonRef.current.disabled = true;
+    } else {
+      postButtonRef.current.disabled = false;
+    }
+  };
+
+  const timeForToday = (dateInput: any) => {
+    const today = new Date();
+    const computeDate = new Date(dateInput);
+
+    const betweenTime = Math.floor(
+      (today.getTime() - computeDate.getTime()) / 1000 / 60,
+    );
+    if (betweenTime < 1) return '방금전';
+    if (betweenTime < 60) {
+      return `${betweenTime}분전`;
+    }
+
+    const betweenTimeHour = Math.floor(betweenTime / 60);
+    if (betweenTimeHour < 24) {
+      return `${betweenTimeHour}시간전`;
+    }
+
+    const betweenTimeDay = Math.floor(betweenTime / 60 / 24);
+    if (betweenTimeDay < 7) {
+      return `${betweenTimeDay}일전`;
+    }
+
+    return `${computeDate.getMonth() + 1}월 ${computeDate.getDate()}일`;
+  };
+
   return (
     <FeedCardContainer>
       <UserInformationWrapper>
         <UserInfo>
           <UserAvatar>
-            <img src={userAvatar} alt="유저아바타" />
+            <img src={profileImage} alt="유저아바타" />
           </UserAvatar>
-          <p>ggumtalkhead</p>
+          <p>{username}</p>
         </UserInfo>
         <KebabMenuIcon />
       </UserInformationWrapper>
@@ -486,26 +636,23 @@ const FeedCard = () => {
           <img src={userImage3} alt="유저이미지" />
         </ImageWrapper>
         <RightArrowIcon currentslide={currentSlide} onClick={NextSlide} />
-        <BigLikedIcon likeButtonClicked={likeButtonClicked} />
+        <BigLikedIcon likebuttonclicked={likeYn} />
       </ImageBoxWrapper>
       <CommentBoxWrapper>
         <IconBox>
           <LeftIconBox>
-            {likeButtonClicked ? (
+            {likeYn === 'Y' ? (
               <ColoredHeartIcon
-                likeButtonClicked={likeButtonClicked}
-                onClick={() => {
-                  setLikeButtonClicked((prev) => !prev);
-                }}
+                likebuttonclicked={likeYn}
+                onClick={likePostFunction}
               />
             ) : (
-              <HeartIcon
-                onClick={() => {
-                  setLikeButtonClicked((prev) => !prev);
-                }}
-              />
+              <HeartIcon onClick={likePostFunction} />
             )}
-            <ChatIcon />
+            <Link to={`/post/${postId}`} state={{ background: location }}>
+              <ChatIcon />
+              <Outlet />
+            </Link>
             <LocationIcon />
           </LeftIconBox>
           <MeatballIconBox ref={circleRef}>
@@ -513,30 +660,57 @@ const FeedCard = () => {
             <MeatballIcon />
             <MeatballIcon />
           </MeatballIconBox>
-          <BookmarkIcon />
+          {bookmarkYn === 'Y' ? (
+            <BookmarkFilledIcon onClick={bookmarkPostFunction} />
+          ) : (
+            <BookmarkIcon onClick={bookmarkPostFunction} />
+          )}
         </IconBox>
-        <LikedMemberBox>5,960 likes</LikedMemberBox>
+        <LikedMemberBox>{likeCount} likes</LikedMemberBox>
         <FeedDescriptionBox>
-          <div>ggumtalkhead</div>
-          <span> 자신감이 떨어진다면....</span>
+          <div>{username}</div>
+          <span> {content}</span>
           <button>more</button>
         </FeedDescriptionBox>
-        <ViewAllCommentsBox>View all 300 comments</ViewAllCommentsBox>
+        <ViewAllCommentsBox>
+          View all {commentCount} comments
+        </ViewAllCommentsBox>
         <CommentsListBox>
           <CommentText>
-            <div>ggumtalkhead</div>
+            <div>{getCommentsListQuery.data?.data.commentList[0].username}</div>
             <p>
-              <span>@minimal__0</span>정답...ㅋㅋㅋ 순서가 바뀔 수도 있음!
+              <span>@minimal__0</span>
+              {getCommentsListQuery.data?.data.commentList[0].content}
             </p>
           </CommentText>
           <SmallHeartIcon />
         </CommentsListBox>
-        <DateBox>1 DAY AGO</DateBox>
+        <DateBox>{timeForToday(createdAt)}</DateBox>
       </CommentBoxWrapper>
       <AddCommentBox>
         <SmileIcon />
-        <textarea name="" id="" placeholder="Add a comment..."></textarea>
-        <button>Post</button>
+        <textarea
+          name=""
+          id=""
+          onChange={(e: any) => isDisabled(e)}
+          ref={textareaRef}
+          placeholder="Add a comment..."></textarea>
+        {isLoading && (
+          <Loader
+            loaded={false}
+            color="#8e8e8e"
+            scale={0.7}
+            top="50%"
+            left="50%"
+          />
+        )}
+        <button
+          type="submit"
+          ref={postButtonRef}
+          disabled
+          onClick={(e: any) => registerComment(e)}>
+          Post
+        </button>
       </AddCommentBox>
     </FeedCardContainer>
   );

@@ -1,10 +1,13 @@
-import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
+import { getPostsList } from '../../api/api';
 import FeedCard from '../../components/feature/Home/FeedCard';
 import HomeAside from '../../components/feature/Home/HomeAside';
 import StoryBox from '../../components/feature/Home/StoryBox';
 import BottomNavigationBar from '../../components/layout/NavigationBar/BottomNavigationBar';
 import NavigationBar from '../../components/layout/NavigationBar/NavigationBar';
+import { useLocation } from 'react-router-dom';
 
 const MainContainer = styled.div`
   width: 100vw;
@@ -71,6 +74,19 @@ const StoryAndFeedSection = styled.section`
 `;
 
 const HomePresenter = () => {
+  const [currentPage, setCurrentPage] = useState({
+    page: 1,
+  });
+  const [postsList, setPostsList] = useState();
+
+  const { data } = useQuery(['getLists', currentPage], () =>
+    getPostsList(currentPage),
+  );
+  useEffect(() => {
+    console.log(data?.data.postList);
+  });
+  const location = useLocation();
+  console.log(location);
   return (
     <>
       <NavigationBar />
@@ -78,8 +94,21 @@ const HomePresenter = () => {
         <MainWrapper>
           <StoryAndFeedSection>
             <StoryBox />
-            <FeedCard />
-            <FeedCard />
+            {data?.data.postList.map((post: any) => (
+              <FeedCard
+                key={post.postId}
+                postId={post.postId}
+                username={post.username}
+                profileImage={post.profileImage}
+                likeYn={post.likeYn}
+                likeCount={post.likeCount}
+                createdAt={post.createdAt}
+                commentCount={post.commentCount}
+                bookmarkYn={post.bookmarkYn}
+                content={post.content}
+                postImageList={post.postImageList}
+              />
+            ))}
           </StoryAndFeedSection>
           <HomeAside />
         </MainWrapper>

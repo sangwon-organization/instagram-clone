@@ -1,10 +1,12 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import userAvatar from '../../../assets/image/userAvatar.png';
 import {
   IoIosArrowDropleftCircle,
   IoIosArrowDroprightCircle,
 } from 'react-icons/io';
+import { useQuery } from '@tanstack/react-query';
+import { getFollowingList } from '../../../api/api';
 
 const StoryBoxContainer = styled.section`
   width: 470px;
@@ -42,7 +44,6 @@ const StoryBoxWrapper = styled.ul`
 const StoryItem = styled.button`
   width: 64px;
   height: 84px;
-  /* border: 1px solid blue; */
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -57,6 +58,9 @@ const StoryItem = styled.button`
     letter-spacing: 0.12px;
     color: ${({ theme }) => theme.textColor};
     /* border: 1px solid red; */
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
   }
 `;
 
@@ -86,7 +90,8 @@ const UserAvatar = styled.div`
 const LeftArrowIcon = styled(IoIosArrowDropleftCircle)`
   width: 30px;
   height: 30px;
-  color: #fff;
+  /* color: #fff; */
+  color: black;
   position: absolute;
   z-index: 200;
   top: 44px;
@@ -96,7 +101,8 @@ const LeftArrowIcon = styled(IoIosArrowDropleftCircle)`
 const RightArrowIcon = styled(IoIosArrowDroprightCircle)`
   width: 30px;
   height: 30px;
-  color: #fff;
+  /* color: #fff; */
+  color: black;
   position: absolute;
   z-index: 200;
   top: 44px;
@@ -106,6 +112,35 @@ const RightArrowIcon = styled(IoIosArrowDroprightCircle)`
 
 const StoryBox = () => {
   const ref = useRef(null);
+  const [currentScrollX, setCurrentScrollX] = useState('leftMax');
+
+  const getFollowingListQuery = useQuery(['getFollowingList'], () =>
+    getFollowingList({ page: 1 }),
+  );
+
+  useEffect(() => {
+    if (!ref.current) {
+      return;
+    }
+
+    const getScrollState = () => {
+      const element = ref.current;
+
+      if (element.scrollLeft === 0) {
+        setCurrentScrollX('leftMax');
+      } else if (
+        element.scrollWidth ===
+        element.clientWidth + element.scrollLeft
+      ) {
+        setCurrentScrollX('rightMax');
+      }
+    };
+
+    ref.current?.addEventListener('scroll', getScrollState);
+    return () => {
+      ref.current?.removeEventListener('scroll', getScrollState);
+    };
+  }, [ref.current]);
 
   const moveRight = () => {
     ref.current.scrollBy({
@@ -125,8 +160,16 @@ const StoryBox = () => {
   return (
     <StoryBoxContainer>
       <StoryBoxWrapper ref={ref}>
-        <StoryItem>
-          <LeftArrowIcon onClick={moveRight} />
+        {currentScrollX !== 'leftMax' && <LeftArrowIcon onClick={moveRight} />}
+        {getFollowingListQuery.data?.data.followingList.map((list: any) => (
+          <StoryItem>
+            <UserAvatar>
+              <img src={list.profileImage} alt="유저아바타" />
+            </UserAvatar>
+            <p>{list.username}</p>
+          </StoryItem>
+        ))}
+        {/* <StoryItem>
           <UserAvatar>
             <img src={userAvatar} alt="유저아바타" />
           </UserAvatar>
@@ -143,44 +186,16 @@ const StoryBox = () => {
             <img src={userAvatar} alt="유저아바타" />
           </UserAvatar>
           <p>username</p>
-        </StoryItem>
-        <StoryItem>
-          <UserAvatar>
-            <img src={userAvatar} alt="유저아바타" />
-          </UserAvatar>
-          <p>username</p>
-        </StoryItem>
-        <StoryItem>
-          <UserAvatar>
-            <img src={userAvatar} alt="유저아바타" />
-          </UserAvatar>
-          <p>username</p>
-        </StoryItem>
-        <StoryItem>
-          <UserAvatar>
-            <img src={userAvatar} alt="유저아바타" />
-          </UserAvatar>
-          <p>username</p>
-        </StoryItem>
-        <StoryItem>
-          <UserAvatar>
-            <img src={userAvatar} alt="유저아바타" />
-          </UserAvatar>
-          <p>username</p>
-        </StoryItem>
-        <StoryItem>
-          <UserAvatar>
-            <img src={userAvatar} alt="유저아바타" />
-          </UserAvatar>
-          <p>username</p>
-        </StoryItem>
-        <StoryItem>
-          <UserAvatar>
-            <img src={userAvatar} alt="유저아바타" />
-          </UserAvatar>
-          <p>username</p>
-        </StoryItem>
-        <RightArrowIcon onClick={moveLeft} />
+        </StoryItem> */}
+
+        {currentScrollX !== 'rightMax' && (
+          <RightArrowIcon
+            onClick={() => {
+              moveLeft();
+              console.log(ref.current?.scrollLeft);
+            }}
+          />
+        )}
       </StoryBoxWrapper>
     </StoryBoxContainer>
   );
