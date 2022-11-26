@@ -85,6 +85,11 @@ const getUserSearchLogs = catchAsync(async (req, res) => {
   res.status(httpStatus.OK).send(Object.assign({ code: 0, message: 'success' }, { userSearchLogList: userSearchLogs }))
 })
 
+const getUserInfo = catchAsync(async (req, res) => {
+  let userInfo = await userService.getUserInfo(req, req.body)
+  res.status(httpStatus.OK).send(Object.assign({ code: 0, message: 'success' }, userInfo))
+})
+
 module.exports = {
   checkEmail,
   checkUsername,
@@ -99,4 +104,5 @@ module.exports = {
   addUserSearchLog,
   deleteUserSearchLog,
   getUserSearchLogs,
+  getUserInfo,
 }

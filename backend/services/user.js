@@ -13,8 +13,9 @@ const sizeOf = require('image-size')
 const fs = require('fs')
 const imageService = require('../services/image')
 const { Op } = require('sequelize')
-const { UserSearchLog } = require('../models')
+const { UserSearchLog, sequelize } = require('../models')
 const Sequelize = require('sequelize')
+const postService = require('../services/post')
 
 const createUser = async (body) => {
   return await User.create(body)
@@ -331,6 +332,46 @@ const getUserSearchLogs = async (req) => {
   return userSearchLogs
 }
 
+const getUserInfo = async (req, data) => {
+  let serviceUrl = env != 'production' ? req.protocol + '://' + req.get('host') : ''
+  let commonImagePath = config.commonImagePath.split('public')[1]
+  let postImagePath = config.postImagePath.split('public')[1]
+  let profileImagePath = config.profileImagePath.split('public')[1]
+
+  let user = await User.findOne({
+    attributes: {
+      include: [
+        [sequelize.literal(`(SELECT COUNT(1) FROM tb_post WHERE user_id = ${data.targetUserId})`), 'postCount'],
+        [sequelize.literal(`(SELECT COUNT(1) FROM tb_user_follow WHERE from_user_id = ${data.targetUserId})`), 'followingCount'],
+        [sequelize.literal(`(SELECT COUNT(1) FROM tb_user_follow WHERE to_user_id = ${data.targetUserId})`), 'followerCount'],
+      ],
+    },
+    include: [
+      {
+        model: Image,
+        required: false,
+      },
+    ],
+    where: {
+      userId: data.targetUserId,
+    },
+  })
+
+  let postList = await postService.getPostList(req, { page: 1, userId: data.userId, targetUserId: data.targetUserId })
+
+  return {
+    userId: user.userId,
+    profileImage: user.Image ? serviceUrl + profileImagePath + user.Image.imageName + '.' + user.Image.imageExt : serviceUrl + commonImagePath + 'profile.png',
+    name: user.name,
+    username: user.username,
+    bio: user.bio,
+    postCount: user.dataValues.postCount,
+    followingCount: user.dataValues.followingCount,
+    followerCount: user.dataValues.followerCount,
+    postList: postList.postList,
+  }
+}
+
 module.exports = {
   createUser,
   findUser,
@@ -348,4 +389,5 @@ module.exports = {
   addUserSearchLog,
   deleteUserSearchLog,
   getUserSearchLogs,
+  getUserInfo,
 }

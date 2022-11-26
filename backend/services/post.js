@@ -164,7 +164,7 @@ const getPost = async (req, data) => {
           { model: UserFollow, as: 'ToUserFollow', required: false, where: { fromUserId: data.userId } },
         ],
       },
-      { model: PostImage, required: false, include: [{ model: Image, require: true }] },
+      { model: PostImage, required: false, include: [{ model: Image, require: false }] },
       { model: PostLike, required: false },
       { model: PostLike, required: false, as: 'LoginUserPostLike', where: { userId: data.userId } },
       { model: PostBookmark, required: false, where: { userId: data.userId } },
@@ -384,7 +384,7 @@ const getPostList = async (req, data) => {
             { model: UserFollow, as: 'ToUserFollow', required: false, where: { fromUserId: data.userId } },
           ],
         },
-        { model: PostImage, required: false, include: [{ model: Image, required: true }] },
+        { model: PostImage, required: false, include: [{ model: Image, required: false }] },
         { model: PostLike, required: false },
         { model: PostLike, required: false, as: 'LoginUserPostLike', where: { userId: data.userId } },
         { model: PostBookmark, required: false, where: { userId: data.userId } },
@@ -409,7 +409,7 @@ const getPostList = async (req, data) => {
             { model: UserFollow, as: 'ToUserFollow', required: true, where: { fromUserId: data.userId } },
           ],
         },
-        { model: PostImage, required: false, include: [{ model: Image, require: true }] },
+        { model: PostImage, required: false, include: [{ model: Image, require: false }] },
         { model: PostLike, required: false },
         { model: PostLike, required: false, as: 'LoginUserPostLike', where: { userId: data.userId } },
         { model: PostBookmark, required: false, where: { userId: data.userId } },
@@ -423,38 +423,6 @@ const getPostList = async (req, data) => {
 
   postList = await Promise.all(
     postList.map(async (post) => {
-      /*
-      let serviceUrl = env != 'production' ? req.protocol + '://' + req.get('host') : ''
-
-      let postId = post.postId
-      let userId = post.Follower.userId
-      let name = post.Follower.name
-      let username = post.Follower.username
-      let content = post.content
-      let createdAt = dateFormat(post.createdAt)
-      let followYn = post.Follower.UserFollows.length ? 'Y' : 'N'
-      let bookmarkYn = post.PostBookmarks.length > 0 ? 'Y' : 'N'
-      let likeYn = post.PostLikes.length > 0 ? 'Y' : 'N'
-      let commentCount = await Comment.count({ where: { postId: postId } })
-      let likeCount = await PostLike.count({ where: { postId: postId } })
-      let profileImage = ''
-      if (!post.Follower.Image) {
-        profileImage = serviceUrl + config.commonImagePath.split('public')[1] + 'profile.png'
-      } else {
-        let imagePath = config.commonImagePath.split('public')[1]
-        let imageName = post.Follower.Image.imageName
-        let imageExt = post.Follower.Image.imageExt
-        profileImage = serviceUrl + imagePath + imageName + '.' + imageExt
-      }
-      let postImageList = post.PostImages.map((postImage) => {
-        let imagePath = config.postImagePath.split('public')[1]
-        let imageName = postImage.Image.imageName
-        let imageExt = postImage.Image.imageExt
-
-        return serviceUrl + imagePath + imageName + '.' + imageExt
-      })
-      */
-
       return {
         userId: post.userId,
         username: post.User.username,

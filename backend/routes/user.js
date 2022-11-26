@@ -16,5 +16,6 @@ router.route('/search').get(checkToken, convertQueryToRequestBody, userControlle
 router.route('/search/log').post(checkToken, userController.addUserSearchLog)
 router.route('/search/log').delete(checkToken, userController.deleteUserSearchLog)
 router.route('/search/log').get(checkToken, userController.getUserSearchLogs)
+router.route('/info').get(checkToken, convertParamToRequestBody, convertQueryToRequestBody, userController.getUserInfo)
 
 module.exports = router
