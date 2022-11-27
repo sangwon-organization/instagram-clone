@@ -157,6 +157,7 @@ const ErrorMessageBox = styled.div`
   letter-spacing: normal;
   text-align: center;
   color: #ed4956;
+  white-space: pre-line;
 `;
 
 const ForgotPasswordBox = styled.div`
@@ -188,6 +189,8 @@ const Login = () => {
   const [passwordShowAndHide, setPasswordShowAndHide] = useState(false);
   const [emailInputBoxClicked, setEmailInputBoxClicked] = useState(false);
   const [passwordInputBoxClicked, setPasswordInputBoxClicked] = useState(false);
+
+  const dispatch = useDispatch();
 
   const userNameInputKeyPress = (e: any) => {
     if (e.target.value === '') {
@@ -227,17 +230,11 @@ const Login = () => {
     },
     onSuccess: (userInfo: any) => {
       console.log('로그인 성공!');
-      // console.log(userInfo);
-      // console.log(data);
+      console.log(data);
     },
   });
-
-  console.log(isLoading);
-
+  console.log(error);
   const onSubmit = (dataInput: any) => {
-    // console.log(dataInput);
-    // const result = JSON.stringify(dataInput);
-    // console.log(result);
     mutate(dataInput);
   };
 
@@ -292,9 +289,14 @@ const Login = () => {
         <OrBox>
           <p>OR</p>
         </OrBox>
-        <ErrorMessageBox>
-          <p>error message</p>
-        </ErrorMessageBox>
+        {error && (
+          <ErrorMessageBox>
+            <p>
+              {error.response.status === 401 &&
+                `이메일 또는 패스워드가 정확하지 않습니다.\n다시 입력해 주세요.`}
+            </p>
+          </ErrorMessageBox>
+        )}
         <ForgotPasswordBox>
           <p>Forgot password?</p>
         </ForgotPasswordBox>

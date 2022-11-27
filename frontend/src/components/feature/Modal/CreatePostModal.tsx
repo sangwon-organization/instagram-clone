@@ -5,6 +5,8 @@ import { BiArrowBack } from 'react-icons/bi';
 import userAvatar from '../../../assets/image/userAvatar.png';
 import { addPost } from '../../../api/api';
 import { URL } from 'url';
+import { useMutation } from '@tanstack/react-query';
+import { useForm } from 'react-hook-form';
 
 const Container = styled.div<{ nextmodal: boolean }>`
   width: ${({ nextmodal }) => (nextmodal ? '1120px' : '768px')};
@@ -152,11 +154,12 @@ const LeftArrowIcon = styled(BiArrowBack)`
 `;
 
 const CreatePostModal = () => {
-  const [imageSrc, setImageSrc] = useState<string | ArrayBuffer>('');
+  const [imageSrc, setImageSrc] = useState<string>('');
   const [nextModal, setNextModal] = useState(false);
   const [textAreaText, setTextAreaText] = useState(0);
 
   const imageInput = useRef(null);
+  const textareaRef = useRef(null);
 
   const countTextLength = (e: any) => {
     // const textLength = e.target.innerText.length;
@@ -168,17 +171,30 @@ const CreatePostModal = () => {
     reader.readAsDataURL(fileBlob);
     return new Promise((resolve: any) => {
       reader.onload = () => {
-        setImageSrc(reader.result);
+        const csv: string = reader.result as string;
+        setImageSrc(csv);
         resolve();
       };
     });
   };
 
-  const onChangeImage = async (event: any) => {
+  const submitFormData = async (e: any) => {
+    e.preventDefault();
     const formData = new FormData();
-    formData.append('file', event.target.files[0]);
-    // const response = await addPost(formData);
+    formData.append('content', textareaRef.current.value);
+    formData.append('postImage1', imageSrc);
+    mutate(formData);
   };
+
+  const { mutate, data, error, reset, isLoading } = useMutation(addPost, {
+    onError: (err: any) => {
+      console.log(err.response.data);
+    },
+    onSuccess: (userInfo: any) => {
+      console.log('포스트 등록 성공!');
+      console.log(data);
+    },
+  });
 
   const onImageInputButtonClick = (event: any) => {
     event.preventDefault();
@@ -192,7 +208,11 @@ const CreatePostModal = () => {
         {imageSrc && nextModal === false && (
           <NextButton onClick={() => setNextModal(true)}>Next</NextButton>
         )}
-        {imageSrc && nextModal && <NextButton>Share</NextButton>}
+        {imageSrc && nextModal && (
+          <NextButton type="submit" onClick={submitFormData}>
+            Share
+          </NextButton>
+        )}
       </Title>
       <Wrapper>
         <Content>
@@ -227,6 +247,7 @@ const CreatePostModal = () => {
               </UserInfoWrapper>
             </UserAccountWrapper>
             <TextBox
+              ref={textareaRef}
               placeholder="Write a caption..."
               maxLength={450}
               onChange={countTextLength}></TextBox>

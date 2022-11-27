@@ -1,5 +1,7 @@
+import { useQuery } from '@tanstack/react-query';
 import React from 'react';
 import styled from 'styled-components';
+import { getNotFollowingList } from '../../../api/api';
 import userAvatar from '../../../assets/image/userAvatar.png';
 
 const HomeAsideContainer = styled.aside`
@@ -165,6 +167,9 @@ const Copyright = styled.div`
 `;
 
 const HomeAside = () => {
+  const getNotFollowingListQuery = useQuery(['getNotFollowingList'], () =>
+    getNotFollowingList(),
+  );
   return (
     <HomeAsideContainer>
       <UserAccountWrapper>
@@ -180,30 +185,16 @@ const HomeAside = () => {
           <p>Suggestions For You</p>
           <button>See All</button>
         </SuggestionsHeader>
-        <SuggestionsItem>
-          <img src={userAvatar} alt="유저아바타" />
-          <ItemUserInfoWrapper>
-            <p>username</p>
-            <p>Suggested for you</p>
-          </ItemUserInfoWrapper>
-          <button>Follow</button>
-        </SuggestionsItem>
-        <SuggestionsItem>
-          <img src={userAvatar} alt="유저아바타" />
-          <ItemUserInfoWrapper>
-            <p>username</p>
-            <p>Suggested for you</p>
-          </ItemUserInfoWrapper>
-          <button>Follow</button>
-        </SuggestionsItem>
-        <SuggestionsItem>
-          <img src={userAvatar} alt="유저아바타" />
-          <ItemUserInfoWrapper>
-            <p>username</p>
-            <p>Suggested for you</p>
-          </ItemUserInfoWrapper>
-          <button>Follow</button>
-        </SuggestionsItem>
+        {getNotFollowingListQuery.data?.data.followingList.map((list: any) => (
+          <SuggestionsItem>
+            <img src={list.profileImage} alt="유저아바타" />
+            <ItemUserInfoWrapper>
+              <p>{list.username}</p>
+              <p>Suggested for you</p>
+            </ItemUserInfoWrapper>
+            <button>Follow</button>
+          </SuggestionsItem>
+        ))}
       </SuggestionsWrapper>
       <AsideFooter>
         <FooterItems>

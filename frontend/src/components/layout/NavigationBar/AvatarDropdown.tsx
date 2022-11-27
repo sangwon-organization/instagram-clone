@@ -9,6 +9,8 @@ import { CgSync } from 'react-icons/cg';
 import useOutsideClick from '../../../hooks/useOutsideClick';
 import { useDispatch } from 'react-redux';
 import { changeThemeMode } from '../../../redux/slices/themeModeSlice';
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 
 const AvatarDropdownContainer = styled.div<{ showDropdown: boolean; ref: any }>`
   display: ${({ showDropdown }) => (showDropdown ? 'block' : 'none')};
@@ -99,17 +101,26 @@ const AvatarDropdown = ({
 }: AvatarDropdownProps) => {
   const outsideRef = useRef();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   useOutsideClick(outsideRef, () => setShowDropdown(false));
+
+  const logout = () => {
+    localStorage.removeItem('accessToken');
+    setTimeout(() => {
+      window.location.reload();
+    }, 600);
+  };
 
   return (
     <AvatarDropdownContainer showDropdown={showDropdown} ref={outsideRef}>
       <AvatarDropdownWrapper>
-        <DropdownItem first>
+        <DropdownItem first onClick={() => navigate('/profile')}>
           <ProfileIcon />
           <p>Profile</p>
         </DropdownItem>
-        <DropdownItem>
+        <DropdownItem
+          onClick={() => window.open('https://www.naver.com', '_top')}>
           <SavedIcon />
           <p>Saved</p>
         </DropdownItem>
@@ -130,7 +141,7 @@ const AvatarDropdown = ({
           <p>Switch accounts</p>
         </DropdownItem>
       </AvatarDropdownWrapper>
-      <DropdownItem last>
+      <DropdownItem last onClick={logout}>
         <p>Log Out</p>
       </DropdownItem>
     </AvatarDropdownContainer>

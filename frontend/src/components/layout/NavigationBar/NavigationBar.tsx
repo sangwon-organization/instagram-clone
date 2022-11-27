@@ -15,6 +15,8 @@ import useOutsideClick from '../../../hooks/useOutsideClick';
 import { useSelector } from 'react-redux';
 import ModalPortal from '../../feature/Modal/ModalPortal';
 import ModalContainer from '../../feature/Modal/ModalContainer';
+import { useQuery } from '@tanstack/react-query';
+import { getRecentSearchUsersList, searchUser } from '../../../api/api';
 
 const NavigationBarContainer = styled.nav`
   width: 100vw;
@@ -60,7 +62,7 @@ const LogoWrapper = styled.div`
   /* border: 1px solid red; */
 `;
 
-const SearchBarWrapper = styled.div<{ searchBarClicked: boolean }>`
+const SearchBarWrapper = styled.div<{ searchbarclicked: string }>`
   width: 270px;
   height: 35px;
   background: ${({ theme }) => theme.searchBarInputColor};
@@ -74,8 +76,8 @@ const SearchBarWrapper = styled.div<{ searchBarClicked: boolean }>`
     height: 100%;
     background: transparent;
     padding-left: 40px;
-    padding-left: ${({ searchBarClicked }) =>
-      searchBarClicked ? '15px' : '40px'};
+    padding-left: ${({ searchbarclicked }) =>
+      searchbarclicked === 'true' ? '15px' : '40px'};
     border: none;
     z-index: 10;
     font-size: 16px;
@@ -92,14 +94,15 @@ const MenuWrapper = styled.div`
   position: relative;
 `;
 
-const SearchIcon = styled(FiSearch)<{ searchBarClicked: boolean }>`
+const SearchIcon = styled(FiSearch)<{ searchbarclicked: string }>`
   width: 18px;
   height: 18px;
   color: ${({ theme }) => theme.greyTextColor};
   position: absolute;
   top: 8px;
   left: 12px;
-  display: ${({ searchBarClicked }) => (searchBarClicked ? 'none' : 'block')};
+  display: ${({ searchbarclicked }) =>
+    searchbarclicked === 'true' ? 'none' : 'block'};
 `;
 
 const UserImage = styled.img<{ showDropdown: boolean }>`
@@ -152,7 +155,7 @@ const HeartIcon = styled(FiHeart)`
   }
 `;
 
-const CancelButton = styled(MdCancel)<{ searchBarClicked: boolean }>`
+const CancelButton = styled(MdCancel)<{ searchbarclicked: string }>`
   width: 17px;
   height: 17px;
   position: absolute;
@@ -160,7 +163,8 @@ const CancelButton = styled(MdCancel)<{ searchBarClicked: boolean }>`
   color: ${({ theme }) => theme.greyTextColor};
   cursor: pointer;
   z-index: 10;
-  display: ${({ searchBarClicked }) => (searchBarClicked ? 'block' : 'none')};
+  display: ${({ searchbarclicked }) =>
+    searchbarclicked === 'true' ? 'block' : 'none'};
 `;
 
 const NavigationBar = () => {
@@ -168,6 +172,7 @@ const NavigationBar = () => {
   const [searchBarClicked, setSearchBarClicked] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [createPostModalOpen, setCreatePostModalOpen] = useState(false);
+  const [userKeyword, setUserKeyword] = useState(null);
 
   const isDarkMode = useSelector((state: any) => state.themeMode.darkMode);
 
@@ -183,17 +188,29 @@ const NavigationBar = () => {
 
   const navigate = useNavigate();
 
+  const searchUserQuery = useQuery(['searchUser'], () =>
+    searchUser({ page: 1, keyword: userKeyword }),
+  );
+
+  const getRecentSearchUserListQuery = useQuery(['getSearchUserList'], () =>
+    getRecentSearchUsersList(),
+  );
+
   return (
     <NavigationBarContainer>
       <NavigationBarWrapper>
-        <LogoWrapper onClick={() => navigate('/home')}>
+        <LogoWrapper onClick={() => navigate('/')}>
           <img
-            src={isDarkMode ? clonestagramLogoWhite : clonestagramLogoBlack}
+            src={
+              isDarkMode === 'dark'
+                ? clonestagramLogoWhite
+                : clonestagramLogoBlack
+            }
             alt="인스타그램로고"
           />
         </LogoWrapper>
-        <SearchBarWrapper searchBarClicked={searchBarClicked}>
-          <SearchIcon searchBarClicked={searchBarClicked} />
+        <SearchBarWrapper searchbarclicked={searchBarClicked.toString()}>
+          <SearchIcon searchbarclicked={searchBarClicked.toString()} />
           <input
             type="text"
             placeholder="Search"
@@ -201,13 +218,24 @@ const NavigationBar = () => {
               setShowTooltip(true);
               setSearchBarClicked(true);
             }}
+            onBlurCapture={(e) => (e.target.value = '')}
+            onChange={(e) => {
+              setUserKeyword(e.target.value);
+              console.log(searchUserQuery.data?.data.userList);
+              searchUserQuery.refetch();
+            }}
           />
-          <CancelButton searchBarClicked={searchBarClicked} />
+          <CancelButton searchbarclicked={searchBarClicked.toString()} />
         </SearchBarWrapper>
         <SearchBarTooltip
           showTooltip={showTooltip}
           setShowTooltip={setShowTooltip}
           setSearchBarClicked={setSearchBarClicked}
+          userList={searchUserQuery.data?.data.userList}
+          searchUserQuery={searchUserQuery}
+          getRecentSearchUserListQuery={
+            getRecentSearchUserListQuery.data?.data.userSearchLogList
+          }
         />
         <MenuWrapper>
           <HomeIcon />
