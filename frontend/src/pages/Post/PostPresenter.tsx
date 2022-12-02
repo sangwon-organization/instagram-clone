@@ -26,6 +26,7 @@ import {
   IoIosArrowDroprightCircle,
 } from 'react-icons/io';
 import theme from '../../styles/theme';
+import { timeForToday } from '../../utils/commons';
 
 const Container = styled.div`
   width: 100%;
@@ -231,6 +232,7 @@ const LeftArrowIcon = styled(IoIosArrowDropleftCircle)<{
 
 const RightArrowIcon = styled(IoIosArrowDroprightCircle)<{
   currentslide: number;
+  totalslides: number;
 }>`
   width: 30px;
   height: 30px;
@@ -241,7 +243,8 @@ const RightArrowIcon = styled(IoIosArrowDroprightCircle)<{
   right: 15px;
   opacity: 0.6;
   cursor: pointer;
-  ${({ currentslide }) => currentslide === TOTAL_SLIDES && 'display: none'};
+  ${({ currentslide, totalslides }) =>
+    currentslide === totalslides - 1 && 'display: none'};
 `;
 
 const KebabMenuIcon = styled(GoKebabHorizontal)`
@@ -416,6 +419,7 @@ const Comment = styled.div`
     font-weight: 600;
     float: left;
     margin-right: 5px;
+    cursor: pointer;
   }
   p {
     color: ${({ theme }) => theme.textColor};
@@ -470,8 +474,6 @@ const ReplyBox = styled.div`
   }
 `;
 
-const TOTAL_SLIDES = 2;
-
 const PostPresenter = () => {
   const textareaRef = useRef(null);
   const postButtonRef = useRef(null);
@@ -481,11 +483,15 @@ const PostPresenter = () => {
   const navigate = useNavigate();
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  let params = useParams();
+  let params: any = useParams();
 
-  const getUserPost = useQuery(['getPost', params], () => getPost(1));
+  const getUserPost = useQuery(['getPost', params], () =>
+    getPost(params.postId),
+  );
 
-  console.log(params);
+  const TOTAL_SLIDES = getUserPost.data?.data.postImageList.length;
+
+  console.log(getUserPost.data?.data);
 
   const NextSlide = () => {
     if (currentSlide >= TOTAL_SLIDES) {
@@ -550,20 +556,32 @@ const PostPresenter = () => {
           <ImageBoxWrapper>
             <LeftArrowIcon currentslide={currentSlide} onClick={PrevSlide} />
             <ImageWrapper ref={slideRef}>
-              <img src={userImage} alt="유저이미지" />
-              <img src={userImage2} alt="유저이미지" />
-              <img src={userImage3} alt="유저이미지" />
+              {getUserPost.data?.data.postImageList.map((image: any) => (
+                <img src={image} key={image} alt="유저이미지" />
+              ))}
             </ImageWrapper>
-            <RightArrowIcon currentslide={currentSlide} onClick={NextSlide} />
+            <RightArrowIcon
+              totalslides={TOTAL_SLIDES}
+              currentslide={currentSlide}
+              onClick={NextSlide}
+            />
             <BigLikedIcon likebuttonclicked={'true'} />
           </ImageBoxWrapper>
           <PostInfo>
             <PostHeader>
               <UserInfo>
                 <UserAvatar>
-                  <img src={userAvatar} alt="유저아바타" />
+                  <img
+                    src={getUserPost.data?.data.profileImage}
+                    alt="유저아바타"
+                  />
                 </UserAvatar>
-                <p>username</p>
+                <p
+                  onClick={() =>
+                    navigate(`/user/${getUserPost.data?.data.userId}`)
+                  }>
+                  {getUserPost.data?.data.username}
+                </p>
               </UserInfo>
               <KebabMenuIcon />
             </PostHeader>
@@ -571,24 +589,26 @@ const PostPresenter = () => {
               <CommentBox>
                 <AvatarBox>
                   <UserAvatar>
-                    <img src={userAvatar} alt="유저아바타" />
+                    <img
+                      src={getUserPost.data?.data.profileImage}
+                      alt="유저아바타"
+                    />
                   </UserAvatar>
                 </AvatarBox>
                 <Comment>
-                  <span>floyd___77</span>
-                  <p>
-                    카타르는 예선도 치르지 않고 개최국 명목으로 나왔으니 결과가
-                    저렇게 됐죠.
-                  </p>
+                  <span
+                    onClick={() =>
+                      navigate(`/user/${getUserPost.data?.data.userId}`)
+                    }>
+                    {getUserPost.data?.data.username}
+                  </span>
+                  <p>{getUserPost.data?.data.content}</p>
                   <OptionBox>
-                    <button>2w</button>
-                    <button>1like</button>
-                    <button>Reply</button>
+                    <button>
+                      {timeForToday(getUserPost.data?.data.createdAt)}
+                    </button>
                   </OptionBox>
-                  <ReplyBox>
-                    <p>View replies (1)</p>
-                  </ReplyBox>
-                  <CommentBox>
+                  {/* <CommentBox>
                     <AvatarBox>
                       <UserAvatar>
                         <img src={userAvatar} alt="유저아바타" />
@@ -607,11 +627,41 @@ const PostPresenter = () => {
                       </OptionBox>
                     </Comment>
                     <SmallHeartIcon />
-                  </CommentBox>
+                  </CommentBox> */}
                 </Comment>
                 <SmallHeartIcon />
               </CommentBox>
-              <CommentBox>
+              {getUserPost.data?.data.commentList.map((comment: any) => (
+                <CommentBox key={comment.commentId}>
+                  <AvatarBox>
+                    <UserAvatar>
+                      <img src={comment.profileImage} alt="유저아바타" />
+                    </UserAvatar>
+                  </AvatarBox>
+                  <Comment>
+                    <span onClick={() => navigate(`/user/${comment.userId}`)}>
+                      {comment.username}
+                    </span>
+                    <p>{comment.content}</p>
+                    <OptionBox>
+                      <button>{timeForToday(comment.createdAt)}</button>
+                      <button>
+                        {comment.likeCount > 0
+                          ? comment.likeCount + ' like'
+                          : ''}
+                      </button>
+                      <button>Reply</button>
+                    </OptionBox>
+                    <ReplyBox>
+                      <p>View replies (1)</p>
+                    </ReplyBox>
+                  </Comment>
+                  <SmallHeartIcon />
+                </CommentBox>
+              ))}
+
+              {}
+              {/* <CommentBox>
                 <AvatarBox>
                   <UserAvatar>
                     <img src={userAvatar} alt="유저아바타" />
@@ -679,30 +729,7 @@ const PostPresenter = () => {
                   </ReplyBox>
                 </Comment>
                 <SmallHeartIcon />
-              </CommentBox>
-              <CommentBox>
-                <AvatarBox>
-                  <UserAvatar>
-                    <img src={userAvatar} alt="유저아바타" />
-                  </UserAvatar>
-                </AvatarBox>
-                <Comment>
-                  <span>floyd___77</span>
-                  <p>
-                    카타르는 예선도 치르지 않고 개최국 명목으로 나왔으니 결과가
-                    저렇게 됐죠.
-                  </p>
-                  <OptionBox>
-                    <button>2w</button>
-                    <button>1like</button>
-                    <button>Reply</button>
-                  </OptionBox>
-                  <ReplyBox>
-                    <p>View replies (1)</p>
-                  </ReplyBox>
-                </Comment>
-                <SmallHeartIcon />
-              </CommentBox>
+              </CommentBox> */}
             </CommentsListBox>
             <PostBottom>
               <ButtonBox>
@@ -713,14 +740,14 @@ const PostPresenter = () => {
                     ) : (
                       <HeartIcon />
                     )}
-                    <ChatIcon />
+                    <ChatIcon onClick={() => textareaRef.current.focus()} />
                     <LocationIcon />
                   </LeftIconBox>
                   {true ? <BookmarkFilledIcon /> : <BookmarkIcon />}
                 </IconBox>
                 <LikeAndDateBox>
-                  <p>743 likes</p>
-                  <p>15 hours ago</p>
+                  <p>{getUserPost.data?.data.likeCount} likes</p>
+                  <p>{timeForToday(getUserPost.data?.data.createdAt)}</p>
                 </LikeAndDateBox>
               </ButtonBox>
               <AddCommentBox>

@@ -3,6 +3,8 @@ import styled from 'styled-components';
 import { BsHeartFill } from 'react-icons/bs';
 import { IoChatbubble } from 'react-icons/io5';
 import userImage from '../../../assets/image/userImage.png';
+import { useNavigate } from 'react-router-dom';
+import { IoIosPhotos } from 'react-icons/io';
 
 const PostContainer = styled.div`
   width: 293px;
@@ -12,6 +14,7 @@ const PostContainer = styled.div`
   align-items: center;
   position: relative;
   cursor: pointer;
+  position: relative;
   img {
     width: 293px;
     height: 293px;
@@ -61,21 +64,40 @@ const ItemBox = styled.div`
   }
 `;
 
-const Post = () => {
+const ImagesIcon = styled(IoIosPhotos)`
+  color: #fff;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 100;
+`;
+
+interface PostType {
+  postImageList: string[];
+  postId: number;
+  likeCount: number;
+  commentCount: number;
+}
+
+const Post = ({ postImageList, postId, likeCount, commentCount }: PostType) => {
   const [postHover, setPostHover] = useState(false);
+
+  const navigate = useNavigate();
   return (
     <PostContainer
       onMouseOver={() => setPostHover(true)}
-      onMouseOut={() => setPostHover(false)}>
-      <img src={userImage} alt="포스트" />
+      onMouseOut={() => setPostHover(false)}
+      onClick={() => navigate(`/post/${postId}`)}>
+      {postImageList.length > 1 ? <ImagesIcon /> : null}
+      <img src={postImageList[0]} alt="포스트" />
       <LikeAndCommentWrapper postHover={postHover}>
         <ItemBox>
           <HeartIcon />
-          <p>28.2K</p>
+          <p>{likeCount}</p>
         </ItemBox>
         <ItemBox>
           <CommentIcon />
-          <p>3,146</p>
+          <p>{commentCount}</p>
         </ItemBox>
       </LikeAndCommentWrapper>
     </PostContainer>

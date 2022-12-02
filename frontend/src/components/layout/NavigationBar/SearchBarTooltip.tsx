@@ -224,8 +224,9 @@ const SearchBarTooltip = ({
           userList.map((list: any) => (
             <>
               <RecentSearchItem
-                onClick={() => {
-                  navigate(`/${list.username}`);
+                key={list.userId}
+                onClick={(e) => {
+                  navigate(`/user/${list.userId}`);
                   addSearchUserQuery.mutate({ toUserId: list.userId });
                 }}>
                 <UserAvatar>
@@ -247,8 +248,9 @@ const SearchBarTooltip = ({
           getRecentSearchUserListQuery.map((list: any) => (
             <>
               <RecentSearchItem
+                key={list.userId}
                 onClick={() => {
-                  navigate(`/${list.username}`);
+                  navigate(`/user/${list.userId}`);
                   addSearchUserQuery.mutate({ toUserId: list.userId });
                 }}>
                 <UserAvatar>

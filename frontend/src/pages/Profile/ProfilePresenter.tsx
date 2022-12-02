@@ -11,7 +11,12 @@ import { BiMoviePlay } from 'react-icons/bi';
 import { IoAppsSharp } from 'react-icons/io5';
 import Footer from '../../components/layout/footer/Footer';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { getPostsList, setUserProfileImage } from '../../api/api';
+import {
+  getPostsList,
+  getUserInformation,
+  setUserProfileImage,
+} from '../../api/api';
+import { useParams } from 'react-router-dom';
 
 const MainContainer = styled.div`
   width: 100%;
@@ -252,12 +257,7 @@ const ProfilePresenter = () => {
   const imageInput = useRef(null);
   const [imageSrc, setImageSrc] = useState<string>('');
 
-  const { data } = useQuery(['getLists'], () =>
-    getPostsList({ page: 1, targetUserId: 1 }),
-  );
-  useEffect(() => {
-    console.log(data?.data);
-  });
+  const params = useParams();
 
   const setUserImage = () => {};
   const encodeFileToBase64 = (fileBlob: any) => {
@@ -288,7 +288,6 @@ const ProfilePresenter = () => {
     },
     onSuccess: (userInfo: any) => {
       console.log('유저이미지 등록 성공!');
-      console.log(data);
     },
   });
 
@@ -296,6 +295,13 @@ const ProfilePresenter = () => {
     event.preventDefault();
     imageInput.current.click();
   };
+
+  const { data } = useQuery(['getUserInformation'], () =>
+    getUserInformation({ targetUserId: parseInt(params.userId) }),
+  );
+
+  console.log(data?.data);
+
   return (
     <>
       <NavigationBar />
@@ -305,7 +311,7 @@ const ProfilePresenter = () => {
             <AvatarWrapper>
               <UserAvatar>
                 <img
-                  src={userProfile}
+                  src={data?.data.profileImage}
                   alt="기본이미지"
                   onClick={onImageInputButtonClick}
                 />
@@ -321,7 +327,7 @@ const ProfilePresenter = () => {
             </AvatarWrapper>
             <UserInfo>
               <FirstBox>
-                <h2>insight.co.kr</h2>
+                <h2>{data?.data.username}</h2>
                 <ButtonBox>
                   <MessageButton>Message</MessageButton>
                   <FollowButton>
@@ -335,22 +341,17 @@ const ProfilePresenter = () => {
               </FirstBox>
               <SecondBox>
                 <p>
-                  <span>28,299</span> posts
+                  <span>{data?.data.postCount}</span> posts
                 </p>
                 <p>
-                  <span>821K</span> followers
+                  <span>{data?.data.followerCount}</span> followers
                 </p>
                 <p>
-                  <span>330</span> following
+                  <span>{data?.data.followingCount}</span> following
                 </p>
               </SecondBox>
               <ThirdBox>
-                <p>
-                  인사이트 <br />
-                  가슴을 울리는 스토리와 통찰력 넘치는 시선으로 독자들과
-                  소통하는 인사이트 공식 인스타그램 계정입니다. <br /> 📧 각종
-                  제보+비즈니스 문의 DM
-                </p>
+                <p>{data?.data.name}</p>
               </ThirdBox>
               <FourthBox>
                 <p>
@@ -377,14 +378,15 @@ const ProfilePresenter = () => {
             </MenuWrapper>
           </TabMenu>
           <PostsWrapper>
-            <Post />
-            <Post />
-            <Post />
-            <Post />
-            <Post />
-            <Post />
-            <Post />
-            <Post />
+            {data?.data.postList.map((post: any) => (
+              <Post
+                key={post.postId}
+                postImageList={post.postImageList}
+                postId={post.postId}
+                likeCount={post.likeCount}
+                commentCount={post.commentCount}
+              />
+            ))}
           </PostsWrapper>
         </MainWrapper>
       </MainContainer>

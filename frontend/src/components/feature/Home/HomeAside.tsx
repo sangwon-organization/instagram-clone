@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { getNotFollowingList } from '../../../api/api';
 import userAvatar from '../../../assets/image/userAvatar.png';
@@ -121,6 +122,7 @@ const ItemUserInfoWrapper = styled.div`
     font-size: 14px;
     font-weight: 600;
     color: ${({ theme }) => theme.textColor};
+    cursor: pointer;
   }
   p:nth-child(2) {
     font-size: 12px;
@@ -167,6 +169,8 @@ const Copyright = styled.div`
 `;
 
 const HomeAside = () => {
+  const navigate = useNavigate();
+
   const getNotFollowingListQuery = useQuery(['getNotFollowingList'], () =>
     getNotFollowingList(),
   );
@@ -186,10 +190,12 @@ const HomeAside = () => {
           <button>See All</button>
         </SuggestionsHeader>
         {getNotFollowingListQuery.data?.data.followingList.map((list: any) => (
-          <SuggestionsItem>
+          <SuggestionsItem key={list.userId}>
             <img src={list.profileImage} alt="유저아바타" />
             <ItemUserInfoWrapper>
-              <p>{list.username}</p>
+              <p onClick={() => navigate(`/user/${list.userId}`)}>
+                {list.username}
+              </p>
               <p>Suggested for you</p>
             </ItemUserInfoWrapper>
             <button>Follow</button>

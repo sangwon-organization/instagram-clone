@@ -17,10 +17,10 @@ const LoggedInRoutes = ({ location }: LoggedInRoutesType) => (
   <Routes>
     <Route path="/" element={<Home />}>
       {location.background && (
-        <Route path="post/:postId" element={<ModalPortal />} />
+        <Route path="/post/:postId" element={<ModalPortal />} />
       )}
     </Route>
-    <Route path="/:username" element={<Profile />} />
+    <Route path="/user/:userId" element={<Profile />} />
     <Route path="/post/:postId" element={<Post />} />
   </Routes>
 );

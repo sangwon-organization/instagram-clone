@@ -25,6 +25,7 @@ import {
 } from '../../../api/api';
 import Loader from 'react-loader';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { timeForToday } from '../../../utils/commons';
 
 const FeedCardContainer = styled.div`
   width: 470px;
@@ -455,9 +456,11 @@ interface FeedCardProps {
   bookmarkYn: string;
   content: string;
   postImageList: string[];
+  userId: number;
 }
 
 const FeedCard = ({
+  userId,
   postId,
   username,
   profileImage,
@@ -513,6 +516,7 @@ const FeedCard = ({
     },
     onSuccess: (e: any) => {
       console.log('댓글 등록 성공!');
+      console.log(e);
       textareaRef.current.value = '';
       textareaRef.current.focus();
     },
@@ -578,31 +582,6 @@ const FeedCard = ({
     }
   };
 
-  const timeForToday = (dateInput: any) => {
-    const today = new Date();
-    const computeDate = new Date(dateInput);
-
-    const betweenTime = Math.floor(
-      (today.getTime() - computeDate.getTime()) / 1000 / 60,
-    );
-    if (betweenTime < 1) return '방금전';
-    if (betweenTime < 60) {
-      return `${betweenTime}분전`;
-    }
-
-    const betweenTimeHour = Math.floor(betweenTime / 60);
-    if (betweenTimeHour < 24) {
-      return `${betweenTimeHour}시간전`;
-    }
-
-    const betweenTimeDay = Math.floor(betweenTime / 60 / 24);
-    if (betweenTimeDay < 7) {
-      return `${betweenTimeDay}일전`;
-    }
-
-    return `${computeDate.getMonth() + 1}월 ${computeDate.getDate()}일`;
-  };
-
   return (
     <FeedCardContainer>
       <UserInformationWrapper>
@@ -610,7 +589,7 @@ const FeedCard = ({
           <UserAvatar>
             <img src={profileImage} alt="유저아바타" />
           </UserAvatar>
-          <p>{username}</p>
+          <p onClick={() => navigate(`/user/${userId}`)}>{username}</p>
         </UserInfo>
         <KebabMenuIcon />
       </UserInformationWrapper>
@@ -618,7 +597,7 @@ const FeedCard = ({
         <LeftArrowIcon currentslide={currentSlide} onClick={PrevSlide} />
         <ImageWrapper ref={slideRef}>
           {postImageList.map((list: any) => (
-            <img src={list} alt="유저이미지" />
+            <img src={list} key={list} alt="유저이미지" />
           ))}
         </ImageWrapper>
         <RightArrowIcon
@@ -667,10 +646,12 @@ const FeedCard = ({
         </ViewAllCommentsBox>
         <CommentsListBox>
           <CommentText>
-            <div>{getCommentsListQuery.data?.data.commentList[0].username}</div>
+            <div>
+              {getCommentsListQuery.data?.data.commentList[0]?.username}
+            </div>
             <p>
               <span>@minimal__0</span>
-              {getCommentsListQuery.data?.data.commentList[0].content}
+              {getCommentsListQuery.data?.data.commentList[0]?.content}
             </p>
           </CommentText>
           <SmallHeartIcon />
