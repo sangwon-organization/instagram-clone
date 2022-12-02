@@ -7,7 +7,7 @@ import { useSelector } from 'react-redux';
 
 const LoginWrapper = styled.div`
   width: 100%;
-  height: 85vh;
+  height: fit-content;
   display: flex;
   flex-direction: column;
   justify-content: center;

@@ -107,6 +107,7 @@ const AvatarDropdown = ({
 
   const logout = () => {
     localStorage.removeItem('accessToken');
+    navigate('/');
     setTimeout(() => {
       window.location.reload();
     }, 600);

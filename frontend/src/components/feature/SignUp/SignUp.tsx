@@ -7,6 +7,8 @@ import LoginSignUpBottomBox from '../../share/LoginSignUpBottomBox';
 import LoginSignUpMiddleBox from '../../share/LoginSignUpMiddleBox';
 import clonestagramLogoBlack from '../../../assets/image/clonestagramLogoBlack.png';
 import { AiFillFacebook } from 'react-icons/ai';
+import Loader from 'react-loader';
+
 import { useMutation } from '@tanstack/react-query';
 import {
   emailDuplicationCheck,
@@ -40,7 +42,7 @@ const TopBox = styled.div<{ error: any }>`
   img {
     width: 171.1px;
     height: 49.9px;
-    margin-top: 45.9px;
+    margin-top: 30px;
   }
 
   p {
@@ -175,6 +177,7 @@ const SignupButton = styled.button<{ disabled: boolean }>`
   text-align: center;
   color: #fff;
   margin-top: 7.8px;
+  position: relative;
 `;
 
 const NoticeBox = styled.div`
@@ -209,7 +212,7 @@ const ValidationFalseIcon = styled(IoIosCloseCircleOutline)`
 
 const ErrorMessageBox = styled.div`
   width: 262px;
-  height: 60px;
+  height: 80px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -293,7 +296,7 @@ const SignUp = () => {
     console.log(err);
   };
 
-  const { mutate, data, error, reset } = useMutation(signUpUser, {
+  const { mutate, data, error, reset, isLoading } = useMutation(signUpUser, {
     onError: (err: any) => {
       console.log(err.response.data);
     },
@@ -404,13 +407,30 @@ const SignUp = () => {
             information to Instagram. <span>Learn More</span>
           </NoticeBox>
           <SignupButton type="submit" disabled={!isValid}>
-            Sign up
+            {isLoading ? (
+              <Loader
+                loaded={!isLoading}
+                color="#fafafa"
+                scale={0.4}
+                top="50%"
+                left="50%"
+              />
+            ) : (
+              'Sign up'
+            )}
           </SignupButton>
           {error && (
             <ErrorMessageBox>
               <p>
-                {error.response.status === 400 &&
-                  `이미 등록된 닉네임입니다.\n 다시 입력해 주세요.`}
+                {error.response.data.message ===
+                  '유효하지 않은 패스워드입니다. 다시 입력해 주세요. (길이 최소 8자 이상 15자 이하, 대문자, 소문자, 숫자, 특수문자(@,$,!,%,*,?,&) 각각 1개 이상 필수 입력)' &&
+                  `This password isn't available. Minimum length of 8 to 15 characters, uppercase, lowercase, number, special characters (@,$,!,%,*,?,&) required.`}
+                {error.response.data.message ===
+                  '이미 등록된 이메일입니다. 다시 입력해 주세요.' &&
+                  `This username isn't available. Please try another.`}
+                {error.response.data.message ===
+                  '이미 등록된 닉네임입니다. 다시 입력해 주세요.' &&
+                  `This username isn't available. Please try another.`}
               </p>
             </ErrorMessageBox>
           )}
