@@ -27,6 +27,7 @@ import {
 } from 'react-icons/io';
 import theme from '../../styles/theme';
 import { timeForToday } from '../../utils/commons';
+import { useForm } from 'react-hook-form';
 
 const Container = styled.div`
   width: 100%;
@@ -401,6 +402,7 @@ const CommentBox = styled.div`
   justify-content: flex-start;
   align-items: flex-start;
   gap: 0 10px;
+  padding: 10px 0;
 `;
 
 const AvatarBox = styled.div`
@@ -474,6 +476,11 @@ const ReplyBox = styled.div`
   }
 `;
 
+type FormValues = {
+  // postId: number;
+  content: string;
+};
+
 const PostPresenter = () => {
   const textareaRef = useRef(null);
   const postButtonRef = useRef(null);
@@ -521,13 +528,19 @@ const PostPresenter = () => {
     }
   };
 
+  const {
+    register,
+    handleSubmit,
+    formState: { isValid, errors, isDirty },
+  } = useForm<FormValues>({ mode: 'onSubmit' });
+
   const registerComment = (e: any) => {
     e.preventDefault();
-    // mutate({
-    // //   postId: postId,
-    //   parentCommentId: '',
-    //   content: textareaRef.current.value,
-    // });
+    mutate({
+      postId: params.postId,
+      parentCommentId: '',
+      content: textareaRef.current.value,
+    });
     if (isLoading) {
       postButtonRef.current.disabled = true;
     }
@@ -543,6 +556,20 @@ const PostPresenter = () => {
       textareaRef.current.focus();
     },
   });
+
+  const onSubmit = (dataInput: any) => {
+    console.log(dataInput);
+    // console.log(data);
+    mutate({
+      postId: params.postId,
+      parentCommentId: '',
+      content: dataInput.content,
+    });
+  };
+
+  const onError = (err: any) => {
+    console.log(err);
+  };
 
   useEffect(() => {
     slideRef.current.style.transition = 'all 0.5s ease-in-out';
@@ -608,26 +635,6 @@ const PostPresenter = () => {
                       {timeForToday(getUserPost.data?.data.createdAt)}
                     </button>
                   </OptionBox>
-                  {/* <CommentBox>
-                    <AvatarBox>
-                      <UserAvatar>
-                        <img src={userAvatar} alt="유저아바타" />
-                      </UserAvatar>
-                    </AvatarBox>
-                    <Comment>
-                      <span>floyd___77</span>
-                      <p>
-                        카타르는 예선도 치르지 않고 개최국 명목으로 나왔으니
-                        결과가 저렇게 됐죠.
-                      </p>
-                      <OptionBox>
-                        <button>2w</button>
-                        <button>1like</button>
-                        <button>Reply</button>
-                      </OptionBox>
-                    </Comment>
-                    <SmallHeartIcon />
-                  </CommentBox> */}
                 </Comment>
                 <SmallHeartIcon />
               </CommentBox>
@@ -650,86 +657,11 @@ const PostPresenter = () => {
                           ? comment.likeCount + ' like'
                           : ''}
                       </button>
-                      <button>Reply</button>
                     </OptionBox>
-                    <ReplyBox>
-                      <p>View replies (1)</p>
-                    </ReplyBox>
                   </Comment>
                   <SmallHeartIcon />
                 </CommentBox>
               ))}
-
-              {}
-              {/* <CommentBox>
-                <AvatarBox>
-                  <UserAvatar>
-                    <img src={userAvatar} alt="유저아바타" />
-                  </UserAvatar>
-                </AvatarBox>
-                <Comment>
-                  <span>floyd___77</span>
-                  <p>
-                    카타르는 예선도 치르지 않고 개최국 명목으로 나왔으니 결과가
-                    저렇게 됐죠.
-                  </p>
-                  <OptionBox>
-                    <button>2w</button>
-                    <button>1like</button>
-                    <button>Reply</button>
-                  </OptionBox>
-                  <ReplyBox>
-                    <p>View replies (1)</p>
-                  </ReplyBox>
-                </Comment>
-                <SmallHeartIcon />
-              </CommentBox>
-              <CommentBox>
-                <AvatarBox>
-                  <UserAvatar>
-                    <img src={userAvatar} alt="유저아바타" />
-                  </UserAvatar>
-                </AvatarBox>
-                <Comment>
-                  <span>floyd___77</span>
-                  <p>
-                    카타르는 예선도 치르지 않고 개최국 명목으로 나왔으니 결과가
-                    저렇게 됐죠.
-                  </p>
-                  <OptionBox>
-                    <button>2w</button>
-                    <button>1like</button>
-                    <button>Reply</button>
-                  </OptionBox>
-                  <ReplyBox>
-                    <p>View replies (1)</p>
-                  </ReplyBox>
-                </Comment>
-                <SmallHeartIcon />
-              </CommentBox>
-              <CommentBox>
-                <AvatarBox>
-                  <UserAvatar>
-                    <img src={userAvatar} alt="유저아바타" />
-                  </UserAvatar>
-                </AvatarBox>
-                <Comment>
-                  <span>floyd___77</span>
-                  <p>
-                    카타르는 예선도 치르지 않고 개최국 명목으로 나왔으니 결과가
-                    저렇게 됐죠.
-                  </p>
-                  <OptionBox>
-                    <button>2w</button>
-                    <button>1like</button>
-                    <button>Reply</button>
-                  </OptionBox>
-                  <ReplyBox>
-                    <p>View replies (1)</p>
-                  </ReplyBox>
-                </Comment>
-                <SmallHeartIcon />
-              </CommentBox> */}
             </CommentsListBox>
             <PostBottom>
               <ButtonBox>
@@ -750,13 +682,14 @@ const PostPresenter = () => {
                   <p>{timeForToday(getUserPost.data?.data.createdAt)}</p>
                 </LikeAndDateBox>
               </ButtonBox>
-              <AddCommentBox>
+              <AddCommentBox onSubmit={handleSubmit(onSubmit, onError)}>
                 <SmileIcon />
                 <textarea
-                  name=""
-                  id=""
-                  onChange={(e: any) => isDisabled(e)}
+                  name="commentInput"
+                  id="commentInput"
+                  // onChange={(e: any) => isDisabled(e)}
                   ref={textareaRef}
+                  {...register('content', { required: true })}
                   placeholder="Add a comment..."></textarea>
                 {isLoading && (
                   <Loader
@@ -770,8 +703,9 @@ const PostPresenter = () => {
                 <button
                   type="submit"
                   ref={postButtonRef}
-                  disabled
-                  onClick={(e: any) => registerComment(e)}>
+                  disabled={isValid}
+                  // onClick={(e: any) => registerComment(e)}
+                >
                   Post
                 </button>
               </AddCommentBox>

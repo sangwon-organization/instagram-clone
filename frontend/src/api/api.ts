@@ -187,6 +187,7 @@ interface commentPostType {
 
 export const commentPost = async (requestParam: commentPostType) => {
   const data = await bearerTokenApi.post('/post/comment', requestParam);
+  console.log(requestParam);
   return data;
 };
 

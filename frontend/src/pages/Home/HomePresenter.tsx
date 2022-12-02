@@ -88,10 +88,7 @@ const HomePresenter = () => {
   } = useInfiniteQuery({
     queryKey: ['getPosts'],
     queryFn: ({ pageParam = 1 }) => getPostsList({ page: pageParam }),
-    getNextPageParam: (lastPage: any, allPages: any) => {
-      const nextPage = allPages.length + 1;
-      return nextPage;
-    },
+    getNextPageParam: (lastPage: any, allPages: any) => lastPage.nextCursor,
     getPreviousPageParam: (firstPage: any, allPages: any) =>
       firstPage.prevCursor,
   });
