@@ -155,7 +155,7 @@ export const deletePost = async (postId: number) => {
 };
 
 export const getPost = async (postId: number) => {
-  const data = await multipartFormDataApi.get(`/:${postId}`);
+  const data = await bearerTokenApi.get(`/post?postId=${postId}`);
   return data;
 };
 
@@ -319,5 +319,18 @@ export const getFollowerList = async ({ page }: getFollowerListType) => {
 
 export const getNotFollowingList = async () => {
   const data = await bearerTokenApi.get('/user/notFollowingList');
+  return data;
+};
+
+interface getUserInformationType {
+  targetUserId: number;
+}
+
+export const getUserInformation = async ({
+  targetUserId,
+}: getUserInformationType) => {
+  const data = await bearerTokenApi.get(
+    `/user/info?targetUserId=${targetUserId}`,
+  );
   return data;
 };

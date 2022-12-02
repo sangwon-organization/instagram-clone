@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { getPostsList } from '../../api/api';
@@ -8,6 +8,7 @@ import StoryBox from '../../components/feature/Home/StoryBox';
 import BottomNavigationBar from '../../components/layout/NavigationBar/BottomNavigationBar';
 import NavigationBar from '../../components/layout/NavigationBar/NavigationBar';
 import { useLocation } from 'react-router-dom';
+import { useInView } from 'react-intersection-observer';
 
 const MainContainer = styled.div`
   width: 100vw;
@@ -74,19 +75,36 @@ const StoryAndFeedSection = styled.section`
 `;
 
 const HomePresenter = () => {
-  const [currentPage, setCurrentPage] = useState({
-    page: 1,
-  });
-  const [postsList, setPostsList] = useState();
+  const [ref, inView] = useInView();
 
-  const { data } = useQuery(['getLists', currentPage], () =>
-    getPostsList(currentPage),
-  );
-  useEffect(() => {
-    console.log(data?.data.postList);
+  const {
+    fetchNextPage,
+    fetchPreviousPage,
+    hasNextPage,
+    hasPreviousPage,
+    isFetchingNextPage,
+    isFetchingPreviousPage,
+    data,
+  } = useInfiniteQuery({
+    queryKey: ['getPosts'],
+    queryFn: ({ pageParam = 1 }) => getPostsList({ page: pageParam }),
+    getNextPageParam: (lastPage: any, allPages: any) => {
+      const nextPage = allPages.length + 1;
+      return nextPage;
+    },
+    getPreviousPageParam: (firstPage: any, allPages: any) =>
+      firstPage.prevCursor,
   });
-  const location = useLocation();
-  console.log(location);
+
+  console.log(hasNextPage);
+
+  useEffect(() => {
+    if (inView) {
+      console.log(inView);
+      fetchNextPage();
+      console.log(data);
+    }
+  }, [inView, fetchNextPage, data]);
   return (
     <>
       <NavigationBar />
@@ -94,7 +112,7 @@ const HomePresenter = () => {
         <MainWrapper>
           <StoryAndFeedSection>
             <StoryBox />
-            {data?.data.postList.map((post: any) => (
+            {data?.pages[0].data.postList.map((post: any) => (
               <FeedCard
                 key={post.postId}
                 postId={post.postId}
@@ -107,13 +125,17 @@ const HomePresenter = () => {
                 bookmarkYn={post.bookmarkYn}
                 content={post.content}
                 postImageList={post.postImageList}
+                userId={post.userId}
               />
             ))}
           </StoryAndFeedSection>
           <HomeAside />
         </MainWrapper>
       </MainContainer>
-      <BottomNavigationBar />
+      <div
+        style={{ background: 'black', width: '30px', height: '30px' }}
+        ref={ref}
+      />
     </>
   );
 };
