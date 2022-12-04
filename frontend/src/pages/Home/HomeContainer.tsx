@@ -10,7 +10,6 @@ const HomeContainer = () => {
   const [ref, inView] = useInView();
 
   const [refetchPageIndex, setRefetchPageIndex] = useState<number | null>(null);
-
   const {
     fetchNextPage,
     fetchPreviousPage,
@@ -25,6 +24,7 @@ const HomeContainer = () => {
     queryFn: ({ pageParam = 1 }) => getPostsList({ page: pageParam }),
     getNextPageParam: (lastPage: any, allPages: any) =>
       Number(lastPage.data.page) + 1,
+
     getPreviousPageParam: (firstPage: any, allPages: any) => undefined,
   });
 
@@ -33,7 +33,7 @@ const HomeContainer = () => {
       refetch({ refetchPage: (page, index) => index === refetchPageIndex });
       setRefetchPageIndex(null);
     }
-  }, [refetchPageIndex]);
+  }, [refetchPageIndex, refetch]);
 
   const refetchPage = (pageIndex: number) => setRefetchPageIndex(pageIndex);
 
@@ -49,7 +49,7 @@ const HomeContainer = () => {
   return (
     <>
       <MetaTag
-        title="인스타그램 클론코딩"
+        title="Clonestagram"
         description="인스타그램을 클론코딩한 웹사이트입니다."
         keywords="클론코딩, 인스타그램"
         url="https://instagram-clone-sangwon.com"

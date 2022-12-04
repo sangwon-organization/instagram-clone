@@ -200,7 +200,7 @@ const AddCommentBox = styled.form`
   }
 `;
 
-const BigLikedIcon = styled(BsHeartFill)<{ likebuttonclicked: string }>`
+const BigLikedIcon = styled(BsHeartFill)<{ likebuttonclicked: boolean }>`
   width: 80px;
   height: 80px;
   color: #fff;
@@ -210,15 +210,26 @@ const BigLikedIcon = styled(BsHeartFill)<{ likebuttonclicked: string }>`
   transform: translate(-50%, -50%);
   transform-origin: center center;
   filter: drop-shadow(5px 5px 30px rgba(0, 0, 0, 0.7));
-  opacity: 0.7;
+  opacity: 0;
   animation: ${({ likebuttonclicked }) =>
-    likebuttonclicked === 'Y ' && 'popIcon 0.2s linear 0s 1 alternate'};
-  @keyframes popIcon {
-    0% {
-      transform: scale(0.1);
+    likebuttonclicked && 'like-heart-animation 2s ease-in-out'};
+  @keyframes like-heart-animation {
+    0%,
+    to {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0);
     }
-    100% {
-      transform: scale(1);
+    15% {
+      opacity: 0.9;
+      transform: translate(-50%, -50%) scale(1.2);
+    }
+    30% {
+      transform: translate(-50%, -50%) scale(0.95);
+    }
+    45%,
+    80% {
+      opacity: 0.9;
+      transform: translate(-50%, -50%) scale(1);
     }
   }
 `;
@@ -500,6 +511,12 @@ interface PostPresenterType {
   postButtonRef: any;
   register: any;
   handleSubmit: any;
+  commentRef: any;
+  rest: any;
+  likePostFunction: any;
+  mutateLikePost: any;
+  likeButtonClicked: any;
+  doubleClickImage: any;
 }
 
 const PostPresenter = ({
@@ -519,6 +536,12 @@ const PostPresenter = ({
   postButtonRef,
   register,
   handleSubmit,
+  commentRef,
+  rest,
+  likePostFunction,
+  mutateLikePost,
+  likeButtonClicked,
+  doubleClickImage,
 }: PostPresenterType) => {
   return (
     <>
@@ -527,7 +550,15 @@ const PostPresenter = ({
         <Wrapper>
           <ImageBoxWrapper>
             <LeftArrowIcon currentslide={currentSlide} onClick={prevSlide} />
-            <ImageWrapper ref={slideRef}>
+            <ImageWrapper
+              ref={slideRef}
+              onDoubleClick={() => {
+                doubleClickImage();
+                mutateLikePost.mutate({
+                  postId: getUserPost.data?.data.postId,
+                  likeYn: 'Y',
+                });
+              }}>
               {getUserPost.data?.data.postImageList.map((image: any) => (
                 <img src={image} key={image} alt="유저이미지" />
               ))}
@@ -537,7 +568,7 @@ const PostPresenter = ({
               currentslide={currentSlide}
               onClick={nextSlide}
             />
-            <BigLikedIcon likebuttonclicked={'true'} />
+            <BigLikedIcon likebuttonclicked={likeButtonClicked} />
           </ImageBoxWrapper>
           <PostInfo>
             <PostHeader>
@@ -612,15 +643,22 @@ const PostPresenter = ({
               <ButtonBox>
                 <IconBox>
                   <LeftIconBox>
-                    {true ? (
-                      <ColoredHeartIcon likebuttonclicked={'true'} />
+                    {getUserPost.data?.data.likeYn === 'Y' ? (
+                      <ColoredHeartIcon
+                        likebuttonclicked={'true'}
+                        onClick={likePostFunction}
+                      />
                     ) : (
-                      <HeartIcon />
+                      <HeartIcon onClick={likePostFunction} />
                     )}
                     <ChatIcon onClick={() => textareaRef.current.focus()} />
                     <LocationIcon />
                   </LeftIconBox>
-                  {true ? <BookmarkFilledIcon /> : <BookmarkIcon />}
+                  {getUserPost.data?.data.bookmarkYn === 'Y' ? (
+                    <BookmarkFilledIcon />
+                  ) : (
+                    <BookmarkIcon />
+                  )}
                 </IconBox>
                 <LikeAndDateBox>
                   <p>{getUserPost.data?.data.likeCount} likes</p>
@@ -632,9 +670,12 @@ const PostPresenter = ({
                 <textarea
                   name="commentInput"
                   id="commentInput"
-                  // onChange={(e: any) => isDisabled(e)}
-                  ref={textareaRef}
-                  {...register('content', { required: true })}
+                  {...rest}
+                  // required
+                  ref={(e) => {
+                    commentRef(e);
+                    textareaRef.current = e;
+                  }}
                   placeholder="Add a comment..."></textarea>
                 {commentPostIsLoading && (
                   <Loader
@@ -645,12 +686,7 @@ const PostPresenter = ({
                     left="50%"
                   />
                 )}
-                <button
-                  type="submit"
-                  ref={postButtonRef}
-                  disabled={isValid}
-                  // onClick={(e: any) => registerComment(e)}
-                >
+                <button type="submit" disabled={!isValid}>
                   Post
                 </button>
               </AddCommentBox>

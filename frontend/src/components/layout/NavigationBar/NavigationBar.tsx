@@ -172,7 +172,9 @@ const NavigationBar = () => {
   const [searchBarClicked, setSearchBarClicked] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [createPostModalOpen, setCreatePostModalOpen] = useState(false);
-  const [userKeyword, setUserKeyword] = useState(null);
+  const [userKeyword, setUserKeyword] = useState('');
+
+  const navigate = useNavigate();
 
   const isDarkMode = useSelector((state: any) => state.themeMode.darkMode);
 
@@ -186,8 +188,6 @@ const NavigationBar = () => {
     document.body.style.overflow = 'unset';
   };
 
-  const navigate = useNavigate();
-
   const searchUserQuery = useQuery(['searchUser'], () =>
     searchUser({ page: 1, keyword: userKeyword }),
   );
@@ -195,6 +195,12 @@ const NavigationBar = () => {
   const getRecentSearchUserListQuery = useQuery(['getSearchUserList'], () =>
     getRecentSearchUsersList(),
   );
+
+  // const isEmptyReset = (e: any) => {
+  //   if (e.target.value === '') {
+  //     searchUserQuery.remove();
+  //   }
+  // };
 
   return (
     <NavigationBarContainer>
@@ -233,9 +239,10 @@ const NavigationBar = () => {
           setSearchBarClicked={setSearchBarClicked}
           userList={searchUserQuery.data?.data.userList}
           searchUserQuery={searchUserQuery}
-          getRecentSearchUserListQuery={
+          getRecentSearchUserListData={
             getRecentSearchUserListQuery.data?.data.userSearchLogList
           }
+          getRecentSearchUserListQuery={getRecentSearchUserListQuery}
         />
         <MenuWrapper>
           <HomeIcon />

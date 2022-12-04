@@ -39,7 +39,7 @@ const UserInfoHeader = styled.header`
   align-items: center;
 `;
 
-const AvatarWrapper = styled.div`
+const AvatarWrapper = styled.form`
   width: 291px;
   height: fit-content;
   display: flex;

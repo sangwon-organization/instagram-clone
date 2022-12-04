@@ -27,6 +27,7 @@ bearerTokenApi.interceptors.response.use(
     if (status === 401) {
       try {
         localStorage.removeItem('accessToken');
+        // window.location.href = '/';
         // window.location.reload();
         return;
       } catch (e) {

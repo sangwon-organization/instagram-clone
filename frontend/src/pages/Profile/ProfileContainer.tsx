@@ -57,12 +57,12 @@ const ProfileContainer = () => {
   return (
     <>
       <MetaTag
-        title="username (@usernickname) ∙ 인스타그램 클론코딩사진 및 동영상"
-        description="314k Followers, 612 Following, 470 Posts - See Instagram photos and videos
-        from username (@usernickname)"
-        keywords="클론코딩, 인스타그램"
-        url="https://instagram-clone-sangwon.com/profile"
-        imgsrc={thumbnail}
+        title={`@${getUserInformationData?.data.username} ∙ Clonestagram photos and videos`}
+        description={`${getUserInformationData?.data.followerCount} Followers, ${getUserInformationData?.data.followingCount} Following, {${getUserInformationData?.data.postCount}} Posts - See Clonestagram photos and videos
+        from @${getUserInformationData?.data.username}`}
+        keywords="클론코딩, 인스타그램, clone coding"
+        url={`https://instagram-clone-sangwon.com/user/${getUserInformationData?.data.userId}`}
+        imgsrc={getUserInformationData?.data.profileImage}
       />
       <ProfilePresenter
         getUserInformationData={getUserInformationData}
