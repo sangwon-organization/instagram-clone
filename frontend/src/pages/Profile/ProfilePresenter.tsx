@@ -1,22 +1,14 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 import { GoKebabHorizontal } from 'react-icons/go';
-import Post from '../../components/feature/Profile/Post';
-import NavigationBar from '../../components/layout/NavigationBar/NavigationBar';
-import userProfile from '../../assets/image/userProfile.png';
 import { SlArrowDown } from 'react-icons/sl';
 import { FaUserCheck } from 'react-icons/fa';
 import { RiAccountPinBoxLine } from 'react-icons/ri';
 import { BiMoviePlay } from 'react-icons/bi';
 import { IoAppsSharp } from 'react-icons/io5';
+import NavigationBar from '../../components/layout/NavigationBar/NavigationBar';
+import Post from '../../components/feature/Profile/Post';
 import Footer from '../../components/layout/footer/Footer';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import {
-  getPostsList,
-  getUserInformation,
-  setUserProfileImage,
-} from '../../api/api';
-import { useParams } from 'react-router-dom';
 
 const MainContainer = styled.div`
   width: 100%;
@@ -47,7 +39,7 @@ const UserInfoHeader = styled.header`
   align-items: center;
 `;
 
-const AvatarWrapper = styled.div`
+const AvatarWrapper = styled.form`
   width: 291px;
   height: fit-content;
   display: flex;
@@ -253,55 +245,19 @@ const PostsWrapper = styled.article`
   gap: 28px 28px;
 `;
 
-const ProfilePresenter = () => {
-  const imageInput = useRef(null);
-  const [imageSrc, setImageSrc] = useState<string>('');
+interface ProfilePresenterType {
+  getUserInformationData: any;
+  onImageInputButtonClick: (event: React.MouseEvent<HTMLElement>) => void;
+  imageInputRef: any;
+  encodeFileToBase64: Function;
+}
 
-  const params = useParams();
-
-  const setUserImage = () => {};
-  const encodeFileToBase64 = (fileBlob: any) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(fileBlob);
-    return new Promise((resolve: any) => {
-      reader.onload = () => {
-        const csv: string = reader.result as string;
-        setImageSrc(csv);
-        const formData = new FormData();
-        formData.append('postImage', imageSrc);
-        postUserProfileImage.mutate(formData);
-        resolve();
-      };
-    });
-  };
-
-  const submitFormData = async (e: any) => {
-    e.preventDefault();
-    const formData = new FormData();
-    formData.append('postImage', imageSrc);
-    postUserProfileImage.mutate(formData);
-  };
-
-  const postUserProfileImage = useMutation(setUserProfileImage, {
-    onError: (err: any) => {
-      console.log(err.response.data);
-    },
-    onSuccess: (userInfo: any) => {
-      console.log('유저이미지 등록 성공!');
-    },
-  });
-
-  const onImageInputButtonClick = (event: any) => {
-    event.preventDefault();
-    imageInput.current.click();
-  };
-
-  const { data } = useQuery(['getUserInformation'], () =>
-    getUserInformation({ targetUserId: parseInt(params.userId) }),
-  );
-
-  console.log(data?.data);
-
+const ProfilePresenter = ({
+  getUserInformationData,
+  onImageInputButtonClick,
+  imageInputRef,
+  encodeFileToBase64,
+}: ProfilePresenterType) => {
   return (
     <>
       <NavigationBar />
@@ -311,14 +267,14 @@ const ProfilePresenter = () => {
             <AvatarWrapper>
               <UserAvatar>
                 <img
-                  src={data?.data.profileImage}
+                  src={getUserInformationData?.data.profileImage}
                   alt="기본이미지"
                   onClick={onImageInputButtonClick}
                 />
                 <input
                   type="file"
                   accept="image/*"
-                  ref={imageInput}
+                  ref={imageInputRef}
                   onChange={(e) => {
                     encodeFileToBase64(e.target.files[0]);
                   }}
@@ -327,7 +283,7 @@ const ProfilePresenter = () => {
             </AvatarWrapper>
             <UserInfo>
               <FirstBox>
-                <h2>{data?.data.username}</h2>
+                <h2>{getUserInformationData?.data.username}</h2>
                 <ButtonBox>
                   <MessageButton>Message</MessageButton>
                   <FollowButton>
@@ -341,17 +297,19 @@ const ProfilePresenter = () => {
               </FirstBox>
               <SecondBox>
                 <p>
-                  <span>{data?.data.postCount}</span> posts
+                  <span>{getUserInformationData?.data.postCount}</span> posts
                 </p>
                 <p>
-                  <span>{data?.data.followerCount}</span> followers
+                  <span>{getUserInformationData?.data.followerCount}</span>{' '}
+                  followers
                 </p>
                 <p>
-                  <span>{data?.data.followingCount}</span> following
+                  <span>{getUserInformationData?.data.followingCount}</span>{' '}
+                  following
                 </p>
               </SecondBox>
               <ThirdBox>
-                <p>{data?.data.name}</p>
+                <p>{getUserInformationData?.data.name}</p>
               </ThirdBox>
               <FourthBox>
                 <p>
@@ -378,7 +336,7 @@ const ProfilePresenter = () => {
             </MenuWrapper>
           </TabMenu>
           <PostsWrapper>
-            {data?.data.postList.map((post: any) => (
+            {getUserInformationData?.data.postList.map((post: any) => (
               <Post
                 key={post.postId}
                 postImageList={post.postImageList}

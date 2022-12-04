@@ -17,6 +17,28 @@ const bearerTokenApi = axios.create({
   },
 });
 
+bearerTokenApi.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const {
+      response: { status },
+    } = error;
+
+    if (status === 401) {
+      try {
+        localStorage.removeItem('accessToken');
+        // window.location.href = '/';
+        // window.location.reload();
+        return;
+      } catch (e) {
+        console.log(e);
+      }
+    }
+
+    return Promise.reject(error);
+  },
+);
+
 const multipartFormDataApi = axios.create({
   baseURL: 'http://59.187.205.70:3000',
   headers: {
@@ -65,10 +87,8 @@ interface getPostsListType {
 export const loginUser = async (userInfo: LoginType) => {
   const { data } = await api.post('/signin', userInfo);
   localStorage.setItem('accessToken', data.accessToken);
-
-  setTimeout(() => {
-    window.location.reload();
-  }, 600);
+  localStorage.setItem('refreshToken', data.refreshToken);
+  window.location.reload();
   return data;
 };
 

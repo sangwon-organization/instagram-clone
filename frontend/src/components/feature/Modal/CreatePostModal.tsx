@@ -8,6 +8,11 @@ import { URL } from 'url';
 import { useMutation } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 
+interface AddPostForm {
+  content: string;
+  postImage1: File;
+}
+
 const Container = styled.div<{ nextmodal: boolean }>`
   width: ${({ nextmodal }) => (nextmodal ? '1120px' : '768px')};
   height: 808px;
@@ -27,7 +32,7 @@ const Title = styled.div`
   font-weight: 600;
 `;
 
-const Wrapper = styled.div`
+const Wrapper = styled.form`
   display: flex;
 `;
 
@@ -178,6 +183,12 @@ const CreatePostModal = () => {
     });
   };
 
+  const {
+    register,
+    handleSubmit,
+    formState: { isValid, errors, isDirty },
+  } = useForm<AddPostForm>({ mode: 'onSubmit' });
+
   const submitFormData = async (e: any) => {
     e.preventDefault();
     const formData = new FormData();
@@ -233,6 +244,7 @@ const CreatePostModal = () => {
             accept="image/*"
             multiple
             ref={imageInput}
+            {...register('postImage1')}
             onChange={(e) => {
               encodeFileToBase64(e.target.files[0]);
             }}
@@ -248,6 +260,7 @@ const CreatePostModal = () => {
             </UserAccountWrapper>
             <TextBox
               ref={textareaRef}
+              {...register('content')}
               placeholder="Write a caption..."
               maxLength={450}
               onChange={countTextLength}></TextBox>

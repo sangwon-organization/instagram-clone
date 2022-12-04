@@ -74,34 +74,13 @@ const StoryAndFeedSection = styled.section`
   }
 `;
 
-const HomePresenter = () => {
-  const [ref, inView] = useInView();
+interface HomePresenterType {
+  data: any;
+  refetchPage: any;
+  scrollRef: any;
+}
 
-  const {
-    fetchNextPage,
-    fetchPreviousPage,
-    hasNextPage,
-    hasPreviousPage,
-    isFetchingNextPage,
-    isFetchingPreviousPage,
-    data,
-  } = useInfiniteQuery({
-    queryKey: ['getPosts'],
-    queryFn: ({ pageParam = 1 }) => getPostsList({ page: pageParam }),
-    getNextPageParam: (lastPage: any, allPages: any) => lastPage.nextCursor,
-    getPreviousPageParam: (firstPage: any, allPages: any) =>
-      firstPage.prevCursor,
-  });
-
-  console.log(hasNextPage);
-
-  useEffect(() => {
-    if (inView) {
-      console.log(inView);
-      fetchNextPage();
-      console.log(data);
-    }
-  }, [inView, fetchNextPage, data]);
+const HomePresenter = ({ data, refetchPage, scrollRef }: HomePresenterType) => {
   return (
     <>
       <NavigationBar />
@@ -109,29 +88,33 @@ const HomePresenter = () => {
         <MainWrapper>
           <StoryAndFeedSection>
             <StoryBox />
-            {data?.pages[0].data.postList.map((post: any) => (
-              <FeedCard
-                key={post.postId}
-                postId={post.postId}
-                username={post.username}
-                profileImage={post.profileImage}
-                likeYn={post.likeYn}
-                likeCount={post.likeCount}
-                createdAt={post.createdAt}
-                commentCount={post.commentCount}
-                bookmarkYn={post.bookmarkYn}
-                content={post.content}
-                postImageList={post.postImageList}
-                userId={post.userId}
-              />
-            ))}
+            {data?.pages.flatMap((page: any, pageIndex: any) =>
+              page.data.postList.map((post: any) => (
+                <FeedCard
+                  key={post.postId}
+                  postId={post.postId}
+                  username={post.username}
+                  profileImage={post.profileImage}
+                  likeYn={post.likeYn}
+                  likeCount={post.likeCount}
+                  createdAt={post.createdAt}
+                  commentCount={post.commentCount}
+                  bookmarkYn={post.bookmarkYn}
+                  content={post.content}
+                  postImageList={post.postImageList}
+                  userId={post.userId}
+                  refetchPage={refetchPage}
+                  pageIndex={pageIndex}
+                />
+              )),
+            )}
           </StoryAndFeedSection>
           <HomeAside />
         </MainWrapper>
       </MainContainer>
       <div
         style={{ background: 'black', width: '30px', height: '30px' }}
-        ref={ref}
+        ref={scrollRef}
       />
     </>
   );

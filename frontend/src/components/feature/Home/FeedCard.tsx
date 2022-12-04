@@ -371,7 +371,7 @@ const KebabMenuIcon = styled(GoKebabHorizontal)`
   color: ${({ theme }) => theme.textColor};
 `;
 
-const BigLikedIcon = styled(BsHeartFill)<{ likebuttonclicked: string }>`
+const BigLikedIcon = styled(BsHeartFill)<{ likebuttonclicked: boolean }>`
   width: 80px;
   height: 80px;
   color: #fff;
@@ -381,15 +381,26 @@ const BigLikedIcon = styled(BsHeartFill)<{ likebuttonclicked: string }>`
   transform: translate(-50%, -50%);
   transform-origin: center center;
   filter: drop-shadow(5px 5px 30px rgba(0, 0, 0, 0.7));
-  opacity: 0.7;
+  opacity: 0;
   animation: ${({ likebuttonclicked }) =>
-    likebuttonclicked === 'Y ' && 'popIcon 0.2s linear 0s 1 alternate'};
-  @keyframes popIcon {
-    0% {
-      transform: scale(0.1);
+    likebuttonclicked && 'like-heart-animation 2s ease-in-out'};
+  @keyframes like-heart-animation {
+    0%,
+    to {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0);
     }
-    100% {
-      transform: scale(1);
+    15% {
+      opacity: 0.9;
+      transform: translate(-50%, -50%) scale(1.2);
+    }
+    30% {
+      transform: translate(-50%, -50%) scale(0.95);
+    }
+    45%,
+    80% {
+      opacity: 0.9;
+      transform: translate(-50%, -50%) scale(1);
     }
   }
 `;
@@ -457,6 +468,8 @@ interface FeedCardProps {
   content: string;
   postImageList: string[];
   userId: number;
+  refetchPage: (pageIndex: number) => void;
+  pageIndex: number;
 }
 
 const FeedCard = ({
@@ -471,6 +484,8 @@ const FeedCard = ({
   bookmarkYn,
   content,
   postImageList,
+  refetchPage,
+  pageIndex,
 }: FeedCardProps) => {
   const [likeButtonClicked, setLikeButtonClicked] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -503,6 +518,13 @@ const FeedCard = ({
     } else {
       setCurrentSlide(currentSlide - 1);
     }
+  };
+
+  const doubleClickImage = () => {
+    setLikeButtonClicked(true);
+    setTimeout(() => {
+      setLikeButtonClicked(false);
+    }, 1200);
   };
 
   useEffect(() => {
@@ -556,13 +578,15 @@ const FeedCard = ({
     }
   };
 
-  const likePostFunction = (e: any) => {
+  const likePostFunction = (pageIndex: number) => (e: any) => {
     e.preventDefault();
     if (likeYn === 'Y') {
       mutateLikePost.mutate({ postId: postId, likeYn: 'N' });
     } else {
       mutateLikePost.mutate({ postId: postId, likeYn: 'Y' });
     }
+
+    refetchPage(pageIndex);
   };
 
   const bookmarkPostFunction = (e: any) => {
@@ -593,7 +617,7 @@ const FeedCard = ({
         </UserInfo>
         <KebabMenuIcon />
       </UserInformationWrapper>
-      <ImageBoxWrapper onDoubleClick={() => setLikeButtonClicked(true)}>
+      <ImageBoxWrapper onDoubleClick={doubleClickImage}>
         <LeftArrowIcon currentslide={currentSlide} onClick={PrevSlide} />
         <ImageWrapper ref={slideRef}>
           {postImageList.map((list: any) => (
@@ -605,7 +629,7 @@ const FeedCard = ({
           currentslide={currentSlide}
           onClick={NextSlide}
         />
-        <BigLikedIcon likebuttonclicked={likeYn} />
+        <BigLikedIcon likebuttonclicked={likeButtonClicked} />
       </ImageBoxWrapper>
       <CommentBoxWrapper>
         <IconBox>
@@ -613,10 +637,10 @@ const FeedCard = ({
             {likeYn === 'Y' ? (
               <ColoredHeartIcon
                 likebuttonclicked={likeYn}
-                onClick={likePostFunction}
+                onClick={likePostFunction(pageIndex)}
               />
             ) : (
-              <HeartIcon onClick={likePostFunction} />
+              <HeartIcon onClick={likePostFunction(pageIndex)} />
             )}
             <Link to={`/post/${postId}`} state={{ background: location }}>
               <ChatIcon />

@@ -3,7 +3,13 @@ import styled from 'styled-components';
 import Footer from '../../components/layout/footer/Footer';
 import NavigationBar from '../../components/layout/NavigationBar/NavigationBar';
 import { HiOutlineEmojiHappy } from 'react-icons/hi';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import {
+  MutateFunction,
+  MutationObserverIdleResult,
+  UseMutateFunction,
+  useMutation,
+  useQuery,
+} from '@tanstack/react-query';
 import userAvatar from '../../assets/image/userAvatar.png';
 import { commentPost, getPost } from '../../api/api';
 import { GoKebabHorizontal } from 'react-icons/go';
@@ -16,6 +22,7 @@ import { TbLocation } from 'react-icons/tb';
 import { BsHeart, BsHeartFill } from 'react-icons/bs';
 import {
   Navigate,
+  NavigateFunction,
   useLocation,
   useNavigate,
   useParams,
@@ -193,7 +200,7 @@ const AddCommentBox = styled.form`
   }
 `;
 
-const BigLikedIcon = styled(BsHeartFill)<{ likebuttonclicked: string }>`
+const BigLikedIcon = styled(BsHeartFill)<{ likebuttonclicked: boolean }>`
   width: 80px;
   height: 80px;
   color: #fff;
@@ -203,15 +210,26 @@ const BigLikedIcon = styled(BsHeartFill)<{ likebuttonclicked: string }>`
   transform: translate(-50%, -50%);
   transform-origin: center center;
   filter: drop-shadow(5px 5px 30px rgba(0, 0, 0, 0.7));
-  opacity: 0.7;
+  opacity: 0;
   animation: ${({ likebuttonclicked }) =>
-    likebuttonclicked === 'Y ' && 'popIcon 0.2s linear 0s 1 alternate'};
-  @keyframes popIcon {
-    0% {
-      transform: scale(0.1);
+    likebuttonclicked && 'like-heart-animation 2s ease-in-out'};
+  @keyframes like-heart-animation {
+    0%,
+    to {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0);
     }
-    100% {
-      transform: scale(1);
+    15% {
+      opacity: 0.9;
+      transform: translate(-50%, -50%) scale(1.2);
+    }
+    30% {
+      transform: translate(-50%, -50%) scale(0.95);
+    }
+    45%,
+    80% {
+      opacity: 0.9;
+      transform: translate(-50%, -50%) scale(1);
     }
   }
 `;
@@ -476,123 +494,81 @@ const ReplyBox = styled.div`
   }
 `;
 
-type FormValues = {
-  // postId: number;
-  content: string;
-};
+interface PostPresenterType {
+  nextSlide: () => void;
+  prevSlide: () => void;
+  commentPostMutate: Function;
+  commentPostIsLoading: boolean;
+  navigate: NavigateFunction;
+  currentSlide: number;
+  getUserPost: any;
+  slideRef: any;
+  totalSlide: number;
+  textareaRef: any;
+  onSubmit: Function;
+  onError: Function;
+  isValid: any;
+  postButtonRef: any;
+  register: any;
+  handleSubmit: any;
+  commentRef: any;
+  rest: any;
+  likePostFunction: any;
+  mutateLikePost: any;
+  likeButtonClicked: any;
+  doubleClickImage: any;
+}
 
-const PostPresenter = () => {
-  const textareaRef = useRef(null);
-  const postButtonRef = useRef(null);
-  const circleRef = useRef(null);
-  const slideRef = useRef(null);
-
-  const navigate = useNavigate();
-  const [currentSlide, setCurrentSlide] = useState(0);
-
-  let params: any = useParams();
-
-  const getUserPost = useQuery(['getPost', params], () =>
-    getPost(params.postId),
-  );
-
-  const TOTAL_SLIDES = getUserPost.data?.data.postImageList.length;
-
-  console.log(getUserPost.data?.data);
-
-  const NextSlide = () => {
-    if (currentSlide >= TOTAL_SLIDES) {
-      // setCurrentSlide(0);
-      return;
-      // rightArrowRef.current.style.display = 'none';
-    } else {
-      setCurrentSlide(currentSlide + 1);
-    }
-  };
-
-  const PrevSlide = () => {
-    if (currentSlide === 0) {
-      // setCurrentSlide(TOTAL_SLIDES);
-      return;
-      // leftArrowRef.current.style.display = 'none';
-    } else {
-      setCurrentSlide(currentSlide - 1);
-    }
-  };
-
-  const isDisabled = (e: any) => {
-    if (e.target.value === '') {
-      postButtonRef.current.disabled = true;
-    } else {
-      postButtonRef.current.disabled = false;
-    }
-  };
-
-  const {
-    register,
-    handleSubmit,
-    formState: { isValid, errors, isDirty },
-  } = useForm<FormValues>({ mode: 'onSubmit' });
-
-  const registerComment = (e: any) => {
-    e.preventDefault();
-    mutate({
-      postId: params.postId,
-      parentCommentId: '',
-      content: textareaRef.current.value,
-    });
-    if (isLoading) {
-      postButtonRef.current.disabled = true;
-    }
-  };
-
-  const { mutate, data, error, reset, isLoading } = useMutation(commentPost, {
-    onError: (err: any) => {
-      console.log(err.response.data);
-    },
-    onSuccess: (e: any) => {
-      console.log('댓글 등록 성공!');
-      textareaRef.current.value = '';
-      textareaRef.current.focus();
-    },
-  });
-
-  const onSubmit = (dataInput: any) => {
-    console.log(dataInput);
-    // console.log(data);
-    mutate({
-      postId: params.postId,
-      parentCommentId: '',
-      content: dataInput.content,
-    });
-  };
-
-  const onError = (err: any) => {
-    console.log(err);
-  };
-
-  useEffect(() => {
-    slideRef.current.style.transition = 'all 0.5s ease-in-out';
-    slideRef.current.style.transform = `translateX(-${currentSlide}00%)`;
-  }, [currentSlide]);
+const PostPresenter = ({
+  nextSlide,
+  prevSlide,
+  commentPostMutate,
+  commentPostIsLoading,
+  navigate,
+  currentSlide,
+  getUserPost,
+  slideRef,
+  totalSlide,
+  textareaRef,
+  onSubmit,
+  onError,
+  isValid,
+  postButtonRef,
+  register,
+  handleSubmit,
+  commentRef,
+  rest,
+  likePostFunction,
+  mutateLikePost,
+  likeButtonClicked,
+  doubleClickImage,
+}: PostPresenterType) => {
   return (
     <>
       <NavigationBar />
       <Container>
         <Wrapper>
           <ImageBoxWrapper>
-            <LeftArrowIcon currentslide={currentSlide} onClick={PrevSlide} />
-            <ImageWrapper ref={slideRef}>
+            <LeftArrowIcon currentslide={currentSlide} onClick={prevSlide} />
+            <ImageWrapper
+              ref={slideRef}
+              onDoubleClick={() => {
+                doubleClickImage();
+                mutateLikePost.mutate({
+                  postId: getUserPost.data?.data.postId,
+                  likeYn: 'Y',
+                });
+              }}>
               {getUserPost.data?.data.postImageList.map((image: any) => (
                 <img src={image} key={image} alt="유저이미지" />
               ))}
             </ImageWrapper>
             <RightArrowIcon
-              totalslides={TOTAL_SLIDES}
+              totalslides={totalSlide}
               currentslide={currentSlide}
-              onClick={NextSlide}
+              onClick={nextSlide}
             />
-            <BigLikedIcon likebuttonclicked={'true'} />
+            <BigLikedIcon likebuttonclicked={likeButtonClicked} />
           </ImageBoxWrapper>
           <PostInfo>
             <PostHeader>
@@ -667,15 +643,22 @@ const PostPresenter = () => {
               <ButtonBox>
                 <IconBox>
                   <LeftIconBox>
-                    {true ? (
-                      <ColoredHeartIcon likebuttonclicked={'true'} />
+                    {getUserPost.data?.data.likeYn === 'Y' ? (
+                      <ColoredHeartIcon
+                        likebuttonclicked={'true'}
+                        onClick={likePostFunction}
+                      />
                     ) : (
-                      <HeartIcon />
+                      <HeartIcon onClick={likePostFunction} />
                     )}
                     <ChatIcon onClick={() => textareaRef.current.focus()} />
                     <LocationIcon />
                   </LeftIconBox>
-                  {true ? <BookmarkFilledIcon /> : <BookmarkIcon />}
+                  {getUserPost.data?.data.bookmarkYn === 'Y' ? (
+                    <BookmarkFilledIcon />
+                  ) : (
+                    <BookmarkIcon />
+                  )}
                 </IconBox>
                 <LikeAndDateBox>
                   <p>{getUserPost.data?.data.likeCount} likes</p>
@@ -687,11 +670,14 @@ const PostPresenter = () => {
                 <textarea
                   name="commentInput"
                   id="commentInput"
-                  // onChange={(e: any) => isDisabled(e)}
-                  ref={textareaRef}
-                  {...register('content', { required: true })}
+                  {...rest}
+                  // required
+                  ref={(e) => {
+                    commentRef(e);
+                    textareaRef.current = e;
+                  }}
                   placeholder="Add a comment..."></textarea>
-                {isLoading && (
+                {commentPostIsLoading && (
                   <Loader
                     loaded={false}
                     color="#8e8e8e"
@@ -700,12 +686,7 @@ const PostPresenter = () => {
                     left="50%"
                   />
                 )}
-                <button
-                  type="submit"
-                  ref={postButtonRef}
-                  disabled={isValid}
-                  // onClick={(e: any) => registerComment(e)}
-                >
+                <button type="submit" disabled={!isValid}>
                   Post
                 </button>
               </AddCommentBox>
