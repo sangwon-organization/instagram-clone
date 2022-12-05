@@ -37,7 +37,7 @@ const HomeContainer = () => {
 
   const refetchPage = (pageIndex: number) => setRefetchPageIndex(pageIndex);
 
-  console.log(hasNextPage);
+  console.log(data);
 
   useEffect(() => {
     if (inView) {
@@ -55,7 +55,12 @@ const HomeContainer = () => {
         url="https://instagram-clone-sangwon.com"
         imgsrc={thumbnail}
       />
-      <HomePresenter data={data} refetchPage={refetchPage} scrollRef={ref} />
+      <HomePresenter
+        data={data}
+        refetchPage={refetchPage}
+        scrollRef={ref}
+        refetch={refetch}
+      />
     </>
   );
 };

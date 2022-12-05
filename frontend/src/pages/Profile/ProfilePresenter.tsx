@@ -9,6 +9,7 @@ import { IoAppsSharp } from 'react-icons/io5';
 import NavigationBar from '../../components/layout/NavigationBar/NavigationBar';
 import Post from '../../components/feature/Profile/Post';
 import Footer from '../../components/layout/footer/Footer';
+import Loader from 'react-loader';
 
 const MainContainer = styled.div`
   width: 100%;
@@ -48,7 +49,7 @@ const AvatarWrapper = styled.form`
   /* border: 1px solid red; */
 `;
 
-const UserAvatar = styled.div`
+const UserAvatar = styled.div<{ isLoading: boolean }>`
   width: 168px;
   height: 168px;
   border-radius: 50%;
@@ -56,7 +57,8 @@ const UserAvatar = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  cursor: pointer;
+  position: relative;
+  cursor: ${({ isLoading }) => (isLoading ? 'default' : 'pointer')};
   background-image: linear-gradient(
       ${({ theme }) => theme.searchBarBgColor},
       ${({ theme }) => theme.searchBarBgColor}
@@ -69,6 +71,7 @@ const UserAvatar = styled.div`
     height: 150px;
     border-radius: 50%;
     z-index: 100;
+    opacity: ${({ isLoading }) => isLoading && 0.4};
   }
   input {
     display: none;
@@ -250,6 +253,12 @@ interface ProfilePresenterType {
   onImageInputButtonClick: (event: React.MouseEvent<HTMLElement>) => void;
   imageInputRef: any;
   encodeFileToBase64: Function;
+  postImageRest: any;
+  imageRef: any;
+  onSubmit: any;
+  onError: any;
+  handleSubmit: any;
+  isLoading: any;
 }
 
 const ProfilePresenter = ({
@@ -257,6 +266,12 @@ const ProfilePresenter = ({
   onImageInputButtonClick,
   imageInputRef,
   encodeFileToBase64,
+  postImageRest,
+  imageRef,
+  onSubmit,
+  onError,
+  handleSubmit,
+  isLoading,
 }: ProfilePresenterType) => {
   return (
     <>
@@ -265,7 +280,7 @@ const ProfilePresenter = ({
         <MainWrapper>
           <UserInfoHeader>
             <AvatarWrapper>
-              <UserAvatar>
+              <UserAvatar isLoading={isLoading}>
                 <img
                   src={getUserInformationData?.data.profileImage}
                   alt="기본이미지"
@@ -274,11 +289,23 @@ const ProfilePresenter = ({
                 <input
                   type="file"
                   accept="image/*"
-                  ref={imageInputRef}
-                  onChange={(e) => {
-                    encodeFileToBase64(e.target.files[0]);
+                  disabled={isLoading}
+                  {...postImageRest}
+                  ref={(e) => {
+                    imageRef(e);
+                    imageInputRef.current = e;
                   }}
+                  onChange={handleSubmit(onSubmit, onError)}
                 />
+                {isLoading && (
+                  <Loader
+                    loaded={!isLoading}
+                    color="#fafafa"
+                    scale={0.8}
+                    top="50%"
+                    left="50%"
+                  />
+                )}
               </UserAvatar>
             </AvatarWrapper>
             <UserInfo>

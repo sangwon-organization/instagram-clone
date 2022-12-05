@@ -78,9 +78,15 @@ interface HomePresenterType {
   data: any;
   refetchPage: any;
   scrollRef: any;
+  refetch: any;
 }
 
-const HomePresenter = ({ data, refetchPage, scrollRef }: HomePresenterType) => {
+const HomePresenter = ({
+  data,
+  refetchPage,
+  scrollRef,
+  refetch,
+}: HomePresenterType) => {
   return (
     <>
       <NavigationBar />
@@ -105,6 +111,7 @@ const HomePresenter = ({ data, refetchPage, scrollRef }: HomePresenterType) => {
                   userId={post.userId}
                   refetchPage={refetchPage}
                   pageIndex={pageIndex}
+                  refetch={refetch}
                 />
               )),
             )}
