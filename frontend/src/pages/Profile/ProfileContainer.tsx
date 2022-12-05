@@ -5,12 +5,36 @@ import thumbnail from '../../assets/image/thumbnail.png';
 import { useParams } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { getUserInformation, setUserProfileImage } from '../../api/api';
+import { useForm } from 'react-hook-form';
+
+interface postUserProfileImageForm {
+  postImage: File;
+}
 
 const ProfileContainer = () => {
   const imageInputRef = useRef(null);
   const [imageSrc, setImageSrc] = useState<string>('');
 
   const params = useParams();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { isValid, errors, isDirty },
+  } = useForm<postUserProfileImageForm>({ mode: 'onChange' });
+
+  const onSubmit = (dataInput: any) => {
+    console.log('유저 프로필 저장 성공!');
+    console.log(dataInput);
+    const formData = new FormData();
+    formData.append('postImage', imageInputRef.current.files[0]);
+    console.log(formData);
+    postUserProfileImage.mutate(formData);
+  };
+
+  const onError = (err: any) => {
+    console.log(err);
+  };
 
   const encodeFileToBase64 = (fileBlob: any) => {
     const reader = new FileReader();
@@ -19,20 +43,14 @@ const ProfileContainer = () => {
       reader.onload = () => {
         const csv: string = reader.result as string;
         setImageSrc(csv);
-        const formData = new FormData();
-        formData.append('postImage', imageSrc);
-        postUserProfileImage.mutate(formData);
         resolve();
       };
     });
   };
 
-  const submitFormData = async (e: any) => {
-    e.preventDefault();
-    const formData = new FormData();
-    formData.append('postImage', imageSrc);
-    postUserProfileImage.mutate(formData);
-  };
+  const { ref: imageRef, ...postImageRest } = register('postImage', {
+    required: true,
+  });
 
   const postUserProfileImage = useMutation(setUserProfileImage, {
     onError: (err: any) => {
@@ -40,6 +58,7 @@ const ProfileContainer = () => {
     },
     onSuccess: (userInfo: any) => {
       console.log('유저이미지 등록 성공!');
+      refetch();
     },
   });
 
@@ -48,12 +67,12 @@ const ProfileContainer = () => {
     imageInputRef.current.click();
   };
 
-  const { data: getUserInformationData } = useQuery(
+  const { data: getUserInformationData, refetch } = useQuery(
     ['getUserInformation'],
     () => getUserInformation({ targetUserId: parseInt(params.userId) }),
   );
 
-  console.log(getUserInformationData?.data);
+  // console.log(getUserInformationData?.data);
   return (
     <>
       <MetaTag
@@ -69,6 +88,12 @@ const ProfileContainer = () => {
         onImageInputButtonClick={onImageInputButtonClick}
         imageInputRef={imageInputRef}
         encodeFileToBase64={encodeFileToBase64}
+        postImageRest={postImageRest}
+        imageRef={imageRef}
+        onSubmit={onSubmit}
+        onError={onError}
+        handleSubmit={handleSubmit}
+        isLoading={postUserProfileImage.isLoading}
       />
     </>
   );

@@ -37,7 +37,9 @@ function App() {
 
   return (
     <ThemeProvider
-      theme={darkMode === 'dark' ? theme.darkTheme : theme.lightTheme}>
+      theme={
+        darkMode === 'dark' && isLoggedIn ? theme.darkTheme : theme.lightTheme
+      }>
       <GlobalFont />
       <GlobalStyle />
       <AppRouter isLoggedIn={isLoggedIn} />

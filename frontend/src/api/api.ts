@@ -48,6 +48,17 @@ const multipartFormDataApi = axios.create({
   },
 });
 
+// const addPostmultipartFormDataApi = (formData: any) =>
+//   axios.create({
+//     baseURL: 'http://59.187.205.70:3000',
+//     data: formData,
+//     headers: {
+//       'Content-Type': 'multipart/form-data',
+//       'Access-Control-Allow-Origin': '*',
+//       Authorization: 'Bearer ' + localStorage.getItem('accessToken'),
+//     },
+//   });
+
 interface LoginType {
   email: string;
   password: string;
@@ -73,11 +84,11 @@ interface changePasswordType {
   newPassword: string;
 }
 
-interface addPostType {
-  content: string;
-  postImage1: File;
-  postImage2?: File;
-}
+// interface addPostType {
+//   content: string;
+//   postImage1: File;
+//   postImage2?: File;
+// }
 
 interface getPostsListType {
   page: number;
@@ -136,6 +147,11 @@ export const changePassword = async ({
   console.log(data);
   return data;
 };
+
+interface addPostType {
+  content: string;
+  postImage1: File;
+}
 
 export const addPost = async (formData: FormData) => {
   const data = await multipartFormDataApi.post('/post', formData);

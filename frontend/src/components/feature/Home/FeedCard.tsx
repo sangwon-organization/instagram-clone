@@ -470,6 +470,7 @@ interface FeedCardProps {
   userId: number;
   refetchPage: (pageIndex: number) => void;
   pageIndex: number;
+  refetch: any;
 }
 
 const FeedCard = ({
@@ -486,6 +487,7 @@ const FeedCard = ({
   postImageList,
   refetchPage,
   pageIndex,
+  refetch,
 }: FeedCardProps) => {
   const [likeButtonClicked, setLikeButtonClicked] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
