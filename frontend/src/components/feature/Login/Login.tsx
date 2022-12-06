@@ -17,6 +17,7 @@ const LoginContainer = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  margin: 100px 0;
 `;
 
 const TopBox = styled.div`
@@ -33,7 +34,7 @@ const TopBox = styled.div`
   img {
     width: 171.1px;
     height: 49.9px;
-    margin-top: 45.9px;
+    margin-top: 30px;
   }
 `;
 

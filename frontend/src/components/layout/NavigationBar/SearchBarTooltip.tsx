@@ -89,7 +89,7 @@ const RecentSearchItem = styled.div`
   height: 60px;
   /* border: 1px solid pink; */
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   padding: 0 15px 0 10px;
   &:hover {
@@ -172,7 +172,8 @@ interface SearchBarTooltipProps {
   setSearchBarClicked: Function;
   userList: [];
   searchUserQuery: any;
-  getRecentSearchUserListQuery: [];
+  getRecentSearchUserListData: [];
+  getRecentSearchUserListQuery: any;
 }
 
 const SearchBarTooltip = ({
@@ -181,6 +182,7 @@ const SearchBarTooltip = ({
   setSearchBarClicked,
   userList,
   searchUserQuery,
+  getRecentSearchUserListData,
   getRecentSearchUserListQuery,
 }: SearchBarTooltipProps) => {
   const outsideRef = useRef();
@@ -224,8 +226,9 @@ const SearchBarTooltip = ({
           userList.map((list: any) => (
             <>
               <RecentSearchItem
-                onClick={() => {
-                  navigate(`/${list.username}`);
+                key={list.userId}
+                onClick={(e) => {
+                  navigate(`/user/${list.userId}`);
                   addSearchUserQuery.mutate({ toUserId: list.userId });
                 }}>
                 <UserAvatar>
@@ -233,22 +236,18 @@ const SearchBarTooltip = ({
                 </UserAvatar>
                 <UserInfo>
                   <p>{list.username}</p>
-                  <p>userDescription</p>
+                  <p>{list.name}</p>
                 </UserInfo>
-                <CloseIcon
-                  onClick={() =>
-                    deleteSearchUserQuery.mutate({ toUserId: list.userId })
-                  }
-                />
               </RecentSearchItem>
             </>
           ))
-        ) : getRecentSearchUserListQuery?.length > 0 ? (
-          getRecentSearchUserListQuery.map((list: any) => (
+        ) : getRecentSearchUserListData?.length > 0 ? (
+          getRecentSearchUserListData.map((list: any) => (
             <>
               <RecentSearchItem
+                key={list.userId}
                 onClick={() => {
-                  navigate(`/${list.username}`);
+                  navigate(`/user/${list.userId}`);
                   addSearchUserQuery.mutate({ toUserId: list.userId });
                 }}>
                 <UserAvatar>
@@ -256,12 +255,14 @@ const SearchBarTooltip = ({
                 </UserAvatar>
                 <UserInfo>
                   <p>{list.username}</p>
-                  <p>userDescription</p>
+                  <p>{list.name}</p>
                 </UserInfo>
                 <CloseIcon
                   onClick={(e: any) => {
                     e.stopPropagation();
                     deleteSearchUserQuery.mutate({ toUserId: list.userId });
+                    getRecentSearchUserListQuery.refetch();
+                    console.log(getRecentSearchUserListQuery);
                   }}
                 />
               </RecentSearchItem>

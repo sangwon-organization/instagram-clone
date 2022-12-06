@@ -4,11 +4,16 @@ import { IoImagesOutline } from 'react-icons/io5';
 import { BiArrowBack } from 'react-icons/bi';
 import userAvatar from '../../../assets/image/userAvatar.png';
 import { addPost } from '../../../api/api';
-import { URL } from 'url';
+import * as url from 'url';
 import { useMutation } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 
-const Container = styled.div<{ nextmodal: boolean }>`
+interface AddPostForm {
+  content: string;
+  postImage1: File;
+}
+
+const Container = styled.form<{ nextmodal: boolean }>`
   width: ${({ nextmodal }) => (nextmodal ? '1120px' : '768px')};
   height: 808px;
   border-radius: 10px;
@@ -178,41 +183,74 @@ const CreatePostModal = () => {
     });
   };
 
-  const submitFormData = async (e: any) => {
-    e.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    formState: { isValid, errors, isDirty },
+  } = useForm<AddPostForm>({ mode: 'onSubmit' });
+
+  const { ref: contentRef, ...contentRest } = register('content', {
+    required: true,
+  });
+
+  const { ref: imageRef, ...postImageRest } = register('postImage1', {
+    required: true,
+  });
+  useEffect(() => {
+    console.log(errors);
+  }, [errors]);
+  // const submitFormData = async (e: any) => {
+  //   e.preventDefault();
+  //   const formData = new FormData();
+  //   formData.append('content', textareaRef.current.value);
+  //   formData.append('postImage1', imageSrc);
+  //   mutate(formData);
+  // };
+
+  const { mutate, data, error, reset, isLoading } = useMutation(
+    (formData: FormData) => addPost(formData),
+    {
+      onError: (err: any) => {
+        console.log(err.response.data);
+      },
+      onSuccess: (userInfo: any) => {
+        console.log('포스트 등록 성공!');
+        console.log(data);
+        window.location.reload();
+      },
+    },
+  );
+
+  const onSubmit = (dataInput: any) => {
+    console.log('submit clicked');
+    console.log(dataInput);
     const formData = new FormData();
     formData.append('content', textareaRef.current.value);
-    formData.append('postImage1', imageSrc);
+    formData.append('postImage1', imageInput.current.files[0]);
+    console.log(formData);
     mutate(formData);
   };
 
-  const { mutate, data, error, reset, isLoading } = useMutation(addPost, {
-    onError: (err: any) => {
-      console.log(err.response.data);
-    },
-    onSuccess: (userInfo: any) => {
-      console.log('포스트 등록 성공!');
-      console.log(data);
-    },
-  });
+  const onError = (err: any) => {
+    console.log(err);
+    console.log(error);
+    // console.log(imageSrc);
+  };
 
   const onImageInputButtonClick = (event: any) => {
     event.preventDefault();
     imageInput.current.click();
   };
+
   return (
-    <Container nextmodal={nextModal}>
+    <Container nextmodal={nextModal} onSubmit={handleSubmit(onSubmit, onError)}>
       <Title>
         {imageSrc && <LeftArrowIcon onClick={() => setNextModal(false)} />}
         Create new Post
         {imageSrc && nextModal === false && (
           <NextButton onClick={() => setNextModal(true)}>Next</NextButton>
         )}
-        {imageSrc && nextModal && (
-          <NextButton type="submit" onClick={submitFormData}>
-            Share
-          </NextButton>
-        )}
+        {imageSrc && nextModal && <NextButton type="submit">Share</NextButton>}
       </Title>
       <Wrapper>
         <Content>
@@ -232,8 +270,15 @@ const CreatePostModal = () => {
             type="file"
             accept="image/*"
             multiple
-            ref={imageInput}
+            name="postImage1"
+            id="postImage1"
+            {...postImageRest}
+            ref={(e) => {
+              imageRef(e);
+              imageInput.current = e;
+            }}
             onChange={(e) => {
+              // setFiles(e.target.files[0]);
               encodeFileToBase64(e.target.files[0]);
             }}
           />
@@ -247,7 +292,13 @@ const CreatePostModal = () => {
               </UserInfoWrapper>
             </UserAccountWrapper>
             <TextBox
-              ref={textareaRef}
+              name="content"
+              id="content"
+              {...contentRest}
+              ref={(e) => {
+                contentRef(e);
+                textareaRef.current = e;
+              }}
               placeholder="Write a caption..."
               maxLength={450}
               onChange={countTextLength}></TextBox>

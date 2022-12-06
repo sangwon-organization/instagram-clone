@@ -25,6 +25,7 @@ import {
 } from '../../../api/api';
 import Loader from 'react-loader';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { timeForToday } from '../../../utils/commons';
 
 const FeedCardContainer = styled.div`
   width: 470px;
@@ -370,7 +371,7 @@ const KebabMenuIcon = styled(GoKebabHorizontal)`
   color: ${({ theme }) => theme.textColor};
 `;
 
-const BigLikedIcon = styled(BsHeartFill)<{ likebuttonclicked: string }>`
+const BigLikedIcon = styled(BsHeartFill)<{ likebuttonclicked: boolean }>`
   width: 80px;
   height: 80px;
   color: #fff;
@@ -380,15 +381,26 @@ const BigLikedIcon = styled(BsHeartFill)<{ likebuttonclicked: string }>`
   transform: translate(-50%, -50%);
   transform-origin: center center;
   filter: drop-shadow(5px 5px 30px rgba(0, 0, 0, 0.7));
-  opacity: 0.7;
+  opacity: 0;
   animation: ${({ likebuttonclicked }) =>
-    likebuttonclicked === 'Y ' && 'popIcon 0.2s linear 0s 1 alternate'};
-  @keyframes popIcon {
-    0% {
-      transform: scale(0.1);
+    likebuttonclicked && 'like-heart-animation 2s ease-in-out'};
+  @keyframes like-heart-animation {
+    0%,
+    to {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0);
     }
-    100% {
-      transform: scale(1);
+    15% {
+      opacity: 0.9;
+      transform: translate(-50%, -50%) scale(1.2);
+    }
+    30% {
+      transform: translate(-50%, -50%) scale(0.95);
+    }
+    45%,
+    80% {
+      opacity: 0.9;
+      transform: translate(-50%, -50%) scale(1);
     }
   }
 `;
@@ -455,9 +467,14 @@ interface FeedCardProps {
   bookmarkYn: string;
   content: string;
   postImageList: string[];
+  userId: number;
+  refetchPage: (pageIndex: number) => void;
+  pageIndex: number;
+  refetch: any;
 }
 
 const FeedCard = ({
+  userId,
   postId,
   username,
   profileImage,
@@ -468,6 +485,9 @@ const FeedCard = ({
   bookmarkYn,
   content,
   postImageList,
+  refetchPage,
+  pageIndex,
+  refetch,
 }: FeedCardProps) => {
   const [likeButtonClicked, setLikeButtonClicked] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -502,6 +522,13 @@ const FeedCard = ({
     }
   };
 
+  const doubleClickImage = () => {
+    setLikeButtonClicked(true);
+    setTimeout(() => {
+      setLikeButtonClicked(false);
+    }, 1200);
+  };
+
   useEffect(() => {
     slideRef.current.style.transition = 'all 0.5s ease-in-out';
     slideRef.current.style.transform = `translateX(-${currentSlide}00%)`;
@@ -513,6 +540,7 @@ const FeedCard = ({
     },
     onSuccess: (e: any) => {
       console.log('댓글 등록 성공!');
+      console.log(e);
       textareaRef.current.value = '';
       textareaRef.current.focus();
     },
@@ -552,13 +580,15 @@ const FeedCard = ({
     }
   };
 
-  const likePostFunction = (e: any) => {
+  const likePostFunction = (pageIndex: number) => (e: any) => {
     e.preventDefault();
     if (likeYn === 'Y') {
       mutateLikePost.mutate({ postId: postId, likeYn: 'N' });
     } else {
       mutateLikePost.mutate({ postId: postId, likeYn: 'Y' });
     }
+
+    refetchPage(pageIndex);
   };
 
   const bookmarkPostFunction = (e: any) => {
@@ -578,31 +608,6 @@ const FeedCard = ({
     }
   };
 
-  const timeForToday = (dateInput: any) => {
-    const today = new Date();
-    const computeDate = new Date(dateInput);
-
-    const betweenTime = Math.floor(
-      (today.getTime() - computeDate.getTime()) / 1000 / 60,
-    );
-    if (betweenTime < 1) return '방금전';
-    if (betweenTime < 60) {
-      return `${betweenTime}분전`;
-    }
-
-    const betweenTimeHour = Math.floor(betweenTime / 60);
-    if (betweenTimeHour < 24) {
-      return `${betweenTimeHour}시간전`;
-    }
-
-    const betweenTimeDay = Math.floor(betweenTime / 60 / 24);
-    if (betweenTimeDay < 7) {
-      return `${betweenTimeDay}일전`;
-    }
-
-    return `${computeDate.getMonth() + 1}월 ${computeDate.getDate()}일`;
-  };
-
   return (
     <FeedCardContainer>
       <UserInformationWrapper>
@@ -610,15 +615,15 @@ const FeedCard = ({
           <UserAvatar>
             <img src={profileImage} alt="유저아바타" />
           </UserAvatar>
-          <p>{username}</p>
+          <p onClick={() => navigate(`/user/${userId}`)}>{username}</p>
         </UserInfo>
         <KebabMenuIcon />
       </UserInformationWrapper>
-      <ImageBoxWrapper onDoubleClick={() => setLikeButtonClicked(true)}>
+      <ImageBoxWrapper onDoubleClick={doubleClickImage}>
         <LeftArrowIcon currentslide={currentSlide} onClick={PrevSlide} />
         <ImageWrapper ref={slideRef}>
           {postImageList.map((list: any) => (
-            <img src={list} alt="유저이미지" />
+            <img src={list} key={list} alt="유저이미지" />
           ))}
         </ImageWrapper>
         <RightArrowIcon
@@ -626,7 +631,7 @@ const FeedCard = ({
           currentslide={currentSlide}
           onClick={NextSlide}
         />
-        <BigLikedIcon likebuttonclicked={likeYn} />
+        <BigLikedIcon likebuttonclicked={likeButtonClicked} />
       </ImageBoxWrapper>
       <CommentBoxWrapper>
         <IconBox>
@@ -634,10 +639,10 @@ const FeedCard = ({
             {likeYn === 'Y' ? (
               <ColoredHeartIcon
                 likebuttonclicked={likeYn}
-                onClick={likePostFunction}
+                onClick={likePostFunction(pageIndex)}
               />
             ) : (
-              <HeartIcon onClick={likePostFunction} />
+              <HeartIcon onClick={likePostFunction(pageIndex)} />
             )}
             <Link to={`/post/${postId}`} state={{ background: location }}>
               <ChatIcon />
@@ -667,10 +672,12 @@ const FeedCard = ({
         </ViewAllCommentsBox>
         <CommentsListBox>
           <CommentText>
-            <div>{getCommentsListQuery.data?.data.commentList[0].username}</div>
+            <div>
+              {getCommentsListQuery.data?.data.commentList[0]?.username}
+            </div>
             <p>
               <span>@minimal__0</span>
-              {getCommentsListQuery.data?.data.commentList[0].content}
+              {getCommentsListQuery.data?.data.commentList[0]?.content}
             </p>
           </CommentText>
           <SmallHeartIcon />

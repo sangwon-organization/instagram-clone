@@ -1,17 +1,15 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 import { GoKebabHorizontal } from 'react-icons/go';
-import Post from '../../components/feature/Profile/Post';
-import NavigationBar from '../../components/layout/NavigationBar/NavigationBar';
-import userProfile from '../../assets/image/userProfile.png';
 import { SlArrowDown } from 'react-icons/sl';
 import { FaUserCheck } from 'react-icons/fa';
 import { RiAccountPinBoxLine } from 'react-icons/ri';
 import { BiMoviePlay } from 'react-icons/bi';
 import { IoAppsSharp } from 'react-icons/io5';
+import NavigationBar from '../../components/layout/NavigationBar/NavigationBar';
+import Post from '../../components/feature/Profile/Post';
 import Footer from '../../components/layout/footer/Footer';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { getPostsList, setUserProfileImage } from '../../api/api';
+import Loader from 'react-loader';
 
 const MainContainer = styled.div`
   width: 100%;
@@ -42,7 +40,7 @@ const UserInfoHeader = styled.header`
   align-items: center;
 `;
 
-const AvatarWrapper = styled.div`
+const AvatarWrapper = styled.form`
   width: 291px;
   height: fit-content;
   display: flex;
@@ -51,7 +49,7 @@ const AvatarWrapper = styled.div`
   /* border: 1px solid red; */
 `;
 
-const UserAvatar = styled.div`
+const UserAvatar = styled.div<{ isLoading: boolean }>`
   width: 168px;
   height: 168px;
   border-radius: 50%;
@@ -59,7 +57,8 @@ const UserAvatar = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  cursor: pointer;
+  position: relative;
+  cursor: ${({ isLoading }) => (isLoading ? 'default' : 'pointer')};
   background-image: linear-gradient(
       ${({ theme }) => theme.searchBarBgColor},
       ${({ theme }) => theme.searchBarBgColor}
@@ -72,6 +71,7 @@ const UserAvatar = styled.div`
     height: 150px;
     border-radius: 50%;
     z-index: 100;
+    opacity: ${({ isLoading }) => isLoading && 0.4};
   }
   input {
     display: none;
@@ -248,54 +248,31 @@ const PostsWrapper = styled.article`
   gap: 28px 28px;
 `;
 
-const ProfilePresenter = () => {
-  const imageInput = useRef(null);
-  const [imageSrc, setImageSrc] = useState<string>('');
+interface ProfilePresenterType {
+  getUserInformationData: any;
+  onImageInputButtonClick: (event: React.MouseEvent<HTMLElement>) => void;
+  imageInputRef: any;
+  encodeFileToBase64: Function;
+  postImageRest: any;
+  imageRef: any;
+  onSubmit: any;
+  onError: any;
+  handleSubmit: any;
+  isLoading: any;
+}
 
-  const { data } = useQuery(['getLists'], () =>
-    getPostsList({ page: 1, targetUserId: 1 }),
-  );
-  useEffect(() => {
-    console.log(data?.data);
-  });
-
-  const setUserImage = () => {};
-  const encodeFileToBase64 = (fileBlob: any) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(fileBlob);
-    return new Promise((resolve: any) => {
-      reader.onload = () => {
-        const csv: string = reader.result as string;
-        setImageSrc(csv);
-        const formData = new FormData();
-        formData.append('postImage', imageSrc);
-        postUserProfileImage.mutate(formData);
-        resolve();
-      };
-    });
-  };
-
-  const submitFormData = async (e: any) => {
-    e.preventDefault();
-    const formData = new FormData();
-    formData.append('postImage', imageSrc);
-    postUserProfileImage.mutate(formData);
-  };
-
-  const postUserProfileImage = useMutation(setUserProfileImage, {
-    onError: (err: any) => {
-      console.log(err.response.data);
-    },
-    onSuccess: (userInfo: any) => {
-      console.log('유저이미지 등록 성공!');
-      console.log(data);
-    },
-  });
-
-  const onImageInputButtonClick = (event: any) => {
-    event.preventDefault();
-    imageInput.current.click();
-  };
+const ProfilePresenter = ({
+  getUserInformationData,
+  onImageInputButtonClick,
+  imageInputRef,
+  encodeFileToBase64,
+  postImageRest,
+  imageRef,
+  onSubmit,
+  onError,
+  handleSubmit,
+  isLoading,
+}: ProfilePresenterType) => {
   return (
     <>
       <NavigationBar />
@@ -303,25 +280,37 @@ const ProfilePresenter = () => {
         <MainWrapper>
           <UserInfoHeader>
             <AvatarWrapper>
-              <UserAvatar>
+              <UserAvatar isLoading={isLoading}>
                 <img
-                  src={userProfile}
+                  src={getUserInformationData?.data.profileImage}
                   alt="기본이미지"
                   onClick={onImageInputButtonClick}
                 />
                 <input
                   type="file"
                   accept="image/*"
-                  ref={imageInput}
-                  onChange={(e) => {
-                    encodeFileToBase64(e.target.files[0]);
+                  disabled={isLoading}
+                  {...postImageRest}
+                  ref={(e) => {
+                    imageRef(e);
+                    imageInputRef.current = e;
                   }}
+                  onChange={handleSubmit(onSubmit, onError)}
                 />
+                {isLoading && (
+                  <Loader
+                    loaded={!isLoading}
+                    color="#fafafa"
+                    scale={0.8}
+                    top="50%"
+                    left="50%"
+                  />
+                )}
               </UserAvatar>
             </AvatarWrapper>
             <UserInfo>
               <FirstBox>
-                <h2>insight.co.kr</h2>
+                <h2>{getUserInformationData?.data.username}</h2>
                 <ButtonBox>
                   <MessageButton>Message</MessageButton>
                   <FollowButton>
@@ -335,22 +324,19 @@ const ProfilePresenter = () => {
               </FirstBox>
               <SecondBox>
                 <p>
-                  <span>28,299</span> posts
+                  <span>{getUserInformationData?.data.postCount}</span> posts
                 </p>
                 <p>
-                  <span>821K</span> followers
+                  <span>{getUserInformationData?.data.followerCount}</span>{' '}
+                  followers
                 </p>
                 <p>
-                  <span>330</span> following
+                  <span>{getUserInformationData?.data.followingCount}</span>{' '}
+                  following
                 </p>
               </SecondBox>
               <ThirdBox>
-                <p>
-                  인사이트 <br />
-                  가슴을 울리는 스토리와 통찰력 넘치는 시선으로 독자들과
-                  소통하는 인사이트 공식 인스타그램 계정입니다. <br /> 📧 각종
-                  제보+비즈니스 문의 DM
-                </p>
+                <p>{getUserInformationData?.data.name}</p>
               </ThirdBox>
               <FourthBox>
                 <p>
@@ -377,14 +363,15 @@ const ProfilePresenter = () => {
             </MenuWrapper>
           </TabMenu>
           <PostsWrapper>
-            <Post />
-            <Post />
-            <Post />
-            <Post />
-            <Post />
-            <Post />
-            <Post />
-            <Post />
+            {getUserInformationData?.data.postList.map((post: any) => (
+              <Post
+                key={post.postId}
+                postImageList={post.postImageList}
+                postId={post.postId}
+                likeCount={post.likeCount}
+                commentCount={post.commentCount}
+              />
+            ))}
           </PostsWrapper>
         </MainWrapper>
       </MainContainer>

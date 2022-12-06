@@ -17,6 +17,28 @@ const bearerTokenApi = axios.create({
   },
 });
 
+bearerTokenApi.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const {
+      response: { status },
+    } = error;
+
+    if (status === 401) {
+      try {
+        localStorage.removeItem('accessToken');
+        // window.location.href = '/';
+        // window.location.reload();
+        return;
+      } catch (e) {
+        console.log(e);
+      }
+    }
+
+    return Promise.reject(error);
+  },
+);
+
 const multipartFormDataApi = axios.create({
   baseURL: 'http://59.187.205.70:3000',
   headers: {
@@ -25,6 +47,17 @@ const multipartFormDataApi = axios.create({
     Authorization: 'Bearer ' + localStorage.getItem('accessToken'),
   },
 });
+
+// const addPostmultipartFormDataApi = (formData: any) =>
+//   axios.create({
+//     baseURL: 'http://59.187.205.70:3000',
+//     data: formData,
+//     headers: {
+//       'Content-Type': 'multipart/form-data',
+//       'Access-Control-Allow-Origin': '*',
+//       Authorization: 'Bearer ' + localStorage.getItem('accessToken'),
+//     },
+//   });
 
 interface LoginType {
   email: string;
@@ -51,11 +84,11 @@ interface changePasswordType {
   newPassword: string;
 }
 
-interface addPostType {
-  content: string;
-  postImage1: File;
-  postImage2?: File;
-}
+// interface addPostType {
+//   content: string;
+//   postImage1: File;
+//   postImage2?: File;
+// }
 
 interface getPostsListType {
   page: number;
@@ -65,10 +98,8 @@ interface getPostsListType {
 export const loginUser = async (userInfo: LoginType) => {
   const { data } = await api.post('/signin', userInfo);
   localStorage.setItem('accessToken', data.accessToken);
-
-  setTimeout(() => {
-    window.location.reload();
-  }, 600);
+  localStorage.setItem('refreshToken', data.refreshToken);
+  window.location.reload();
   return data;
 };
 
@@ -117,6 +148,11 @@ export const changePassword = async ({
   return data;
 };
 
+interface addPostType {
+  content: string;
+  postImage1: File;
+}
+
 export const addPost = async (formData: FormData) => {
   const data = await multipartFormDataApi.post('/post', formData);
   return data;
@@ -155,7 +191,7 @@ export const deletePost = async (postId: number) => {
 };
 
 export const getPost = async (postId: number) => {
-  const data = await multipartFormDataApi.get(`/:${postId}`);
+  const data = await bearerTokenApi.get(`/post?postId=${postId}`);
   return data;
 };
 
@@ -187,6 +223,7 @@ interface commentPostType {
 
 export const commentPost = async (requestParam: commentPostType) => {
   const data = await bearerTokenApi.post('/post/comment', requestParam);
+  console.log(requestParam);
   return data;
 };
 
@@ -319,5 +356,18 @@ export const getFollowerList = async ({ page }: getFollowerListType) => {
 
 export const getNotFollowingList = async () => {
   const data = await bearerTokenApi.get('/user/notFollowingList');
+  return data;
+};
+
+interface getUserInformationType {
+  targetUserId: number;
+}
+
+export const getUserInformation = async ({
+  targetUserId,
+}: getUserInformationType) => {
+  const data = await bearerTokenApi.get(
+    `/user/info?targetUserId=${targetUserId}`,
+  );
   return data;
 };

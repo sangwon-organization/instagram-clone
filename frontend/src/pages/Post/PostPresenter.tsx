@@ -3,7 +3,13 @@ import styled from 'styled-components';
 import Footer from '../../components/layout/footer/Footer';
 import NavigationBar from '../../components/layout/NavigationBar/NavigationBar';
 import { HiOutlineEmojiHappy } from 'react-icons/hi';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import {
+  MutateFunction,
+  MutationObserverIdleResult,
+  UseMutateFunction,
+  useMutation,
+  useQuery,
+} from '@tanstack/react-query';
 import userAvatar from '../../assets/image/userAvatar.png';
 import { commentPost, getPost } from '../../api/api';
 import { GoKebabHorizontal } from 'react-icons/go';
@@ -16,6 +22,7 @@ import { TbLocation } from 'react-icons/tb';
 import { BsHeart, BsHeartFill } from 'react-icons/bs';
 import {
   Navigate,
+  NavigateFunction,
   useLocation,
   useNavigate,
   useParams,
@@ -26,6 +33,8 @@ import {
   IoIosArrowDroprightCircle,
 } from 'react-icons/io';
 import theme from '../../styles/theme';
+import { timeForToday } from '../../utils/commons';
+import { useForm } from 'react-hook-form';
 
 const Container = styled.div`
   width: 100%;
@@ -191,7 +200,7 @@ const AddCommentBox = styled.form`
   }
 `;
 
-const BigLikedIcon = styled(BsHeartFill)<{ likebuttonclicked: string }>`
+const BigLikedIcon = styled(BsHeartFill)<{ likebuttonclicked: boolean }>`
   width: 80px;
   height: 80px;
   color: #fff;
@@ -201,15 +210,26 @@ const BigLikedIcon = styled(BsHeartFill)<{ likebuttonclicked: string }>`
   transform: translate(-50%, -50%);
   transform-origin: center center;
   filter: drop-shadow(5px 5px 30px rgba(0, 0, 0, 0.7));
-  opacity: 0.7;
+  opacity: 0;
   animation: ${({ likebuttonclicked }) =>
-    likebuttonclicked === 'Y ' && 'popIcon 0.2s linear 0s 1 alternate'};
-  @keyframes popIcon {
-    0% {
-      transform: scale(0.1);
+    likebuttonclicked && 'like-heart-animation 2s ease-in-out'};
+  @keyframes like-heart-animation {
+    0%,
+    to {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0);
     }
-    100% {
-      transform: scale(1);
+    15% {
+      opacity: 0.9;
+      transform: translate(-50%, -50%) scale(1.2);
+    }
+    30% {
+      transform: translate(-50%, -50%) scale(0.95);
+    }
+    45%,
+    80% {
+      opacity: 0.9;
+      transform: translate(-50%, -50%) scale(1);
     }
   }
 `;
@@ -231,6 +251,7 @@ const LeftArrowIcon = styled(IoIosArrowDropleftCircle)<{
 
 const RightArrowIcon = styled(IoIosArrowDroprightCircle)<{
   currentslide: number;
+  totalslides: number;
 }>`
   width: 30px;
   height: 30px;
@@ -241,7 +262,8 @@ const RightArrowIcon = styled(IoIosArrowDroprightCircle)<{
   right: 15px;
   opacity: 0.6;
   cursor: pointer;
-  ${({ currentslide }) => currentslide === TOTAL_SLIDES && 'display: none'};
+  ${({ currentslide, totalslides }) =>
+    currentslide === totalslides - 1 && 'display: none'};
 `;
 
 const KebabMenuIcon = styled(GoKebabHorizontal)`
@@ -398,6 +420,7 @@ const CommentBox = styled.div`
   justify-content: flex-start;
   align-items: flex-start;
   gap: 0 10px;
+  padding: 10px 0;
 `;
 
 const AvatarBox = styled.div`
@@ -416,6 +439,7 @@ const Comment = styled.div`
     font-weight: 600;
     float: left;
     margin-right: 5px;
+    cursor: pointer;
   }
   p {
     color: ${({ theme }) => theme.textColor};
@@ -470,100 +494,97 @@ const ReplyBox = styled.div`
   }
 `;
 
-const TOTAL_SLIDES = 2;
+interface PostPresenterType {
+  nextSlide: () => void;
+  prevSlide: () => void;
+  commentPostMutate: Function;
+  commentPostIsLoading: boolean;
+  navigate: NavigateFunction;
+  currentSlide: number;
+  getUserPost: any;
+  slideRef: any;
+  totalSlide: number;
+  textareaRef: any;
+  onSubmit: Function;
+  onError: Function;
+  isValid: any;
+  postButtonRef: any;
+  register: any;
+  handleSubmit: any;
+  commentRef: any;
+  rest: any;
+  likePostFunction: any;
+  mutateLikePost: any;
+  likeButtonClicked: any;
+  doubleClickImage: any;
+}
 
-const PostPresenter = () => {
-  const textareaRef = useRef(null);
-  const postButtonRef = useRef(null);
-  const circleRef = useRef(null);
-  const slideRef = useRef(null);
-
-  const navigate = useNavigate();
-  const [currentSlide, setCurrentSlide] = useState(0);
-
-  let params = useParams();
-
-  const getUserPost = useQuery(['getPost', params], () => getPost(1));
-
-  console.log(params);
-
-  const NextSlide = () => {
-    if (currentSlide >= TOTAL_SLIDES) {
-      // setCurrentSlide(0);
-      return;
-      // rightArrowRef.current.style.display = 'none';
-    } else {
-      setCurrentSlide(currentSlide + 1);
-    }
-  };
-
-  const PrevSlide = () => {
-    if (currentSlide === 0) {
-      // setCurrentSlide(TOTAL_SLIDES);
-      return;
-      // leftArrowRef.current.style.display = 'none';
-    } else {
-      setCurrentSlide(currentSlide - 1);
-    }
-  };
-
-  const isDisabled = (e: any) => {
-    if (e.target.value === '') {
-      postButtonRef.current.disabled = true;
-    } else {
-      postButtonRef.current.disabled = false;
-    }
-  };
-
-  const registerComment = (e: any) => {
-    e.preventDefault();
-    // mutate({
-    // //   postId: postId,
-    //   parentCommentId: '',
-    //   content: textareaRef.current.value,
-    // });
-    if (isLoading) {
-      postButtonRef.current.disabled = true;
-    }
-  };
-
-  const { mutate, data, error, reset, isLoading } = useMutation(commentPost, {
-    onError: (err: any) => {
-      console.log(err.response.data);
-    },
-    onSuccess: (e: any) => {
-      console.log('댓글 등록 성공!');
-      textareaRef.current.value = '';
-      textareaRef.current.focus();
-    },
-  });
-
-  useEffect(() => {
-    slideRef.current.style.transition = 'all 0.5s ease-in-out';
-    slideRef.current.style.transform = `translateX(-${currentSlide}00%)`;
-  }, [currentSlide]);
+const PostPresenter = ({
+  nextSlide,
+  prevSlide,
+  commentPostMutate,
+  commentPostIsLoading,
+  navigate,
+  currentSlide,
+  getUserPost,
+  slideRef,
+  totalSlide,
+  textareaRef,
+  onSubmit,
+  onError,
+  isValid,
+  postButtonRef,
+  register,
+  handleSubmit,
+  commentRef,
+  rest,
+  likePostFunction,
+  mutateLikePost,
+  likeButtonClicked,
+  doubleClickImage,
+}: PostPresenterType) => {
   return (
     <>
       <NavigationBar />
       <Container>
         <Wrapper>
           <ImageBoxWrapper>
-            <LeftArrowIcon currentslide={currentSlide} onClick={PrevSlide} />
-            <ImageWrapper ref={slideRef}>
-              <img src={userImage} alt="유저이미지" />
-              <img src={userImage2} alt="유저이미지" />
-              <img src={userImage3} alt="유저이미지" />
+            <LeftArrowIcon currentslide={currentSlide} onClick={prevSlide} />
+            <ImageWrapper
+              ref={slideRef}
+              onDoubleClick={() => {
+                doubleClickImage();
+                mutateLikePost.mutate({
+                  postId: getUserPost.data?.data.postId,
+                  likeYn: 'Y',
+                });
+              }}>
+              {getUserPost.data?.data.postImageList.map((image: any) => (
+                <img src={image} key={image} alt="유저이미지" />
+              ))}
             </ImageWrapper>
-            <RightArrowIcon currentslide={currentSlide} onClick={NextSlide} />
-            <BigLikedIcon likebuttonclicked={'true'} />
+            <RightArrowIcon
+              totalslides={totalSlide}
+              currentslide={currentSlide}
+              onClick={nextSlide}
+            />
+            <BigLikedIcon likebuttonclicked={likeButtonClicked} />
           </ImageBoxWrapper>
           <PostInfo>
             <PostHeader>
               <UserInfo>
                 <UserAvatar>
-                  <img src={userAvatar} alt="유저아바타" />
+                  <img
+                    src={getUserPost.data?.data.profileImage}
+                    alt="유저아바타"
+                  />
                 </UserAvatar>
-                <p>username</p>
+                <p
+                  onClick={() =>
+                    navigate(`/user/${getUserPost.data?.data.userId}`)
+                  }>
+                  {getUserPost.data?.data.username}
+                </p>
               </UserInfo>
               <KebabMenuIcon />
             </PostHeader>
@@ -571,167 +592,92 @@ const PostPresenter = () => {
               <CommentBox>
                 <AvatarBox>
                   <UserAvatar>
-                    <img src={userAvatar} alt="유저아바타" />
+                    <img
+                      src={getUserPost.data?.data.profileImage}
+                      alt="유저아바타"
+                    />
                   </UserAvatar>
                 </AvatarBox>
                 <Comment>
-                  <span>floyd___77</span>
-                  <p>
-                    카타르는 예선도 치르지 않고 개최국 명목으로 나왔으니 결과가
-                    저렇게 됐죠.
-                  </p>
+                  <span
+                    onClick={() =>
+                      navigate(`/user/${getUserPost.data?.data.userId}`)
+                    }>
+                    {getUserPost.data?.data.username}
+                  </span>
+                  <p>{getUserPost.data?.data.content}</p>
                   <OptionBox>
-                    <button>2w</button>
-                    <button>1like</button>
-                    <button>Reply</button>
+                    <button>
+                      {timeForToday(getUserPost.data?.data.createdAt)}
+                    </button>
                   </OptionBox>
-                  <ReplyBox>
-                    <p>View replies (1)</p>
-                  </ReplyBox>
-                  <CommentBox>
-                    <AvatarBox>
-                      <UserAvatar>
-                        <img src={userAvatar} alt="유저아바타" />
-                      </UserAvatar>
-                    </AvatarBox>
-                    <Comment>
-                      <span>floyd___77</span>
-                      <p>
-                        카타르는 예선도 치르지 않고 개최국 명목으로 나왔으니
-                        결과가 저렇게 됐죠.
-                      </p>
-                      <OptionBox>
-                        <button>2w</button>
-                        <button>1like</button>
-                        <button>Reply</button>
-                      </OptionBox>
-                    </Comment>
-                    <SmallHeartIcon />
-                  </CommentBox>
                 </Comment>
                 <SmallHeartIcon />
               </CommentBox>
-              <CommentBox>
-                <AvatarBox>
-                  <UserAvatar>
-                    <img src={userAvatar} alt="유저아바타" />
-                  </UserAvatar>
-                </AvatarBox>
-                <Comment>
-                  <span>floyd___77</span>
-                  <p>
-                    카타르는 예선도 치르지 않고 개최국 명목으로 나왔으니 결과가
-                    저렇게 됐죠.
-                  </p>
-                  <OptionBox>
-                    <button>2w</button>
-                    <button>1like</button>
-                    <button>Reply</button>
-                  </OptionBox>
-                  <ReplyBox>
-                    <p>View replies (1)</p>
-                  </ReplyBox>
-                </Comment>
-                <SmallHeartIcon />
-              </CommentBox>
-              <CommentBox>
-                <AvatarBox>
-                  <UserAvatar>
-                    <img src={userAvatar} alt="유저아바타" />
-                  </UserAvatar>
-                </AvatarBox>
-                <Comment>
-                  <span>floyd___77</span>
-                  <p>
-                    카타르는 예선도 치르지 않고 개최국 명목으로 나왔으니 결과가
-                    저렇게 됐죠.
-                  </p>
-                  <OptionBox>
-                    <button>2w</button>
-                    <button>1like</button>
-                    <button>Reply</button>
-                  </OptionBox>
-                  <ReplyBox>
-                    <p>View replies (1)</p>
-                  </ReplyBox>
-                </Comment>
-                <SmallHeartIcon />
-              </CommentBox>
-              <CommentBox>
-                <AvatarBox>
-                  <UserAvatar>
-                    <img src={userAvatar} alt="유저아바타" />
-                  </UserAvatar>
-                </AvatarBox>
-                <Comment>
-                  <span>floyd___77</span>
-                  <p>
-                    카타르는 예선도 치르지 않고 개최국 명목으로 나왔으니 결과가
-                    저렇게 됐죠.
-                  </p>
-                  <OptionBox>
-                    <button>2w</button>
-                    <button>1like</button>
-                    <button>Reply</button>
-                  </OptionBox>
-                  <ReplyBox>
-                    <p>View replies (1)</p>
-                  </ReplyBox>
-                </Comment>
-                <SmallHeartIcon />
-              </CommentBox>
-              <CommentBox>
-                <AvatarBox>
-                  <UserAvatar>
-                    <img src={userAvatar} alt="유저아바타" />
-                  </UserAvatar>
-                </AvatarBox>
-                <Comment>
-                  <span>floyd___77</span>
-                  <p>
-                    카타르는 예선도 치르지 않고 개최국 명목으로 나왔으니 결과가
-                    저렇게 됐죠.
-                  </p>
-                  <OptionBox>
-                    <button>2w</button>
-                    <button>1like</button>
-                    <button>Reply</button>
-                  </OptionBox>
-                  <ReplyBox>
-                    <p>View replies (1)</p>
-                  </ReplyBox>
-                </Comment>
-                <SmallHeartIcon />
-              </CommentBox>
+              {getUserPost.data?.data.commentList.map((comment: any) => (
+                <CommentBox key={comment.commentId}>
+                  <AvatarBox>
+                    <UserAvatar>
+                      <img src={comment.profileImage} alt="유저아바타" />
+                    </UserAvatar>
+                  </AvatarBox>
+                  <Comment>
+                    <span onClick={() => navigate(`/user/${comment.userId}`)}>
+                      {comment.username}
+                    </span>
+                    <p>{comment.content}</p>
+                    <OptionBox>
+                      <button>{timeForToday(comment.createdAt)}</button>
+                      <button>
+                        {comment.likeCount > 0
+                          ? comment.likeCount + ' like'
+                          : ''}
+                      </button>
+                    </OptionBox>
+                  </Comment>
+                  <SmallHeartIcon />
+                </CommentBox>
+              ))}
             </CommentsListBox>
             <PostBottom>
               <ButtonBox>
                 <IconBox>
                   <LeftIconBox>
-                    {true ? (
-                      <ColoredHeartIcon likebuttonclicked={'true'} />
+                    {getUserPost.data?.data.likeYn === 'Y' ? (
+                      <ColoredHeartIcon
+                        likebuttonclicked={'true'}
+                        onClick={likePostFunction}
+                      />
                     ) : (
-                      <HeartIcon />
+                      <HeartIcon onClick={likePostFunction} />
                     )}
-                    <ChatIcon />
+                    <ChatIcon onClick={() => textareaRef.current.focus()} />
                     <LocationIcon />
                   </LeftIconBox>
-                  {true ? <BookmarkFilledIcon /> : <BookmarkIcon />}
+                  {getUserPost.data?.data.bookmarkYn === 'Y' ? (
+                    <BookmarkFilledIcon />
+                  ) : (
+                    <BookmarkIcon />
+                  )}
                 </IconBox>
                 <LikeAndDateBox>
-                  <p>743 likes</p>
-                  <p>15 hours ago</p>
+                  <p>{getUserPost.data?.data.likeCount} likes</p>
+                  <p>{timeForToday(getUserPost.data?.data.createdAt)}</p>
                 </LikeAndDateBox>
               </ButtonBox>
-              <AddCommentBox>
+              <AddCommentBox onSubmit={handleSubmit(onSubmit, onError)}>
                 <SmileIcon />
                 <textarea
-                  name=""
-                  id=""
-                  onChange={(e: any) => isDisabled(e)}
-                  ref={textareaRef}
+                  name="commentInput"
+                  id="commentInput"
+                  {...rest}
+                  // required
+                  ref={(e) => {
+                    commentRef(e);
+                    textareaRef.current = e;
+                  }}
                   placeholder="Add a comment..."></textarea>
-                {isLoading && (
+                {commentPostIsLoading && (
                   <Loader
                     loaded={false}
                     color="#8e8e8e"
@@ -740,11 +686,7 @@ const PostPresenter = () => {
                     left="50%"
                   />
                 )}
-                <button
-                  type="submit"
-                  ref={postButtonRef}
-                  disabled
-                  onClick={(e: any) => registerComment(e)}>
+                <button type="submit" disabled={!isValid}>
                   Post
                 </button>
               </AddCommentBox>
