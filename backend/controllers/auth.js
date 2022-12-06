@@ -19,7 +19,7 @@ const signin = catchAsync(async (req, res) => {
     .send(
       Object.assign(
         { code: 0, message: 'success' },
-        { accessToken: tokens.access.token, accessTokenExpiredAt: tokens.access.expires, refreshToken: tokens.refresh.token, refreshTokenExpiredAt: tokens.refresh.expires }
+        { userId: user.userId, accessToken: tokens.access.token, accessTokenExpiredAt: tokens.access.expires, refreshToken: tokens.refresh.token, refreshTokenExpiredAt: tokens.refresh.expires }
       )
     )
 })
