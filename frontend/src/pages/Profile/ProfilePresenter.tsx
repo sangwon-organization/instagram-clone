@@ -10,6 +10,8 @@ import NavigationBar from '../../components/layout/NavigationBar/NavigationBar';
 import Post from '../../components/feature/Profile/Post';
 import Footer from '../../components/layout/footer/Footer';
 import Loader from 'react-loader';
+import NoPostsBox from '../../components/feature/Post/NoPostsBox';
+import SharesPhotosBox from '../../components/feature/Post/SharesPhotosBox';
 
 const MainContainer = styled.div`
   width: 100%;
@@ -49,7 +51,7 @@ const AvatarWrapper = styled.form`
   /* border: 1px solid red; */
 `;
 
-const UserAvatar = styled.div<{ isLoading: boolean }>`
+const UserAvatar = styled.div<{ isloading: boolean; ismypage: boolean }>`
   width: 168px;
   height: 168px;
   border-radius: 50%;
@@ -58,7 +60,8 @@ const UserAvatar = styled.div<{ isLoading: boolean }>`
   justify-content: center;
   align-items: center;
   position: relative;
-  cursor: ${({ isLoading }) => (isLoading ? 'default' : 'pointer')};
+  cursor: ${({ isloading, ismypage }) =>
+    isloading || !ismypage ? 'default' : 'pointer'};
   background-image: linear-gradient(
       ${({ theme }) => theme.searchBarBgColor},
       ${({ theme }) => theme.searchBarBgColor}
@@ -71,7 +74,7 @@ const UserAvatar = styled.div<{ isLoading: boolean }>`
     height: 150px;
     border-radius: 50%;
     z-index: 100;
-    opacity: ${({ isLoading }) => isLoading && 0.4};
+    opacity: ${({ isloading }) => isloading && 0.4};
   }
   input {
     display: none;
@@ -219,6 +222,10 @@ const MenuWrapper = styled.ul`
     &:active {
       opacity: 0.7;
     }
+    &:first-child {
+      color: ${({ theme }) => theme.textColor};
+      border-top: 1px solid ${({ theme }) => theme.textColor};
+    }
   }
 `;
 
@@ -259,6 +266,7 @@ interface ProfilePresenterType {
   onError: any;
   handleSubmit: any;
   isLoading: any;
+  isMyPage: boolean;
 }
 
 const ProfilePresenter = ({
@@ -272,6 +280,7 @@ const ProfilePresenter = ({
   onError,
   handleSubmit,
   isLoading,
+  isMyPage,
 }: ProfilePresenterType) => {
   return (
     <>
@@ -280,7 +289,7 @@ const ProfilePresenter = ({
         <MainWrapper>
           <UserInfoHeader>
             <AvatarWrapper>
-              <UserAvatar isLoading={isLoading}>
+              <UserAvatar isloading={isLoading} ismypage={isMyPage}>
                 <img
                   src={getUserInformationData?.data.profileImage}
                   alt="기본이미지"
@@ -289,7 +298,7 @@ const ProfilePresenter = ({
                 <input
                   type="file"
                   accept="image/*"
-                  disabled={isLoading}
+                  disabled={isLoading || !isMyPage}
                   {...postImageRest}
                   ref={(e) => {
                     imageRef(e);
@@ -362,17 +371,23 @@ const ProfilePresenter = ({
               </li>
             </MenuWrapper>
           </TabMenu>
-          <PostsWrapper>
-            {getUserInformationData?.data.postList.map((post: any) => (
-              <Post
-                key={post.postId}
-                postImageList={post.postImageList}
-                postId={post.postId}
-                likeCount={post.likeCount}
-                commentCount={post.commentCount}
-              />
-            ))}
-          </PostsWrapper>
+          {getUserInformationData?.data.postList.length > 0 ? (
+            <PostsWrapper>
+              {getUserInformationData?.data.postList.map((post: any) => (
+                <Post
+                  key={post.postId}
+                  postImageList={post.postImageList}
+                  postId={post.postId}
+                  likeCount={post.likeCount}
+                  commentCount={post.commentCount}
+                />
+              ))}
+            </PostsWrapper>
+          ) : isMyPage ? (
+            <SharesPhotosBox />
+          ) : (
+            <NoPostsBox />
+          )}
         </MainWrapper>
       </MainContainer>
       <Footer />

@@ -26,6 +26,10 @@ import {
 import Loader from 'react-loader';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { timeForToday } from '../../../utils/commons';
+import ModalPortal from '../Modal/ModalPortal';
+import ModalContainer from '../Modal/ModalContainer';
+import PostDropDownModal from '../Modal/PostDropDownModal';
+import DeleteConfirmModal from '../Modal/DeleteConfirmModal';
 
 const FeedCardContainer = styled.div`
   width: 470px;
@@ -491,6 +495,7 @@ const FeedCard = ({
 }: FeedCardProps) => {
   const [likeButtonClicked, setLikeButtonClicked] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [showPostDropdown, setShowPostDropdown] = useState(false);
   const slideRef = useRef(null);
   const circleRef = useRef(null);
   const textareaRef = useRef(null);
@@ -501,6 +506,16 @@ const FeedCard = ({
   const location = useLocation();
 
   const TOTAL_SLIDES = postImageList.length;
+
+  const openModal = () => {
+    setShowPostDropdown(true);
+    document.body.style.overflow = 'hidden';
+  };
+
+  const closeModal = () => {
+    setShowPostDropdown(false);
+    document.body.style.overflow = 'unset';
+  };
 
   const NextSlide = () => {
     if (currentSlide >= TOTAL_SLIDES) {
@@ -608,6 +623,12 @@ const FeedCard = ({
     }
   };
 
+  const myUserId = parseInt(localStorage.getItem('userId'));
+
+  const isMyPost = myUserId === userId;
+
+  const [deleteButtonClicked, setdeleteButtonClicked] = useState(false);
+
   return (
     <FeedCardContainer>
       <UserInformationWrapper>
@@ -617,7 +638,7 @@ const FeedCard = ({
           </UserAvatar>
           <p onClick={() => navigate(`/user/${userId}`)}>{username}</p>
         </UserInfo>
-        <KebabMenuIcon />
+        <KebabMenuIcon onClick={openModal} />
       </UserInformationWrapper>
       <ImageBoxWrapper onDoubleClick={doubleClickImage}>
         <LeftArrowIcon currentslide={currentSlide} onClick={PrevSlide} />
@@ -709,6 +730,26 @@ const FeedCard = ({
           Post
         </button>
       </AddCommentBox>
+      {showPostDropdown && (
+        <ModalPortal>
+          <ModalContainer
+            isMyPost={isMyPost}
+            postId={postId}
+            postDropDown
+            closeModal={closeModal}>
+            {deleteButtonClicked ? (
+              <DeleteConfirmModal />
+            ) : (
+              <PostDropDownModal
+                closeFristModal={closeModal}
+                isMyPost={isMyPost}
+                postId={postId}
+                setdeleteButtonClicked={setdeleteButtonClicked}
+              />
+            )}
+          </ModalContainer>
+        </ModalPortal>
+      )}
     </FeedCardContainer>
   );
 };

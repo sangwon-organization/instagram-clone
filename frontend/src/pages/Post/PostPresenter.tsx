@@ -35,6 +35,9 @@ import {
 import theme from '../../styles/theme';
 import { timeForToday } from '../../utils/commons';
 import { useForm } from 'react-hook-form';
+import ModalPortal from '../../components/feature/Modal/ModalPortal';
+import ModalContainer from '../../components/feature/Modal/ModalContainer';
+import PostDropDownModal from '../../components/feature/Modal/PostDropDownModal';
 
 const Container = styled.div`
   width: 100%;
@@ -517,6 +520,11 @@ interface PostPresenterType {
   mutateLikePost: any;
   likeButtonClicked: any;
   doubleClickImage: any;
+  showPostDropdown: any;
+  openModal: any;
+  closeModal: any;
+  isMyPost: any;
+  postId: any;
 }
 
 const PostPresenter = ({
@@ -542,6 +550,11 @@ const PostPresenter = ({
   mutateLikePost,
   likeButtonClicked,
   doubleClickImage,
+  showPostDropdown,
+  openModal,
+  closeModal,
+  isMyPost,
+  postId,
 }: PostPresenterType) => {
   return (
     <>
@@ -586,7 +599,7 @@ const PostPresenter = ({
                   {getUserPost.data?.data.username}
                 </p>
               </UserInfo>
-              <KebabMenuIcon />
+              <KebabMenuIcon onClick={openModal} />
             </PostHeader>
             <CommentsListBox>
               <CommentBox>
@@ -695,6 +708,21 @@ const PostPresenter = ({
         </Wrapper>
       </Container>
       <Footer />
+      {showPostDropdown && (
+        <ModalPortal>
+          <ModalContainer
+            isMyPost={isMyPost}
+            postId={postId}
+            postDropDown
+            closeModal={closeModal}>
+            <PostDropDownModal
+              isMyPost={isMyPost}
+              postId={postId}
+              closeFristModal={closeModal}
+            />
+          </ModalContainer>
+        </ModalPortal>
+      )}
     </>
   );
 };

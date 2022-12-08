@@ -72,6 +72,10 @@ const ProfileContainer = () => {
     () => getUserInformation({ targetUserId: parseInt(params.userId) }),
   );
 
+  const myUserId = localStorage.getItem('userId');
+
+  const isMyPage = myUserId === params.userId;
+
   // console.log(getUserInformationData?.data);
   return (
     <>
@@ -94,6 +98,7 @@ const ProfileContainer = () => {
         onError={onError}
         handleSubmit={handleSubmit}
         isLoading={postUserProfileImage.isLoading}
+        isMyPage={isMyPage}
       />
     </>
   );

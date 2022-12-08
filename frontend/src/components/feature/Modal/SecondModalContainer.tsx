@@ -4,6 +4,7 @@ import { IoClose } from 'react-icons/io5';
 import useOutsideClick from '../../../hooks/useOutsideClick';
 import CreatePostModal from './CreatePostModal';
 import PostDropDownModal from './PostDropDownModal';
+import DeleteConfirmModal from './DeleteConfirmModal';
 
 const Container = styled.div`
   position: absolute;
@@ -60,15 +61,12 @@ type ModalContainerProps = {
   createPost?: any;
   postDropDown?: any;
   isMyPost?: any;
-  postId?: number;
+  postId: number;
   children: any;
 };
 
-function ModalContainer({
+function SecondModalContainer({
   closeModal,
-  createPost,
-  postDropDown,
-  isMyPost,
   postId,
   children,
 }: ModalContainerProps) {
@@ -78,18 +76,12 @@ function ModalContainer({
   return (
     <Container>
       <Background />
-      {createPost && <CloseIcon />}
+      <CloseIcon />
       <ModalBlock>
-        <Contents ref={outsideRef}>
-          {/* {createPost && <CreatePostModal />} */}
-          {/* {postDropDown && (
-            <PostDropDownModal isMyPost={isMyPost} postId={postId} />
-          )} */}
-          {children}
-        </Contents>
+        <Contents ref={outsideRef}>{children}</Contents>
       </ModalBlock>
     </Container>
   );
 }
 
-export default ModalContainer;
+export default SecondModalContainer;
