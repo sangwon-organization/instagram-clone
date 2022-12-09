@@ -4,6 +4,7 @@ import { IoClose } from 'react-icons/io5';
 import useOutsideClick from '../../../hooks/useOutsideClick';
 import CreatePostModal from './CreatePostModal';
 import PostDropDownModal from './PostDropDownModal';
+import DeleteConfirmModal from './DeleteConfirmModal';
 
 const Container = styled.div`
   position: absolute;
@@ -58,12 +59,15 @@ const CloseIcon = styled(IoClose)`
 type ModalContainerProps = {
   closeModal: Function;
   createPost?: any;
+  postDropDown?: any;
+  isMyPost?: any;
+  postId: number;
   children: any;
 };
 
-function ModalContainer({
+function SecondModalContainer({
   closeModal,
-  createPost,
+  postId,
   children,
 }: ModalContainerProps) {
   const outsideRef = useRef();
@@ -72,7 +76,7 @@ function ModalContainer({
   return (
     <Container>
       <Background />
-      {createPost && <CloseIcon />}
+      <CloseIcon />
       <ModalBlock>
         <Contents ref={outsideRef}>{children}</Contents>
       </ModalBlock>
@@ -80,4 +84,4 @@ function ModalContainer({
   );
 }
 
-export default ModalContainer;
+export default SecondModalContainer;

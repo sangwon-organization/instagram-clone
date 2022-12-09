@@ -3,8 +3,8 @@ import MetaTag from '../../meta/MetaTag';
 import HomePresenter from './HomePresenter';
 import thumbnail from '../../assets/image/thumbnail.png';
 import { useInView } from 'react-intersection-observer';
-import { useInfiniteQuery } from '@tanstack/react-query';
-import { getPostsList } from '../../api/api';
+import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { getPostsList, getUserInformation } from '../../api/api';
 
 const HomeContainer = () => {
   const [ref, inView] = useInView();

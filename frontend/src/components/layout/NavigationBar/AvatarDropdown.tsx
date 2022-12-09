@@ -107,21 +107,29 @@ const AvatarDropdown = ({
 
   const logout = () => {
     localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('userId');
     navigate('/');
     setTimeout(() => {
       window.location.reload();
     }, 600);
   };
 
+  const userId = localStorage.getItem('userId');
+
   return (
     <AvatarDropdownContainer showDropdown={showDropdown} ref={outsideRef}>
       <AvatarDropdownWrapper>
-        <DropdownItem first onClick={() => navigate('/profile')}>
+        <DropdownItem
+          first
+          onClick={() => {
+            navigate(`/user/${userId}`);
+            window.location.reload();
+          }}>
           <ProfileIcon />
           <p>Profile</p>
         </DropdownItem>
-        <DropdownItem
-          onClick={() => window.open('https://www.naver.com', '_top')}>
+        <DropdownItem>
           <SavedIcon />
           <p>Saved</p>
         </DropdownItem>

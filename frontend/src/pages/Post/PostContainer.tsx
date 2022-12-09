@@ -119,10 +119,25 @@ const PostContainer = () => {
     },
   });
 
-  useEffect(() => {
-    slideRef.current.style.transition = 'all 0.5s ease-in-out';
-    slideRef.current.style.transform = `translateX(-${currentSlide}00%)`;
-  }, [currentSlide]);
+  // useEffect(() => {
+  //   slideRef.current.style.transition = 'all 0.5s ease-in-out';
+  //   slideRef.current.style.transform = `translateX(-${currentSlide}00%)`;
+  // }, [currentSlide]);
+
+  const [showPostDropdown, setShowPostDropdown] = useState(false);
+  const openModal = () => {
+    setShowPostDropdown(true);
+    document.body.style.overflow = 'hidden';
+  };
+
+  const closeModal = () => {
+    setShowPostDropdown(false);
+    document.body.style.overflow = 'unset';
+  };
+
+  const myUserId = parseInt(localStorage.getItem('userId'));
+
+  const isMyPost = myUserId === getUserPost.data?.data.userId;
   return (
     <>
       <MetaTag
@@ -155,6 +170,11 @@ const PostContainer = () => {
         mutateLikePost={mutateLikePost}
         likeButtonClicked={likeButtonClicked}
         doubleClickImage={doubleClickImage}
+        showPostDropdown={showPostDropdown}
+        openModal={openModal}
+        closeModal={closeModal}
+        isMyPost={isMyPost}
+        postId={params.postId}
       />
     </>
   );

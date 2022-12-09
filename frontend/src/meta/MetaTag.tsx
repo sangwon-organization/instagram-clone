@@ -20,7 +20,6 @@ const MetaTag = ({
   return (
     <Helmet>
       <title>{title}</title>
-
       <meta name="description" content={description} data-react-helmet="true" />
       <meta name="keywords" content={keywords} data-react-helmet="true" />
 
