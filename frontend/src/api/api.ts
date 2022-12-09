@@ -176,7 +176,7 @@ export const modifyPost = async (formData: modifyPostType) => {
 };
 
 export const deletePost = async (postId: number) => {
-  const data = await api.delete(`/:${postId}`);
+  const data = await bearerTokenApi.delete(`/post/${postId}`);
   return data;
 };
 

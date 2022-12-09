@@ -76,7 +76,7 @@ const ProfileContainer = () => {
 
   const isMyPage = myUserId === params.userId;
 
-  // console.log(getUserInformationData?.data);
+  console.log(getUserInformationData?.data);
   return (
     <>
       <MetaTag

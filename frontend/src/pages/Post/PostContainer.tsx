@@ -119,10 +119,10 @@ const PostContainer = () => {
     },
   });
 
-  useEffect(() => {
-    slideRef.current.style.transition = 'all 0.5s ease-in-out';
-    slideRef.current.style.transform = `translateX(-${currentSlide}00%)`;
-  }, [currentSlide]);
+  // useEffect(() => {
+  //   slideRef.current.style.transition = 'all 0.5s ease-in-out';
+  //   slideRef.current.style.transform = `translateX(-${currentSlide}00%)`;
+  // }, [currentSlide]);
 
   const [showPostDropdown, setShowPostDropdown] = useState(false);
   const openModal = () => {

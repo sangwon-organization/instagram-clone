@@ -7,13 +7,15 @@ import { addPost } from '../../../api/api';
 import * as url from 'url';
 import { useMutation } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
+import Loader from 'react-loader';
+import { FiCheck } from 'react-icons/fi';
 
 interface AddPostForm {
   content: string;
   postImage1: File;
 }
 
-const Container = styled.form<{ nextmodal: boolean }>`
+const Container = styled.form<{ nextmodal?: boolean }>`
   width: ${({ nextmodal }) => (nextmodal ? '1120px' : '768px')};
   height: 808px;
   border-radius: 10px;
@@ -44,6 +46,7 @@ const Content = styled.div`
   justify-content: center;
   align-items: center;
   gap: 15px 0;
+  position: relative;
   p {
     font-size: 22px;
     font-weight: 300;
@@ -158,6 +161,34 @@ const LeftArrowIcon = styled(BiArrowBack)`
   cursor: pointer;
 `;
 
+const UserAvatar = styled.div`
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  border: 4px solid transparent;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-image: linear-gradient(
+      ${({ theme }) => theme.searchBarBgColor},
+      ${({ theme }) => theme.searchBarBgColor}
+    ),
+    linear-gradient(to right, red 0%, orange 100%);
+  background-origin: border-box;
+  background-clip: content-box, border-box;
+  img {
+    width: 57px;
+    height: 57px;
+    border-radius: 50%;
+    z-index: 100;
+  }
+`;
+
+const CheckIcon = styled(FiCheck)`
+  font-size: 55px;
+  color: #f60273;
+`;
+
 const CreatePostModal = () => {
   const [imageSrc, setImageSrc] = useState<string>('');
   const [nextModal, setNextModal] = useState(false);
@@ -207,7 +238,7 @@ const CreatePostModal = () => {
   //   mutate(formData);
   // };
 
-  const { mutate, data, error, reset, isLoading } = useMutation(
+  const { mutate, data, error, reset, isLoading, isSuccess } = useMutation(
     (formData: FormData) => addPost(formData),
     {
       onError: (err: any) => {
@@ -216,7 +247,6 @@ const CreatePostModal = () => {
       onSuccess: (userInfo: any) => {
         console.log('포스트 등록 성공!');
         console.log(data);
-        window.location.reload();
       },
     },
   );
@@ -241,6 +271,32 @@ const CreatePostModal = () => {
     event.preventDefault();
     imageInput.current.click();
   };
+
+  if (isLoading || isSuccess) {
+    return (
+      <Container>
+        <Title>{isLoading ? 'Sharing...' : 'Post shared'}</Title>
+        <Wrapper>
+          <Content>
+            {isLoading ? (
+              <Loader
+                loaded={!isLoading}
+                color="#000"
+                scale={2.0}
+                top="50%"
+                left="50%"
+              />
+            ) : (
+              <UserAvatar>
+                <CheckIcon />
+              </UserAvatar>
+            )}
+            {isSuccess && <p>Your post has been shared.</p>}
+          </Content>
+        </Wrapper>
+      </Container>
+    );
+  }
 
   return (
     <Container nextmodal={nextModal} onSubmit={handleSubmit(onSubmit, onError)}>

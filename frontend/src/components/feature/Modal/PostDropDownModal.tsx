@@ -1,5 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import React, { useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { deletePost } from '../../../api/api';
 import DeleteConfirmModal from './DeleteConfirmModal';
@@ -7,9 +8,11 @@ import ModalContainer from './ModalContainer';
 import ModalPortal from './ModalPortal';
 import SecondModalContainer from './SecondModalContainer';
 
-const Container = styled.div<{ ismypost: boolean }>`
+const Container = styled.div<{
+  ismypost: boolean;
+}>`
   width: 400px;
-  height: ${({ ismypost }) => (ismypost ? '435px' : '288px')};
+  height: fit-content;
   background: ${({ theme }) => theme.dropDownBgColor};
   border-radius: 10px;
 `;
@@ -40,43 +43,21 @@ const Button = styled.button<{ first?: boolean; last?: boolean }>`
 interface PostDropDownModalType {
   isMyPost: boolean;
   postId: number;
-  closeFristModal: any;
-  setdeleteButtonClicked?: any;
+  userId: number;
 }
 
 const PostDropDownModal = ({
   isMyPost,
   postId,
-  closeFristModal,
-  setdeleteButtonClicked,
+  userId,
 }: PostDropDownModalType) => {
-  const {
-    mutate: deletePostMutate,
-    data,
-    error,
-    reset,
-    isLoading,
-  } = useMutation(deletePost, {
-    onError: (err: any) => {
-      console.log(err.response.data);
-    },
-    onSuccess: (e: any) => {
-      console.log('포스트 삭제 성공!');
-      console.log(e);
-    },
-  });
-  //   deletePostMutate(postId);
+  const [deleteButtonClicked, setdeleteButtonClicked] = useState(false);
+  const navigate = useNavigate();
+  const { postId: urlPostId } = useParams();
 
-  const openModal = () => {
-    setdeleteButtonClicked(true);
-    document.body.style.overflow = 'hidden';
-  };
-
-  const closeModal = () => {
-    setdeleteButtonClicked(false);
-    document.body.style.overflow = 'unset';
-  };
-
+  if (deleteButtonClicked) {
+    return <DeleteConfirmModal postId={postId} userId={userId} />;
+  }
   return (
     <Container ismypost={isMyPost}>
       {isMyPost ? (
@@ -89,7 +70,9 @@ const PostDropDownModal = ({
       {isMyPost && <Button>Edit</Button>}
       {isMyPost && <Button>Unhide like count</Button>}
       {isMyPost && <Button>Turn on Commenting</Button>}
-      <Button>Go to post</Button>
+      {!urlPostId && (
+        <Button onClick={() => navigate(`/post/${postId}`)}>Go to post</Button>
+      )}
       <Button>Share to...</Button>
       <Button>Copy link</Button>
       <Button>Embed</Button>

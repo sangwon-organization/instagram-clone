@@ -20,10 +20,6 @@ const MetaTag = ({
   return (
     <Helmet>
       <title>{title}</title>
-      <meta
-        http-equiv="Content-Security-Policy"
-        content="upgrade-insecure-requests"
-      />
       <meta name="description" content={description} data-react-helmet="true" />
       <meta name="keywords" content={keywords} data-react-helmet="true" />
 

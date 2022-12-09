@@ -58,18 +58,12 @@ const CloseIcon = styled(IoClose)`
 type ModalContainerProps = {
   closeModal: Function;
   createPost?: any;
-  postDropDown?: any;
-  isMyPost?: any;
-  postId?: number;
   children: any;
 };
 
 function ModalContainer({
   closeModal,
   createPost,
-  postDropDown,
-  isMyPost,
-  postId,
   children,
 }: ModalContainerProps) {
   const outsideRef = useRef();
@@ -80,13 +74,7 @@ function ModalContainer({
       <Background />
       {createPost && <CloseIcon />}
       <ModalBlock>
-        <Contents ref={outsideRef}>
-          {/* {createPost && <CreatePostModal />} */}
-          {/* {postDropDown && (
-            <PostDropDownModal isMyPost={isMyPost} postId={postId} />
-          )} */}
-          {children}
-        </Contents>
+        <Contents ref={outsideRef}>{children}</Contents>
       </ModalBlock>
     </Container>
   );

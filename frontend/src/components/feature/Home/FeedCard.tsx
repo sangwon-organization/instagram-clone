@@ -30,6 +30,7 @@ import ModalPortal from '../Modal/ModalPortal';
 import ModalContainer from '../Modal/ModalContainer';
 import PostDropDownModal from '../Modal/PostDropDownModal';
 import DeleteConfirmModal from '../Modal/DeleteConfirmModal';
+import PostWrapper from '../Post/PostWrapper';
 
 const FeedCardContainer = styled.div`
   width: 470px;
@@ -496,6 +497,7 @@ const FeedCard = ({
   const [likeButtonClicked, setLikeButtonClicked] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showPostDropdown, setShowPostDropdown] = useState(false);
+  const [showPostModal, setShowPostModal] = useState(false);
   const slideRef = useRef(null);
   const circleRef = useRef(null);
   const textareaRef = useRef(null);
@@ -515,6 +517,17 @@ const FeedCard = ({
   const closeModal = () => {
     setShowPostDropdown(false);
     document.body.style.overflow = 'unset';
+  };
+
+  const openPost = () => {
+    setShowPostModal(true);
+    document.body.style.overflow = 'hidden';
+  };
+
+  const closePost = () => {
+    setShowPostModal(false);
+    document.body.style.overflow = 'unset';
+    navigate(-1);
   };
 
   const NextSlide = () => {
@@ -627,8 +640,6 @@ const FeedCard = ({
 
   const isMyPost = myUserId === userId;
 
-  const [deleteButtonClicked, setdeleteButtonClicked] = useState(false);
-
   return (
     <FeedCardContainer>
       <UserInformationWrapper>
@@ -665,10 +676,15 @@ const FeedCard = ({
             ) : (
               <HeartIcon onClick={likePostFunction(pageIndex)} />
             )}
-            <Link to={`/post/${postId}`} state={{ background: location }}>
-              <ChatIcon />
-              <Outlet />
-            </Link>
+            {/* <Link to={`/post/${postId}`} state={{ background: location }}> */}
+            <ChatIcon
+              onClick={() => {
+                window.history.pushState('', '', `/post/${postId}`);
+                openPost();
+              }}
+            />
+            {/* <Outlet /> */}
+            {/* </Link> */}
             <LocationIcon />
           </LeftIconBox>
           <MeatballIconBox ref={circleRef}>
@@ -732,21 +748,19 @@ const FeedCard = ({
       </AddCommentBox>
       {showPostDropdown && (
         <ModalPortal>
-          <ModalContainer
-            isMyPost={isMyPost}
-            postId={postId}
-            postDropDown
-            closeModal={closeModal}>
-            {deleteButtonClicked ? (
-              <DeleteConfirmModal />
-            ) : (
-              <PostDropDownModal
-                closeFristModal={closeModal}
-                isMyPost={isMyPost}
-                postId={postId}
-                setdeleteButtonClicked={setdeleteButtonClicked}
-              />
-            )}
+          <ModalContainer closeModal={closeModal}>
+            <PostDropDownModal
+              isMyPost={isMyPost}
+              postId={postId}
+              userId={userId}
+            />
+          </ModalContainer>
+        </ModalPortal>
+      )}
+      {showPostModal && (
+        <ModalPortal>
+          <ModalContainer closeModal={closePost}>
+            <PostWrapper postId={postId} />
           </ModalContainer>
         </ModalPortal>
       )}

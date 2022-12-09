@@ -12,6 +12,7 @@ import Footer from '../../components/layout/footer/Footer';
 import Loader from 'react-loader';
 import NoPostsBox from '../../components/feature/Post/NoPostsBox';
 import SharesPhotosBox from '../../components/feature/Post/SharesPhotosBox';
+import { IoIosSettings } from 'react-icons/io';
 
 const MainContainer = styled.div`
   width: 100%;
@@ -105,10 +106,11 @@ const FirstBox = styled.div`
 `;
 
 const ButtonBox = styled.div`
-  width: 240px;
+  width: fit-content;
   height: 100%;
   display: flex;
-  justify-content: space-between;
+  gap: 0 15px;
+  justify-content: flex-start;
   align-items: center;
 `;
 
@@ -165,7 +167,7 @@ const UserCheckIcon = styled(FaUserCheck)`
 `;
 
 const MessageButton = styled.button`
-  width: 80px;
+  width: fit-content;
   height: 30px;
   padding: 5px 9px;
   font-size: 14px;
@@ -175,8 +177,8 @@ const MessageButton = styled.button`
   background: transparent;
   color: ${({ theme }) => theme.textColor};
 `;
-const FollowButton = styled.button`
-  width: 72px;
+const UnFollowButton = styled.button`
+  width: fit-content;
   height: 30px;
   padding: 5px 9px;
   border: 1px solid ${({ theme }) => theme.borderColor};
@@ -184,6 +186,25 @@ const FollowButton = styled.button`
   background: transparent;
   color: ${({ theme }) => theme.textColor};
 `;
+
+const FollowButon = styled.button`
+  width: fit-content;
+  height: 30px;
+  padding: 5px 9px;
+  border-radius: 5px;
+  border: none;
+  background: #0095f6;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  &:active {
+    opacity: 0.7;
+  }
+  &:hover {
+    background: #1872f2;
+  }
+`;
+
 const SuggestedButton = styled.button`
   width: 34px;
   height: 30px;
@@ -227,6 +248,11 @@ const MenuWrapper = styled.ul`
       border-top: 1px solid ${({ theme }) => theme.textColor};
     }
   }
+`;
+
+const SettingsIcon = styled(IoIosSettings)`
+  font-size: 30px;
+  color: ${({ theme }) => theme.textColor};
 `;
 
 const TaggedIcon = styled(RiAccountPinBoxLine)`
@@ -320,16 +346,29 @@ const ProfilePresenter = ({
             <UserInfo>
               <FirstBox>
                 <h2>{getUserInformationData?.data.username}</h2>
-                <ButtonBox>
-                  <MessageButton>Message</MessageButton>
-                  <FollowButton>
-                    <UserCheckIcon />
-                  </FollowButton>
-                  <SuggestedButton>
-                    <ArrowDownIcon />
-                  </SuggestedButton>
-                  <KebabMenuIcon />
-                </ButtonBox>
+                {isMyPage ? (
+                  <ButtonBox>
+                    <MessageButton>Edit profile</MessageButton>
+                    <SettingsIcon />
+                  </ButtonBox>
+                ) : (
+                  <ButtonBox>
+                    {getUserInformationData?.data.followYn === 'Y' ? (
+                      <MessageButton>Message</MessageButton>
+                    ) : null}
+                    {getUserInformationData?.data.followYn === 'Y' ? (
+                      <UnFollowButton>
+                        <UserCheckIcon />
+                      </UnFollowButton>
+                    ) : (
+                      <FollowButon>Follow</FollowButon>
+                    )}
+                    <SuggestedButton>
+                      <ArrowDownIcon />
+                    </SuggestedButton>
+                    <KebabMenuIcon />
+                  </ButtonBox>
+                )}
               </FirstBox>
               <SecondBox>
                 <p>
