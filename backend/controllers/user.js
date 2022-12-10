@@ -81,7 +81,7 @@ const deleteUserSearchLog = catchAsync(async (req, res) => {
 })
 
 const getUserSearchLogs = catchAsync(async (req, res) => {
-  let userSearchLogs = await userService.getUserSearchLogs(req)
+  let userSearchLogs = await userService.getUserSearchLogs(req, req.body)
   res.status(httpStatus.OK).send(Object.assign({ code: 0, message: 'success' }, { userSearchLogList: userSearchLogs }))
 })
 

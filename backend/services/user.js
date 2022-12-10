@@ -271,7 +271,10 @@ const searchUsers = async (req, data) => {
   let offset = (page - 1) * pageSize
 
   let users = await User.findAll({
-    include: { model: Image, required: false },
+    include: [
+      { model: Image, required: false },
+      { model: UserFollow, as: 'ToUserFollow', required: false, where: { fromUserId: data.userId } },
+    ],
     where: { username: { [Op.like]: '%' + data.keyword + '%' } },
     order: [['createdAt', 'desc']],
     offset: offset,
@@ -284,6 +287,7 @@ const searchUsers = async (req, data) => {
       username: user.username,
       name: user.name,
       profileImage: user.Image ? serviceUrl + profileImagePath + user.Image.imageName + '.' + user.Image.imageExt : serviceUrl + commonImagePath + 'profile.png',
+      followYn: user.ToUserFollow.length > 0 ? 'Y' : 'N',
     }
   })
 
@@ -302,7 +306,7 @@ const deleteUserSearchLog = async (data) => {
   await UserSearchLog.destroy({ where: { fromUserId: data.userId, toUserId: data.toUserId } })
 }
 
-const getUserSearchLogs = async (req) => {
+const getUserSearchLogs = async (req, data) => {
   let serviceUrl = env != 'production' ? req.protocol + '://' + req.get('host') : ''
   let commonImagePath = config.commonImagePath.split('public')[1]
   let profileImagePath = config.profileImagePath.split('public')[1]
@@ -312,7 +316,14 @@ const getUserSearchLogs = async (req) => {
   let offset = (page - 1) * pageSize
 
   let userSearchLogs = await UserSearchLog.findAll({
-    include: { model: User, required: true, include: { model: Image, required: false } },
+    include: {
+      model: User,
+      required: true,
+      include: [
+        { model: Image, required: false },
+        { model: UserFollow, as: 'ToUserFollow', required: false, where: { fromUserId: data.userId } },
+      ],
+    },
     order: [['updatedAt', 'desc']],
     offset: offset,
     limit: pageSize,
@@ -326,6 +337,7 @@ const getUserSearchLogs = async (req) => {
       profileImage: userSearchLog.User.Image
         ? serviceUrl + profileImagePath + userSearchLog.User.Image.imageName + '.' + userSearchLog.User.Image.imageExt
         : serviceUrl + commonImagePath + 'profile.png',
+      followYn: userSearchLog.User.ToUserFollow.length > 0 ? 'Y' : 'N',
     }
   })
 
@@ -347,11 +359,10 @@ const getUserInfo = async (req, data) => {
       ],
     },
     include: [
-      {
-        model: Image,
-        required: false,
-      },
+      { model: Image, required: false },
+      { model: UserFollow, as: 'ToUserFollow', required: false, where: { fromUserId: data.userId } },
     ],
+
     where: {
       userId: data.targetUserId,
     },
@@ -365,6 +376,7 @@ const getUserInfo = async (req, data) => {
     name: user.name,
     username: user.username,
     bio: user.bio,
+    followYn: user.ToUserFollow.length > 0 ? 'Y' : 'N',
     postCount: user.dataValues.postCount,
     followingCount: user.dataValues.followingCount,
     followerCount: user.dataValues.followerCount,
