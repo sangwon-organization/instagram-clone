@@ -368,6 +368,23 @@ const getUserInfo = async (req, data) => {
     },
   })
 
+  let followerImFollowingList = await User.findAll({
+    include: [
+      { model: Image, required: false },
+      { model: UserFollow, as: 'FromUserFollow', required: true, where: { toUserId: data.targetUserId } },
+      { model: UserFollow, as: 'ToUserFollow', required: true, where: { fromUserId: data.userId } },
+    ],
+  })
+  followerImFollowingList = followerImFollowingList.map((follower) => {
+    return {
+      userId: follower.userId,
+      username: follower.username,
+      name: follower.name,
+      profileImage: follower.Image ? serviceUrl + profileImagePath + follower.Image.imageName + '.' + follower.Image.imageExt : serviceUrl + commonImagePath + 'profile.png',
+      followYn: follower.ToUserFollow.length > 0 ? 'Y' : 'N',
+    }
+  })
+
   let postList = await postService.getPostList(req, { page: 1, userId: data.userId, targetUserId: data.targetUserId })
 
   return {
@@ -380,6 +397,7 @@ const getUserInfo = async (req, data) => {
     postCount: user.dataValues.postCount,
     followingCount: user.dataValues.followingCount,
     followerCount: user.dataValues.followerCount,
+    followerImFollowingList: followerImFollowingList,
     postList: postList.postList,
   }
 }
