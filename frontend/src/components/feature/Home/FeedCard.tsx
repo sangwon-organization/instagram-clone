@@ -26,6 +26,11 @@ import {
 import Loader from 'react-loader';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { timeForToday } from '../../../utils/commons';
+import ModalPortal from '../Modal/ModalPortal';
+import ModalContainer from '../Modal/ModalContainer';
+import PostDropDownModal from '../Modal/PostDropDownModal';
+import DeleteConfirmModal from '../Modal/DeleteConfirmModal';
+import PostWrapper from '../Post/PostWrapper';
 
 const FeedCardContainer = styled.div`
   width: 470px;
@@ -491,6 +496,8 @@ const FeedCard = ({
 }: FeedCardProps) => {
   const [likeButtonClicked, setLikeButtonClicked] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [showPostDropdown, setShowPostDropdown] = useState(false);
+  const [showPostModal, setShowPostModal] = useState(false);
   const slideRef = useRef(null);
   const circleRef = useRef(null);
   const textareaRef = useRef(null);
@@ -501,6 +508,27 @@ const FeedCard = ({
   const location = useLocation();
 
   const TOTAL_SLIDES = postImageList.length;
+
+  const openModal = () => {
+    setShowPostDropdown(true);
+    document.body.style.overflow = 'hidden';
+  };
+
+  const closeModal = () => {
+    setShowPostDropdown(false);
+    document.body.style.overflow = 'unset';
+  };
+
+  const openPost = () => {
+    setShowPostModal(true);
+    document.body.style.overflow = 'hidden';
+  };
+
+  const closePost = () => {
+    setShowPostModal(false);
+    document.body.style.overflow = 'unset';
+    navigate(-1);
+  };
 
   const NextSlide = () => {
     if (currentSlide >= TOTAL_SLIDES) {
@@ -608,6 +636,10 @@ const FeedCard = ({
     }
   };
 
+  const myUserId = parseInt(localStorage.getItem('userId'));
+
+  const isMyPost = myUserId === userId;
+
   return (
     <FeedCardContainer>
       <UserInformationWrapper>
@@ -617,7 +649,7 @@ const FeedCard = ({
           </UserAvatar>
           <p onClick={() => navigate(`/user/${userId}`)}>{username}</p>
         </UserInfo>
-        <KebabMenuIcon />
+        <KebabMenuIcon onClick={openModal} />
       </UserInformationWrapper>
       <ImageBoxWrapper onDoubleClick={doubleClickImage}>
         <LeftArrowIcon currentslide={currentSlide} onClick={PrevSlide} />
@@ -644,10 +676,15 @@ const FeedCard = ({
             ) : (
               <HeartIcon onClick={likePostFunction(pageIndex)} />
             )}
-            <Link to={`/post/${postId}`} state={{ background: location }}>
-              <ChatIcon />
-              <Outlet />
-            </Link>
+            {/* <Link to={`/post/${postId}`} state={{ background: location }}> */}
+            <ChatIcon
+              onClick={() => {
+                window.history.pushState('', '', `/post/${postId}`);
+                openPost();
+              }}
+            />
+            {/* <Outlet /> */}
+            {/* </Link> */}
             <LocationIcon />
           </LeftIconBox>
           <MeatballIconBox ref={circleRef}>
@@ -709,6 +746,24 @@ const FeedCard = ({
           Post
         </button>
       </AddCommentBox>
+      {showPostDropdown && (
+        <ModalPortal>
+          <ModalContainer closeModal={closeModal}>
+            <PostDropDownModal
+              isMyPost={isMyPost}
+              postId={postId}
+              userId={userId}
+            />
+          </ModalContainer>
+        </ModalPortal>
+      )}
+      {showPostModal && (
+        <ModalPortal>
+          <ModalContainer closeModal={closePost}>
+            <PostWrapper postId={postId} />
+          </ModalContainer>
+        </ModalPortal>
+      )}
     </FeedCardContainer>
   );
 };

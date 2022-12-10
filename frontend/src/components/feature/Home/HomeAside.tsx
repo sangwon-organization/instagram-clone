@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { getNotFollowingList } from '../../../api/api';
+import { getNotFollowingList, getUserInformation } from '../../../api/api';
 import userAvatar from '../../../assets/image/userAvatar.png';
 
 const HomeAsideContainer = styled.aside`
@@ -16,15 +16,16 @@ const HomeAsideContainer = styled.aside`
 `;
 
 const UserAccountWrapper = styled.div`
-  width: 319px;
-  height: 56px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 319px;
+  height: 56px;
   img {
     width: 56px;
     height: 56px;
     border-radius: 50%;
+    cursor: pointer;
   }
   button {
     width: 40px;
@@ -50,6 +51,7 @@ const UserInfoWrapper = styled.div`
     font-size: 14px;
     font-weight: 600;
     color: ${({ theme }) => theme.textColor};
+    cursor: pointer;
   }
   p:nth-child(2) {
     font-size: 14px;
@@ -174,13 +176,27 @@ const HomeAside = () => {
   const getNotFollowingListQuery = useQuery(['getNotFollowingList'], () =>
     getNotFollowingList(),
   );
+
+  const { data: getUserInformData } = useQuery(['getUserInform'], () => {
+    const userId = Number(localStorage.getItem('userId'));
+    return getUserInformation({ targetUserId: userId });
+  });
+
+  const userId = localStorage.getItem('userId');
+
   return (
     <HomeAsideContainer>
       <UserAccountWrapper>
-        <img src={userAvatar} alt="유저아바타" />
+        <img
+          src={getUserInformData?.data.profileImage}
+          alt="유저아바타"
+          onClick={() => navigate(`/user/${userId}`)}
+        />
         <UserInfoWrapper>
-          <p>_leesangwon</p>
-          <p>이상원</p>
+          <p onClick={() => navigate(`/user/${userId}`)}>
+            {getUserInformData?.data.username}
+          </p>
+          <p>{getUserInformData?.data.name}</p>
         </UserInfoWrapper>
         <button>Switch</button>
       </UserAccountWrapper>

@@ -16,7 +16,12 @@ import { useSelector } from 'react-redux';
 import ModalPortal from '../../feature/Modal/ModalPortal';
 import ModalContainer from '../../feature/Modal/ModalContainer';
 import { useQuery } from '@tanstack/react-query';
-import { getRecentSearchUsersList, searchUser } from '../../../api/api';
+import {
+  getRecentSearchUsersList,
+  getUserInformation,
+  searchUser,
+} from '../../../api/api';
+import CreatePostModal from '../../feature/Modal/CreatePostModal';
 
 const NavigationBarContainer = styled.nav`
   width: 100vw;
@@ -196,6 +201,11 @@ const NavigationBar = () => {
     getRecentSearchUsersList(),
   );
 
+  const { data: getUserProfileImage } = useQuery(['getUserProfile'], () => {
+    const userId = Number(localStorage.getItem('userId'));
+    return getUserInformation({ targetUserId: userId });
+  });
+
   // const isEmptyReset = (e: any) => {
   //   if (e.target.value === '') {
   //     searchUserQuery.remove();
@@ -251,7 +261,7 @@ const NavigationBar = () => {
           <CompassIcon />
           <HeartIcon />
           <UserImage
-            src={userAvatar}
+            src={getUserProfileImage?.data.profileImage}
             alt="유저아바타"
             onClick={() => setShowDropdown(true)}
             showDropdown={showDropdown}
@@ -264,7 +274,9 @@ const NavigationBar = () => {
       </NavigationBarWrapper>
       {createPostModalOpen && (
         <ModalPortal>
-          <ModalContainer closeModal={closeModal} />
+          <ModalContainer createPost closeModal={closeModal}>
+            <CreatePostModal />
+          </ModalContainer>
         </ModalPortal>
       )}
     </NavigationBarContainer>

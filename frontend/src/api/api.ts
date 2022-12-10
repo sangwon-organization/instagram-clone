@@ -48,17 +48,6 @@ const multipartFormDataApi = axios.create({
   },
 });
 
-// const addPostmultipartFormDataApi = (formData: any) =>
-//   axios.create({
-//     baseURL: 'http://59.187.205.70:3000',
-//     data: formData,
-//     headers: {
-//       'Content-Type': 'multipart/form-data',
-//       'Access-Control-Allow-Origin': '*',
-//       Authorization: 'Bearer ' + localStorage.getItem('accessToken'),
-//     },
-//   });
-
 interface LoginType {
   email: string;
   password: string;
@@ -99,6 +88,7 @@ export const loginUser = async (userInfo: LoginType) => {
   const { data } = await api.post('/signin', userInfo);
   localStorage.setItem('accessToken', data.accessToken);
   localStorage.setItem('refreshToken', data.refreshToken);
+  localStorage.setItem('userId', data.userId);
   window.location.reload();
   return data;
 };
@@ -186,7 +176,7 @@ export const modifyPost = async (formData: modifyPostType) => {
 };
 
 export const deletePost = async (postId: number) => {
-  const data = await api.delete(`/:${postId}`);
+  const data = await bearerTokenApi.delete(`/post/${postId}`);
   return data;
 };
 

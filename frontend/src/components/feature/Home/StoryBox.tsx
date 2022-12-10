@@ -160,21 +160,24 @@ const StoryBox = () => {
       behavior: 'smooth',
     });
   };
+
   return (
-    <StoryBoxContainer>
-      <StoryBoxWrapper ref={ref}>
-        {(currentScrollX === 'leftMax' || currentScrollX === 'middle') && (
-          <LeftArrowIcon onClick={moveRight} />
-        )}
-        {getFollowingListQuery.data?.data.followingList.map((list: any) => (
-          <StoryItem key={list.userId}>
-            <UserAvatar>
-              <img src={list.profileImage} alt="유저아바타" />
-            </UserAvatar>
-            <p>{list.username}</p>
-          </StoryItem>
-        ))}
-        {/* <StoryItem>
+    <>
+      {getFollowingListQuery.data?.data.followingList.length > 0 && (
+        <StoryBoxContainer>
+          <StoryBoxWrapper ref={ref}>
+            {(currentScrollX === 'leftMax' || currentScrollX === 'middle') && (
+              <LeftArrowIcon onClick={moveRight} />
+            )}
+            {getFollowingListQuery.data?.data.followingList.map((list: any) => (
+              <StoryItem key={list.userId}>
+                <UserAvatar>
+                  <img src={list.profileImage} alt="유저아바타" />
+                </UserAvatar>
+                <p>{list.username}</p>
+              </StoryItem>
+            ))}
+            {/* <StoryItem>
           <UserAvatar>
             <img src={userAvatar} alt="유저아바타" />
           </UserAvatar>
@@ -211,16 +214,18 @@ const StoryBox = () => {
           <p>username</p>
         </StoryItem> */}
 
-        {(currentScrollX === 'rightMax' || currentScrollX === 'middle') && (
-          <RightArrowIcon
-            onClick={() => {
-              moveLeft();
-              console.log(ref.current?.scrollLeft);
-            }}
-          />
-        )}
-      </StoryBoxWrapper>
-    </StoryBoxContainer>
+            {(currentScrollX === 'rightMax' || currentScrollX === 'middle') && (
+              <RightArrowIcon
+                onClick={() => {
+                  moveLeft();
+                  console.log(ref.current?.scrollLeft);
+                }}
+              />
+            )}
+          </StoryBoxWrapper>
+        </StoryBoxContainer>
+      )}
+    </>
   );
 };
 

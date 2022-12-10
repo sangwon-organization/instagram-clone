@@ -10,6 +10,9 @@ import NavigationBar from '../../components/layout/NavigationBar/NavigationBar';
 import Post from '../../components/feature/Profile/Post';
 import Footer from '../../components/layout/footer/Footer';
 import Loader from 'react-loader';
+import NoPostsBox from '../../components/feature/Post/NoPostsBox';
+import SharesPhotosBox from '../../components/feature/Post/SharesPhotosBox';
+import { IoIosSettings } from 'react-icons/io';
 
 const MainContainer = styled.div`
   width: 100%;
@@ -49,7 +52,7 @@ const AvatarWrapper = styled.form`
   /* border: 1px solid red; */
 `;
 
-const UserAvatar = styled.div<{ isLoading: boolean }>`
+const UserAvatar = styled.div<{ isloading: boolean; ismypage: boolean }>`
   width: 168px;
   height: 168px;
   border-radius: 50%;
@@ -58,7 +61,8 @@ const UserAvatar = styled.div<{ isLoading: boolean }>`
   justify-content: center;
   align-items: center;
   position: relative;
-  cursor: ${({ isLoading }) => (isLoading ? 'default' : 'pointer')};
+  cursor: ${({ isloading, ismypage }) =>
+    isloading || !ismypage ? 'default' : 'pointer'};
   background-image: linear-gradient(
       ${({ theme }) => theme.searchBarBgColor},
       ${({ theme }) => theme.searchBarBgColor}
@@ -71,7 +75,7 @@ const UserAvatar = styled.div<{ isLoading: boolean }>`
     height: 150px;
     border-radius: 50%;
     z-index: 100;
-    opacity: ${({ isLoading }) => isLoading && 0.4};
+    opacity: ${({ isloading }) => isloading && 0.4};
   }
   input {
     display: none;
@@ -102,10 +106,11 @@ const FirstBox = styled.div`
 `;
 
 const ButtonBox = styled.div`
-  width: 240px;
+  width: fit-content;
   height: 100%;
   display: flex;
-  justify-content: space-between;
+  gap: 0 15px;
+  justify-content: flex-start;
   align-items: center;
 `;
 
@@ -162,7 +167,7 @@ const UserCheckIcon = styled(FaUserCheck)`
 `;
 
 const MessageButton = styled.button`
-  width: 80px;
+  width: fit-content;
   height: 30px;
   padding: 5px 9px;
   font-size: 14px;
@@ -172,8 +177,8 @@ const MessageButton = styled.button`
   background: transparent;
   color: ${({ theme }) => theme.textColor};
 `;
-const FollowButton = styled.button`
-  width: 72px;
+const UnFollowButton = styled.button`
+  width: fit-content;
   height: 30px;
   padding: 5px 9px;
   border: 1px solid ${({ theme }) => theme.borderColor};
@@ -181,6 +186,25 @@ const FollowButton = styled.button`
   background: transparent;
   color: ${({ theme }) => theme.textColor};
 `;
+
+const FollowButon = styled.button`
+  width: fit-content;
+  height: 30px;
+  padding: 5px 9px;
+  border-radius: 5px;
+  border: none;
+  background: #0095f6;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  &:active {
+    opacity: 0.7;
+  }
+  &:hover {
+    background: #1872f2;
+  }
+`;
+
 const SuggestedButton = styled.button`
   width: 34px;
   height: 30px;
@@ -219,7 +243,16 @@ const MenuWrapper = styled.ul`
     &:active {
       opacity: 0.7;
     }
+    &:first-child {
+      color: ${({ theme }) => theme.textColor};
+      border-top: 1px solid ${({ theme }) => theme.textColor};
+    }
   }
+`;
+
+const SettingsIcon = styled(IoIosSettings)`
+  font-size: 30px;
+  color: ${({ theme }) => theme.textColor};
 `;
 
 const TaggedIcon = styled(RiAccountPinBoxLine)`
@@ -259,6 +292,7 @@ interface ProfilePresenterType {
   onError: any;
   handleSubmit: any;
   isLoading: any;
+  isMyPage: boolean;
 }
 
 const ProfilePresenter = ({
@@ -272,6 +306,7 @@ const ProfilePresenter = ({
   onError,
   handleSubmit,
   isLoading,
+  isMyPage,
 }: ProfilePresenterType) => {
   return (
     <>
@@ -280,7 +315,7 @@ const ProfilePresenter = ({
         <MainWrapper>
           <UserInfoHeader>
             <AvatarWrapper>
-              <UserAvatar isLoading={isLoading}>
+              <UserAvatar isloading={isLoading} ismypage={isMyPage}>
                 <img
                   src={getUserInformationData?.data.profileImage}
                   alt="기본이미지"
@@ -289,7 +324,7 @@ const ProfilePresenter = ({
                 <input
                   type="file"
                   accept="image/*"
-                  disabled={isLoading}
+                  disabled={isLoading || !isMyPage}
                   {...postImageRest}
                   ref={(e) => {
                     imageRef(e);
@@ -311,16 +346,29 @@ const ProfilePresenter = ({
             <UserInfo>
               <FirstBox>
                 <h2>{getUserInformationData?.data.username}</h2>
-                <ButtonBox>
-                  <MessageButton>Message</MessageButton>
-                  <FollowButton>
-                    <UserCheckIcon />
-                  </FollowButton>
-                  <SuggestedButton>
-                    <ArrowDownIcon />
-                  </SuggestedButton>
-                  <KebabMenuIcon />
-                </ButtonBox>
+                {isMyPage ? (
+                  <ButtonBox>
+                    <MessageButton>Edit profile</MessageButton>
+                    <SettingsIcon />
+                  </ButtonBox>
+                ) : (
+                  <ButtonBox>
+                    {getUserInformationData?.data.followYn === 'Y' ? (
+                      <MessageButton>Message</MessageButton>
+                    ) : null}
+                    {getUserInformationData?.data.followYn === 'Y' ? (
+                      <UnFollowButton>
+                        <UserCheckIcon />
+                      </UnFollowButton>
+                    ) : (
+                      <FollowButon>Follow</FollowButon>
+                    )}
+                    <SuggestedButton>
+                      <ArrowDownIcon />
+                    </SuggestedButton>
+                    <KebabMenuIcon />
+                  </ButtonBox>
+                )}
               </FirstBox>
               <SecondBox>
                 <p>
@@ -362,17 +410,23 @@ const ProfilePresenter = ({
               </li>
             </MenuWrapper>
           </TabMenu>
-          <PostsWrapper>
-            {getUserInformationData?.data.postList.map((post: any) => (
-              <Post
-                key={post.postId}
-                postImageList={post.postImageList}
-                postId={post.postId}
-                likeCount={post.likeCount}
-                commentCount={post.commentCount}
-              />
-            ))}
-          </PostsWrapper>
+          {getUserInformationData?.data.postList.length > 0 ? (
+            <PostsWrapper>
+              {getUserInformationData?.data.postList.map((post: any) => (
+                <Post
+                  key={post.postId}
+                  postImageList={post.postImageList}
+                  postId={post.postId}
+                  likeCount={post.likeCount}
+                  commentCount={post.commentCount}
+                />
+              ))}
+            </PostsWrapper>
+          ) : isMyPage ? (
+            <SharesPhotosBox />
+          ) : (
+            <NoPostsBox />
+          )}
         </MainWrapper>
       </MainContainer>
       <Footer />

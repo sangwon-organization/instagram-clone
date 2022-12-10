@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 const initialState = {
   darkMode: 'light',
@@ -12,7 +12,7 @@ export const themeModeSlice = createSlice({
       state.darkMode = state.darkMode === 'light' ? 'dark' : 'light';
       localStorage.setItem('theme', state.darkMode);
     },
-    persistThemeMode: (state, action) => {
+    persistThemeMode: (state, action: PayloadAction<string>) => {
       state.darkMode = action.payload;
     },
   },
