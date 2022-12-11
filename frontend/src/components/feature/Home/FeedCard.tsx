@@ -16,7 +16,7 @@ import {
   IoIosArrowDroprightCircle,
 } from 'react-icons/io';
 import theme from '../../../styles/theme';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQueries, useQuery } from '@tanstack/react-query';
 import {
   bookmarkPost,
   commentPost,
@@ -31,6 +31,12 @@ import ModalContainer from '../Modal/ModalContainer';
 import PostDropDownModal from '../Modal/PostDropDownModal';
 import DeleteConfirmModal from '../Modal/DeleteConfirmModal';
 import PostWrapper from '../Post/PostWrapper';
+import CommentsListBox from '../Post/CommentsListBox';
+import { useForm } from 'react-hook-form';
+
+type FormValues = {
+  commentInput: string;
+};
 
 const FeedCardContainer = styled.div`
   width: 470px;
@@ -182,16 +188,6 @@ const ColoredHeartIcon = styled(BsHeartFill)<{ likebuttonclicked: string }>`
   }
 `;
 
-const SmallHeartIcon = styled(BsHeart)`
-  width: 10px;
-  height: 10px;
-  cursor: pointer;
-  color: ${({ theme }) => theme.textColor};
-  &:hover {
-    color: ${({ theme }) => theme.greyTextColor};
-  }
-`;
-
 const ChatIcon = styled(RiChat3Line)`
   width: 23px;
   height: 23px;
@@ -244,20 +240,19 @@ const LikedMemberBox = styled.div`
 const FeedDescriptionBox = styled.div`
   width: 100%;
   height: fit-content;
-  font-size: 14px;
-  font-weight: 600;
-  margin: 0 10px 10px 10px;
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  gap: 0 5px;
-  div {
+  padding: 0 10px 10px 10px;
+  line-height: 18px;
+  /* border: 1px solid red; */
+  span:first-child {
+    float: left;
     font-size: 14px;
     font-weight: 600;
     color: ${({ theme }) => theme.textColor};
     cursor: pointer;
+    margin-right: 5px;
   }
-  span {
+  p {
+    display: inline;
     font-size: 14px;
     font-weight: 400;
     color: ${({ theme }) => theme.textColor};
@@ -268,6 +263,8 @@ const FeedDescriptionBox = styled.div`
     color: ${({ theme }) => theme.greyTextColor};
     border: none;
     background: transparent;
+    cursor: pointer;
+    display: inline-block;
   }
 `;
 const ViewAllCommentsBox = styled.div`
@@ -279,48 +276,7 @@ const ViewAllCommentsBox = styled.div`
   margin: 0 10px 10px 10px;
   cursor: pointer;
 `;
-const CommentsListBox = styled.div`
-  width: 90%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: fit-content;
-  height: fit-content;
-  font-size: 14px;
-  font-weight: 400;
-  margin: 0 10px 10px 10px;
-  /* border: 1px solid red; */
-`;
 
-const CommentText = styled.div`
-  display: flex;
-  gap: 0 5px;
-  justify-content: flex-start;
-  align-items: center;
-  /* border: 1px solid blue; */
-  div {
-    width: fit-content;
-    height: fit-content;
-    font-size: 14px;
-    font-weight: 600;
-    color: ${({ theme }) => theme.textColor};
-    cursor: pointer;
-  }
-  p {
-    width: 340px;
-    height: fit-content;
-    font-size: 14px;
-    font-weight: 400;
-    color: ${({ theme }) => theme.textColor};
-    span {
-      width: fit-content;
-      height: fit-content;
-      margin-right: 5px;
-      color: ${({ theme }) => theme.hashTagColor};
-      cursor: pointer;
-    }
-  }
-`;
 const DateBox = styled.div`
   width: 100%;
   height: fit-content;
@@ -498,6 +454,7 @@ const FeedCard = ({
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showPostDropdown, setShowPostDropdown] = useState(false);
   const [showPostModal, setShowPostModal] = useState(false);
+  const [showMoreText, setShowMoreText] = useState(false);
   const slideRef = useRef(null);
   const circleRef = useRef(null);
   const textareaRef = useRef(null);
@@ -569,10 +526,34 @@ const FeedCard = ({
     onSuccess: (e: any) => {
       console.log('댓글 등록 성공!');
       console.log(e);
+      refetch();
       textareaRef.current.value = '';
       textareaRef.current.focus();
     },
   });
+
+  const {
+    register,
+    handleSubmit,
+    formState: { isValid, errors, isDirty },
+  } = useForm<FormValues>({ mode: 'onChange' });
+
+  const { ref: commentRef, ...rest } = register('commentInput', {
+    required: true,
+  });
+
+  const onSubmit = (dataInput: any) => {
+    console.log(dataInput);
+    mutate({
+      postId: postId,
+      parentCommentId: '',
+      content: dataInput.commentInput,
+    });
+  };
+
+  const onError = (err: any) => {
+    console.log(err);
+  };
 
   const mutateLikePost = useMutation(likePost, {
     onError: (err: any) => {
@@ -580,8 +561,20 @@ const FeedCard = ({
     },
     onSuccess: (e: any) => {
       console.log('포스트 좋아요 성공!');
+      refetch();
     },
   });
+
+  const likePostFunction = (pageIndex: number) => (e: any) => {
+    e.preventDefault();
+    if (likeYn === 'Y') {
+      mutateLikePost.mutate({ postId: postId, likeYn: 'N' });
+    } else {
+      mutateLikePost.mutate({ postId: postId, likeYn: 'Y' });
+    }
+
+    // refetchPage(pageIndex);
+  };
 
   const mutateBookmarkPost = useMutation(bookmarkPost, {
     onError: (err: any) => {
@@ -591,10 +584,6 @@ const FeedCard = ({
       console.log('북마크 성공!');
     },
   });
-
-  const getCommentsListQuery = useQuery(['getCommentsList'], () =>
-    getCommentsList({ page: 1, postId: postId }),
-  );
 
   const registerComment = (e: any) => {
     e.preventDefault();
@@ -606,17 +595,6 @@ const FeedCard = ({
     if (isLoading) {
       postButtonRef.current.disabled = true;
     }
-  };
-
-  const likePostFunction = (pageIndex: number) => (e: any) => {
-    e.preventDefault();
-    if (likeYn === 'Y') {
-      mutateLikePost.mutate({ postId: postId, likeYn: 'N' });
-    } else {
-      mutateLikePost.mutate({ postId: postId, likeYn: 'Y' });
-    }
-
-    refetchPage(pageIndex);
   };
 
   const bookmarkPostFunction = (e: any) => {
@@ -651,7 +629,11 @@ const FeedCard = ({
         </UserInfo>
         <KebabMenuIcon onClick={openModal} />
       </UserInformationWrapper>
-      <ImageBoxWrapper onDoubleClick={doubleClickImage}>
+      <ImageBoxWrapper
+        onDoubleClick={() => {
+          doubleClickImage();
+          mutateLikePost.mutate({ postId: postId, likeYn: 'Y' });
+        }}>
         <LeftArrowIcon currentslide={currentSlide} onClick={PrevSlide} />
         <ImageWrapper ref={slideRef}>
           {postImageList.map((list: any) => (
@@ -700,34 +682,40 @@ const FeedCard = ({
         </IconBox>
         <LikedMemberBox>{likeCount} likes</LikedMemberBox>
         <FeedDescriptionBox>
-          <div>{username}</div>
-          <span> {content}</span>
-          <button>more</button>
+          <span>{username}</span>
+          <p>{showMoreText ? content : content.substring(0, 30)}</p>
+          {content.length > 30 && !showMoreText && (
+            <span>
+              ...
+              <button onClick={() => setShowMoreText(true)}>more</button>
+            </span>
+          )}
         </FeedDescriptionBox>
-        <ViewAllCommentsBox>
-          View all {commentCount} comments
-        </ViewAllCommentsBox>
-        <CommentsListBox>
-          <CommentText>
-            <div>
-              {getCommentsListQuery.data?.data.commentList[0]?.username}
-            </div>
-            <p>
-              <span>@minimal__0</span>
-              {getCommentsListQuery.data?.data.commentList[0]?.content}
-            </p>
-          </CommentText>
-          <SmallHeartIcon />
-        </CommentsListBox>
+        {commentCount > 0 && (
+          <ViewAllCommentsBox
+            onClick={() => {
+              window.history.pushState('', '', `/post/${postId}`);
+              openPost();
+            }}>
+            {commentCount === 1
+              ? `View ${commentCount} comment`
+              : `View all ${commentCount} comments`}
+          </ViewAllCommentsBox>
+        )}
+        <CommentsListBox postId={postId} />
         <DateBox>{timeForToday(createdAt)}</DateBox>
       </CommentBoxWrapper>
-      <AddCommentBox>
+      <AddCommentBox onSubmit={handleSubmit(onSubmit, onError)}>
         <SmileIcon />
         <textarea
-          name=""
-          id=""
-          onChange={(e: any) => isDisabled(e)}
-          ref={textareaRef}
+          name="commentInput"
+          id="commentInput"
+          // onChange={(e: any) => isDisabled(e)}
+          {...rest}
+          ref={(e) => {
+            commentRef(e);
+            textareaRef.current = e;
+          }}
           placeholder="Add a comment..."></textarea>
         {isLoading && (
           <Loader
@@ -741,7 +729,7 @@ const FeedCard = ({
         <button
           type="submit"
           ref={postButtonRef}
-          disabled
+          disabled={!isValid}
           onClick={(e: any) => registerComment(e)}>
           Post
         </button>

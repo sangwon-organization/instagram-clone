@@ -577,6 +577,16 @@ const PostWrapper = ({ postId }: PostWrapperType) => {
     console.log(err);
   };
 
+  const mutateLikePost = useMutation(likePost, {
+    onError: (err: any) => {
+      console.log(err.response.data);
+    },
+    onSuccess: (e: any) => {
+      console.log('포스트 좋아요 성공!');
+      getUserPost.refetch();
+    },
+  });
+
   const likePostFunction = (e: any) => {
     e.preventDefault();
     if (getUserPost.data?.data.likeYn === 'Y') {
@@ -591,16 +601,6 @@ const PostWrapper = ({ postId }: PostWrapperType) => {
       });
     }
   };
-
-  const mutateLikePost = useMutation(likePost, {
-    onError: (err: any) => {
-      console.log(err.response.data);
-    },
-    onSuccess: (e: any) => {
-      console.log('포스트 좋아요 성공!');
-      getUserPost.refetch();
-    },
-  });
 
   useEffect(() => {
     slideRef.current.style.transition = 'all 0.5s ease-in-out';

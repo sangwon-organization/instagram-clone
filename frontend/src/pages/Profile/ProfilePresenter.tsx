@@ -178,17 +178,18 @@ const MessageButton = styled.button`
   color: ${({ theme }) => theme.textColor};
 `;
 const UnFollowButton = styled.button`
-  width: fit-content;
+  width: 38px;
   height: 30px;
   padding: 5px 9px;
   border: 1px solid ${({ theme }) => theme.borderColor};
   border-radius: 5px;
   background: transparent;
   color: ${({ theme }) => theme.textColor};
+  position: relative;
 `;
 
 const FollowButon = styled.button`
-  width: fit-content;
+  width: 62px;
   height: 30px;
   padding: 5px 9px;
   border-radius: 5px;
@@ -197,6 +198,7 @@ const FollowButon = styled.button`
   color: #fff;
   font-size: 14px;
   font-weight: 600;
+  position: relative;
   &:active {
     opacity: 0.7;
   }
@@ -293,6 +295,8 @@ interface ProfilePresenterType {
   handleSubmit: any;
   isLoading: any;
   isMyPage: boolean;
+  followingUserIsLoading: any;
+  userFollowingUnFollowing: any;
 }
 
 const ProfilePresenter = ({
@@ -307,6 +311,8 @@ const ProfilePresenter = ({
   handleSubmit,
   isLoading,
   isMyPage,
+  followingUserIsLoading,
+  userFollowingUnFollowing,
 }: ProfilePresenterType) => {
   return (
     <>
@@ -357,11 +363,33 @@ const ProfilePresenter = ({
                       <MessageButton>Message</MessageButton>
                     ) : null}
                     {getUserInformationData?.data.followYn === 'Y' ? (
-                      <UnFollowButton>
-                        <UserCheckIcon />
+                      <UnFollowButton onClick={userFollowingUnFollowing}>
+                        {followingUserIsLoading ? (
+                          <Loader
+                            loaded={isLoading}
+                            color="#000"
+                            scale={0.3}
+                            top="50%"
+                            left="50%"
+                          />
+                        ) : (
+                          <UserCheckIcon />
+                        )}
                       </UnFollowButton>
                     ) : (
-                      <FollowButon>Follow</FollowButon>
+                      <FollowButon onClick={userFollowingUnFollowing}>
+                        {followingUserIsLoading ? (
+                          <Loader
+                            loaded={isLoading}
+                            color="#fafafa"
+                            scale={0.4}
+                            top="50%"
+                            left="50%"
+                          />
+                        ) : (
+                          'Follow'
+                        )}
+                      </FollowButon>
                     )}
                     <SuggestedButton>
                       <ArrowDownIcon />
@@ -387,6 +415,7 @@ const ProfilePresenter = ({
                 <p>{getUserInformationData?.data.name}</p>
               </ThirdBox>
               <FourthBox>
+                {/* {getUserInformationData?.data.followerImFollowingList.length > 0 && ()} */}
                 <p>
                   Followed by <span>from_minju</span>, <span>_yooohyun_</span>,
                   <span>_heon</span> + 27 more

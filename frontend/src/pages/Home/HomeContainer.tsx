@@ -4,7 +4,11 @@ import HomePresenter from './HomePresenter';
 import thumbnail from '../../assets/image/thumbnail.png';
 import { useInView } from 'react-intersection-observer';
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
-import { getPostsList, getUserInformation } from '../../api/api';
+import {
+  getCommentsList,
+  getPostsList,
+  getUserInformation,
+} from '../../api/api';
 
 const HomeContainer = () => {
   const [ref, inView] = useInView();
@@ -46,6 +50,7 @@ const HomeContainer = () => {
       console.log(data);
     }
   }, [inView, fetchNextPage, data]);
+
   return (
     <>
       <MetaTag

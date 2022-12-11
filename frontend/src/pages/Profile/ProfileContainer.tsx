@@ -4,7 +4,11 @@ import ProfilePresenter from '../Profile/ProfilePresenter';
 import thumbnail from '../../assets/image/thumbnail.png';
 import { useParams } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { getUserInformation, setUserProfileImage } from '../../api/api';
+import {
+  followingUser,
+  getUserInformation,
+  setUserProfileImage,
+} from '../../api/api';
 import { useForm } from 'react-hook-form';
 
 interface postUserProfileImageForm {
@@ -77,6 +81,32 @@ const ProfileContainer = () => {
   const isMyPage = myUserId === params.userId;
 
   console.log(getUserInformationData?.data);
+
+  const userFollowingUnFollowing = (e: any) => {
+    e.preventDefault();
+    if (getUserInformationData.data?.followYn === 'Y') {
+      followingUserMutate({
+        followUserId: getUserInformationData.data?.userId,
+        followYn: 'N',
+      });
+    } else {
+      followingUserMutate({
+        followUserId: getUserInformationData.data?.userId,
+        followYn: 'Y',
+      });
+    }
+  };
+
+  const { mutate: followingUserMutate, isLoading: followingUserIsLoading } =
+    useMutation(followingUser, {
+      onError: (err: any) => {
+        console.log(err.response.data);
+      },
+      onSuccess: (e: any) => {
+        console.log('유저 팔로우/언팔로우 성공!');
+        refetch();
+      },
+    });
   return (
     <>
       <MetaTag
@@ -99,6 +129,8 @@ const ProfileContainer = () => {
         handleSubmit={handleSubmit}
         isLoading={postUserProfileImage.isLoading}
         isMyPage={isMyPage}
+        userFollowingUnFollowing={userFollowingUnFollowing}
+        followingUserIsLoading={followingUserIsLoading}
       />
     </>
   );
