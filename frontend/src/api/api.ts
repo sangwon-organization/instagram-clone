@@ -361,3 +361,13 @@ export const getUserInformation = async ({
   );
   return data;
 };
+
+interface FollowingUserType {
+  followUserId: number;
+  followYn: string;
+}
+
+export const followingUser = async (requestBody: FollowingUserType) => {
+  const data = await bearerTokenApi.post(`/user/followUser`, requestBody);
+  return data;
+};

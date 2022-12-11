@@ -1,9 +1,14 @@
-import { useQuery } from '@tanstack/react-query';
-import React from 'react';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { getNotFollowingList, getUserInformation } from '../../../api/api';
+import {
+  followingUser,
+  getNotFollowingList,
+  getUserInformation,
+} from '../../../api/api';
 import userAvatar from '../../../assets/image/userAvatar.png';
+import Loader from 'react-loader';
 
 const HomeAsideContainer = styled.aside`
   width: 319px;
@@ -108,6 +113,7 @@ const SuggestionsItem = styled.div`
     color: #0095f6;
     font-size: 12px;
     font-weight: 600;
+    position: relative;
   }
 `;
 
@@ -172,9 +178,12 @@ const Copyright = styled.div`
 
 const HomeAside = () => {
   const navigate = useNavigate();
+  // const [isFollowing, setIsFollowing] = useState();
 
-  const getNotFollowingListQuery = useQuery(['getNotFollowingList'], () =>
-    getNotFollowingList(),
+  const getNotFollowingListQuery = useQuery(
+    ['getNotFollowingList'],
+    () => getNotFollowingList(),
+    { refetchOnWindowFocus: false },
   );
 
   const { data: getUserInformData } = useQuery(['getUserInform'], () => {
@@ -183,6 +192,37 @@ const HomeAside = () => {
   });
 
   const userId = localStorage.getItem('userId');
+
+  const userFollowingUnFollowing = (userId: number) => {
+    // e.preventDefault();
+    if (getNotFollowingListQuery.data?.data.followYn === 'Y') {
+      followingUserMutate({
+        followUserId: userId,
+        followYn: 'N',
+      });
+    } else {
+      followingUserMutate({
+        followUserId: userId,
+        followYn: 'Y',
+      });
+    }
+  };
+
+  const { mutate: followingUserMutate, isLoading: followingUserIsLoading } =
+    useMutation(followingUser, {
+      onError: (err: any) => {
+        console.log(err.response.data);
+      },
+      onSuccess: (e: any) => {
+        console.log('유저 팔로우/언팔로우 성공!');
+      },
+    });
+
+  // const toggleIsFollowing = () => {
+  //   const [isFollowing, setIsFollowing] = useState(false);
+  //   setIsFollowing((prev) => !prev);
+
+  // };
 
   return (
     <HomeAsideContainer>
@@ -214,7 +254,19 @@ const HomeAside = () => {
               </p>
               <p>Suggested for you</p>
             </ItemUserInfoWrapper>
-            <button>Follow</button>
+            <button onClick={() => userFollowingUnFollowing(list.userId)}>
+              {followingUserIsLoading ? (
+                <Loader
+                  loaded={!followingUserIsLoading}
+                  color="#000"
+                  scale={0.5}
+                  top="50%"
+                  left="50%"
+                />
+              ) : (
+                'Follow'
+              )}
+            </button>
           </SuggestionsItem>
         ))}
       </SuggestionsWrapper>
