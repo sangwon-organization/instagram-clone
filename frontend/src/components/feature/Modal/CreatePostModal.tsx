@@ -19,19 +19,19 @@ const Container = styled.form<{ nextmodal?: boolean }>`
   width: ${({ nextmodal }) => (nextmodal ? '1120px' : '768px')};
   height: 808px;
   border-radius: 10px;
-  background: #fff;
+  background: ${({ theme }) => theme.dropDownBgColor};
 `;
 
 const Title = styled.div`
-  width: 100%;
-  height: 40px;
-  border-bottom: 1px solid ${({ theme }) => theme.borderColor};
   display: flex;
   justify-content: center;
   align-items: center;
-  color: ${({ theme }) => theme.textColor};
+  width: 100%;
+  height: 40px;
+  border-bottom: 1px solid ${({ theme }) => theme.borderColor};
   font-size: 16px;
   font-weight: 600;
+  color: ${({ theme }) => theme.textColor};
 `;
 
 const Wrapper = styled.div`
@@ -39,14 +39,14 @@ const Wrapper = styled.div`
 `;
 
 const Content = styled.div`
-  width: 768px;
-  height: 768px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   gap: 15px 0;
   position: relative;
+  width: 768px;
+  height: 768px;
   p {
     font-size: 22px;
     font-weight: 300;
@@ -54,13 +54,13 @@ const Content = styled.div`
   }
 
   button {
-    font-size: 14px;
-    font-weight: 600;
-    color: #fff;
-    background: #0095f6;
-    border-radius: 5px;
     padding: 5px 9px;
     border: none;
+    border-radius: 5px;
+    background: ${({ theme }) => theme.buttonColor};
+    font-size: 14px;
+    font-weight: 600;
+    color: ${({ theme }) => theme.whiteColor};
     &:active {
       opacity: 0.6;
     }
@@ -77,16 +77,17 @@ const Content = styled.div`
 
 const ImageIcon = styled(IoImagesOutline)`
   font-size: 50px;
+  color: ${({ theme }) => theme.textColor};
 `;
 
 const NextButton = styled.button`
-  font-size: 14px;
-  font-weight: 600;
-  color: #0095f6;
-  background: transparent;
-  border: none;
   position: absolute;
   right: 10px;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 600;
+  color: ${({ theme }) => theme.buttonColor};
 `;
 
 const CaptionBox = styled.div`
@@ -97,14 +98,13 @@ const CaptionBox = styled.div`
 `;
 
 const UserAccountWrapper = styled.div`
-  /* border: 1px solid red; */
-  width: 100%;
-  height: 56px;
   display: flex;
   justify-content: flex-stert;
   align-items: center;
-  padding-left: 15px;
   gap: 0 15px;
+  width: 100%;
+  height: 56px;
+  padding-left: 15px;
   img {
     width: 28px;
     height: 28px;
@@ -113,13 +113,13 @@ const UserAccountWrapper = styled.div`
 `;
 
 const UserInfoWrapper = styled.div`
-  width: 280px;
-  height: 30px;
   display: flex;
   flex-direction: column;
-  gap: 5px 0;
   justify-content: center;
   align-items: flex-start;
+  gap: 5px 0;
+  width: 280px;
+  height: 30px;
 
   p {
     font-size: 14px;
@@ -129,51 +129,51 @@ const UserInfoWrapper = styled.div`
 `;
 
 const TextBox = styled.textarea`
-  /* border: 1px solid blue; */
   width: 100%;
   height: 50%;
+  padding: 10px;
+  border: none;
+  background: ${({ theme }) => theme.dropDownBgColor};
   font-family: 'RobotoFont';
   font-size: 16px;
   color: ${({ theme }) => theme.textColor};
-  padding: 10px;
   outline: none;
   resize: none;
-  border: none;
   &:focus::placeholder {
     color: ${({ theme }) => theme.footerTextColor};
   }
 `;
 
 const TextLength = styled.div`
-  font-size: 12px;
-  font-weight: 400;
-  color: ${({ theme }) => theme.footerTextColor};
   display: flex;
   justify-content: flex-end;
   padding-right: 15px;
+  font-size: 12px;
+  font-weight: 400;
+  color: ${({ theme }) => theme.footerTextColor};
 `;
 
 const LeftArrowIcon = styled(BiArrowBack)`
-  font-size: 30px;
-  color: ${({ theme }) => theme.textColor};
   position: absolute;
   left: 15px;
+  font-size: 30px;
+  color: ${({ theme }) => theme.textColor};
   cursor: pointer;
 `;
 
 const UserAvatar = styled.div`
-  width: 90px;
-  height: 90px;
-  border-radius: 50%;
-  border: 4px solid transparent;
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 90px;
+  height: 90px;
+  border: 4px solid transparent;
+  border-radius: 50%;
   background-image: linear-gradient(
-      ${({ theme }) => theme.searchBarBgColor},
-      ${({ theme }) => theme.searchBarBgColor}
+      ${({ theme }) => theme.dropDownBgColor},
+      ${({ theme }) => theme.dropDownBgColor}
     ),
-    linear-gradient(to right, red 0%, orange 100%);
+    linear-gradient(to right, #ff0000 0%, #ffa500 100%);
   background-origin: border-box;
   background-clip: content-box, border-box;
   img {
@@ -198,7 +198,6 @@ const CreatePostModal = () => {
   const textareaRef = useRef(null);
 
   const countTextLength = (e: any) => {
-    // const textLength = e.target.innerText.length;
     setTextAreaText(e.target.value.length);
   };
 

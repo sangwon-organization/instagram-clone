@@ -1,9 +1,5 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import userAvatar from '../../../assets/image/userAvatar.png';
-import userImage from '../../../assets/image/userImage.png';
-import userImage2 from '../../../assets/image/userImage2.png';
-import userImage3 from '../../../assets/image/userImage3.png';
 import { BsHeart } from 'react-icons/bs';
 import { BsHeartFill } from 'react-icons/bs';
 import { RiChat3Line } from 'react-icons/ri';
@@ -15,21 +11,14 @@ import {
   IoIosArrowDropleftCircle,
   IoIosArrowDroprightCircle,
 } from 'react-icons/io';
-import theme from '../../../styles/theme';
-import { useMutation, useQueries, useQuery } from '@tanstack/react-query';
-import {
-  bookmarkPost,
-  commentPost,
-  getCommentsList,
-  likePost,
-} from '../../../api/api';
+import { useMutation } from '@tanstack/react-query';
+import { bookmarkPost, commentPost, likePost } from '../../../api/api';
 import Loader from 'react-loader';
-import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { timeForToday } from '../../../utils/commons';
 import ModalPortal from '../Modal/ModalPortal';
 import ModalContainer from '../Modal/ModalContainer';
 import PostDropDownModal from '../Modal/PostDropDownModal';
-import DeleteConfirmModal from '../Modal/DeleteConfirmModal';
 import PostWrapper from '../Post/PostWrapper';
 import CommentsListBox from '../Post/CommentsListBox';
 import { useForm } from 'react-hook-form';
@@ -40,73 +29,59 @@ type FormValues = {
 };
 
 const FeedCardContainer = styled.div`
+  display: flex;
+  flex-direction: column;
   width: 470px;
   height: fit-content;
   border: 1px solid ${({ theme }) => theme.borderColor};
   border-radius: 10px;
-  display: flex;
-  flex-direction: column;
   background: ${({ theme }) => theme.searchBarBgColor};
-  @media ${({ theme }) => theme.tablet} {
-    width: 100vw;
-    display: flex;
-    flex-direction: column;
-  }
-  @media ${({ theme }) => theme.mobile} {
-    width: 100vw;
-    display: flex;
-    flex-direction: column;
-  }
 `;
 
 const UserInformationWrapper = styled.div`
-  width: 100%;
-  height: 60px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100%;
+  height: 60px;
   padding: 5px 10px;
 `;
 
 const UserInfo = styled.div`
-  width: fit-content;
-  height: fit-content;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 0 10px;
+  width: fit-content;
+  height: fit-content;
   p {
     width: fit-content;
     font-size: 14px;
     font-weight: 600;
-    cursor: pointer;
     color: ${({ theme }) => theme.textColor};
+    cursor: pointer;
   }
 `;
 
 const ImageBoxWrapper = styled.div`
+  display: flex;
+  position: relative;
   width: 100%;
   height: fit-content;
-  display: flex;
   overflow: hidden;
-  /* background-image: url('../../../assets/image/userImage.png');
-  background-position: center;
-  background-size: contain;
-  background-repeat: no-repeat; */
-  position: relative;
 `;
 
 const ImageWrapper = styled.div`
-  width: 100%;
-  height: 100%;
   display: flex;
   align-items: center;
+  width: 100%;
+  height: 100%;
   img {
+    flex: none;
     width: 100%;
     height: 585px;
+    background: ${({ theme }) => theme.blackColor};
     object-fit: cover;
-    background: black;
-    flex: none;
     -webkit-user-drag: none;
     -khtml-user-drag: none;
     -moz-user-drag: none;
@@ -121,14 +96,13 @@ const CommentBoxWrapper = styled.div`
 `;
 
 const UserAvatar = styled.div`
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  border: 2px solid transparent;
   display: flex;
   justify-content: center;
   align-items: center;
-  cursor: pointer;
+  width: 42px;
+  height: 42px;
+  border: 2px solid transparent;
+  border-radius: 50%;
   background-image: linear-gradient(
       ${({ theme }) => theme.searchBarBgColor},
       ${({ theme }) => theme.searchBarBgColor}
@@ -136,6 +110,7 @@ const UserAvatar = styled.div`
     linear-gradient(to right, red 0%, orange 100%);
   background-origin: border-box;
   background-clip: content-box, border-box;
+  cursor: pointer;
   img {
     width: 32px;
     height: 32px;
@@ -145,28 +120,27 @@ const UserAvatar = styled.div`
 `;
 
 const IconBox = styled.div`
-  width: 100%;
-  height: 46px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100%;
+  height: 46px;
   padding: 0 10px;
-  /* border: 1px solid red; */
 `;
 
 const LeftIconBox = styled.div`
-  width: 100px;
-  height: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100px;
+  height: 100%;
 `;
 
 const HeartIcon = styled(BsHeart)`
   width: 23px;
   height: 23px;
-  cursor: pointer;
   color: ${({ theme }) => theme.textColor};
+  cursor: pointer;
   &:hover {
     color: ${({ theme }) => theme.greyTextColor};
   }
@@ -175,11 +149,11 @@ const HeartIcon = styled(BsHeart)`
 const ColoredHeartIcon = styled(BsHeartFill)<{ likebuttonclicked: string }>`
   width: 23px;
   height: 23px;
-  color: #ed4956;
+  color: ${({ theme }) => theme.errorColor};
   cursor: pointer;
   animation: ${({ likebuttonclicked }) =>
-    likebuttonclicked === 'Y' ? 'pop 1s ease-in-out' : ''};
-  @keyframes pop {
+    likebuttonclicked === 'Y' ? 'likeHeart 1s ease-in-out' : ''};
+  @keyframes likeHeart {
     0% {
       transform: scale(1);
     }
@@ -199,8 +173,8 @@ const ColoredHeartIcon = styled(BsHeartFill)<{ likebuttonclicked: string }>`
 const ChatIcon = styled(RiChat3Line)`
   width: 23px;
   height: 23px;
-  cursor: pointer;
   color: ${({ theme }) => theme.textColor};
+  cursor: pointer;
   &:hover {
     color: ${({ theme }) => theme.greyTextColor};
   }
@@ -209,8 +183,8 @@ const ChatIcon = styled(RiChat3Line)`
 const LocationIcon = styled(TbLocation)`
   width: 23px;
   height: 23px;
-  cursor: pointer;
   color: ${({ theme }) => theme.textColor};
+  cursor: pointer;
   &:hover {
     color: ${({ theme }) => theme.greyTextColor};
   }
@@ -219,8 +193,8 @@ const LocationIcon = styled(TbLocation)`
 const BookmarkIcon = styled(FaRegBookmark)`
   width: 23px;
   height: 23px;
-  cursor: pointer;
   color: ${({ theme }) => theme.textColor};
+  cursor: pointer;
   &:hover {
     color: ${({ theme }) => theme.greyTextColor};
   }
@@ -229,8 +203,8 @@ const BookmarkIcon = styled(FaRegBookmark)`
 const BookmarkFilledIcon = styled(FaBookmark)`
   width: 23px;
   height: 23px;
-  cursor: pointer;
   color: ${({ theme }) => theme.textColor};
+  cursor: pointer;
   &:hover {
     color: ${({ theme }) => theme.greyTextColor};
   }
@@ -239,9 +213,9 @@ const BookmarkFilledIcon = styled(FaBookmark)`
 const LikedMemberBox = styled.div`
   width: fit-content;
   height: fit-content;
+  margin: 0 10px 10px 10px;
   font-size: 14px;
   font-weight: 600;
-  margin: 0 10px 10px 10px;
   color: ${({ theme }) => theme.textColor};
   cursor: pointer;
 `;
@@ -250,14 +224,13 @@ const FeedDescriptionBox = styled.div`
   height: fit-content;
   padding: 0 10px 10px 10px;
   line-height: 18px;
-  /* border: 1px solid red; */
   span:first-child {
     float: left;
+    margin-right: 5px;
     font-size: 14px;
     font-weight: 600;
     color: ${({ theme }) => theme.textColor};
     cursor: pointer;
-    margin-right: 5px;
   }
   p {
     display: inline;
@@ -266,62 +239,62 @@ const FeedDescriptionBox = styled.div`
     color: ${({ theme }) => theme.textColor};
   }
   button {
+    display: inline-block;
+    border: none;
+    background: transparent;
     font-size: 14px;
     font-weight: 400;
     color: ${({ theme }) => theme.greyTextColor};
-    border: none;
-    background: transparent;
     cursor: pointer;
-    display: inline-block;
   }
 `;
 const ViewAllCommentsBox = styled.div`
   width: fit-content;
   height: fit-content;
+  margin: 0 10px 10px 10px;
   font-size: 14px;
   font-weight: 400;
   color: ${({ theme }) => theme.greyTextColor};
-  margin: 0 10px 10px 10px;
   cursor: pointer;
 `;
 
 const DateBox = styled.div`
   width: 100%;
   height: fit-content;
+  padding: 0 10px 10px 10px;
   font-size: 10px;
   font-weight: 400;
   color: ${({ theme }) => theme.greyTextColor};
-  padding: 0 10px 10px 10px;
 `;
 
 const AddCommentBox = styled.form`
-  width: 100%;
-  height: fit-content;
-  border-top: 1px solid ${({ theme }) => theme.borderColor};
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px;
   position: relative;
+  width: 100%;
+  height: fit-content;
+  padding: 10px;
+  border-top: 1px solid ${({ theme }) => theme.borderColor};
   textarea {
     width: 375px;
     height: 20px;
-    border: none;
-    resize: none;
-    outline: none;
     margin-left: 10px;
+    border: none;
     background: transparent;
     font-family: 'RobotoFont';
+    outline: none;
+    resize: none;
   }
   button {
+    border: none;
+    background: transparent;
     font-size: 14px;
     font-weight: 600;
-    color: #0095f6;
-    background: transparent;
-    border: none;
+    color: ${({ theme }) => theme.buttonColor};
     &:disabled {
-      pointer-events: none;
       opacity: 0.4;
+      pointer-events: none;
     }
   }
 `;
@@ -329,31 +302,31 @@ const AddCommentBox = styled.form`
 const SmileIcon = styled(HiOutlineEmojiHappy)`
   width: 30px;
   height: 30px;
-  cursor: pointer;
   color: ${({ theme }) => theme.textColor};
+  cursor: pointer;
 `;
 
 const KebabMenuIcon = styled(GoKebabHorizontal)`
   width: 20px;
   height: 20px;
-  cursor: pointer;
   color: ${({ theme }) => theme.textColor};
+  cursor: pointer;
 `;
 
 const BigLikedIcon = styled(BsHeartFill)<{ likebuttonclicked: boolean }>`
-  width: 80px;
-  height: 80px;
-  color: #fff;
   position: absolute;
   top: 50%;
   left: 50%;
+  width: 80px;
+  height: 80px;
+  color: ${({ theme }) => theme.whiteColor};
   transform: translate(-50%, -50%);
   transform-origin: center center;
   filter: drop-shadow(5px 5px 30px rgba(0, 0, 0, 0.7));
   opacity: 0;
   animation: ${({ likebuttonclicked }) =>
-    likebuttonclicked && 'like-heart-animation 2s ease-in-out'};
-  @keyframes like-heart-animation {
+    likebuttonclicked && 'likeHeart 2s ease-in-out'};
+  @keyframes likeHeart {
     0%,
     to {
       opacity: 0;
@@ -377,52 +350,51 @@ const BigLikedIcon = styled(BsHeartFill)<{ likebuttonclicked: boolean }>`
 const LeftArrowIcon = styled(IoIosArrowDropleftCircle)<{
   currentslide: number;
 }>`
-  width: 30px;
-  height: 30px;
-  color: #fff;
+  display: ${({ currentslide }) => currentslide === 0 && 'none'};
   position: absolute;
-  z-index: 200;
   top: 50%;
   left: 15px;
+  width: 30px;
+  height: 30px;
+  color: ${({ theme }) => theme.whiteColor};
   opacity: 0.6;
   cursor: pointer;
-  ${({ currentslide }) => currentslide === 0 && 'display: none'};
+  z-index: 200;
 `;
 
 const RightArrowIcon = styled(IoIosArrowDroprightCircle)<{
   currentslide: number;
   totalslide: number;
 }>`
-  width: 30px;
-  height: 30px;
-  color: #fff;
+  display: ${({ currentslide, totalslide }) =>
+    currentslide === totalslide - 1 && 'none'};
   position: absolute;
-  z-index: 200;
   top: 50%;
   right: 15px;
+  width: 30px;
+  height: 30px;
+  color: ${({ theme }) => theme.whiteColor};
+  z-index: 200;
   opacity: 0.6;
   cursor: pointer;
-  ${({ currentslide, totalslide }) =>
-    currentslide === totalslide - 1 && 'display: none'};
 `;
 
 const MeatballIconBox = styled.div`
-  width: fit-content;
-  height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 0 3px;
-  padding: 0 10px;
+  width: fit-content;
+  height: 100%;
   margin-right: 80px;
+  padding: 0 10px;
 `;
 
 const MeatballIcon = styled(FaCircle)<{ index: number; currentslide: number }>`
   width: 6px;
   height: 6px;
-  /* color: ${({ theme }) => theme.greyTextColor}; */
   color: ${({ theme, index, currentslide }) =>
-    index === currentslide ? '#0095f6' : theme.greyTextColor};
+    index === currentslide ? theme.buttonColor : theme.greyTextColor};
 `;
 
 interface FeedCardProps {
@@ -497,9 +469,7 @@ const FeedCard = ({
 
   const NextSlide = () => {
     if (currentSlide >= TOTAL_SLIDES) {
-      // setCurrentSlide(0);
       return;
-      // rightArrowRef.current.style.display = 'none';
     } else {
       setCurrentSlide(currentSlide + 1);
     }
@@ -507,9 +477,7 @@ const FeedCard = ({
 
   const PrevSlide = () => {
     if (currentSlide === 0) {
-      // setCurrentSlide(TOTAL_SLIDES);
       return;
-      // leftArrowRef.current.style.display = 'none';
     } else {
       setCurrentSlide(currentSlide - 1);
     }

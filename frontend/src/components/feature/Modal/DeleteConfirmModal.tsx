@@ -7,18 +7,18 @@ import { deletePost } from '../../../api/api';
 const Container = styled.div`
   width: 400px;
   height: 201px;
-  background: ${({ theme }) => theme.dropDownBgColor};
   border-radius: 10px;
+  background: ${({ theme }) => theme.dropDownBgColor};
 `;
 
 const Title = styled.div`
-  width: 400px;
-  height: 107px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   gap: 15px 0;
+  width: 400px;
+  height: 107px;
   h3 {
     font-size: 18px;
     font-weight: 600;
@@ -34,15 +34,15 @@ const Button = styled.button<{ last?: boolean }>`
   width: 100%;
   height: 47px;
   border: none;
-  background: transparent;
   border-top: 1px solid ${({ theme }) => theme.borderColor};
+  background: transparent;
   font-size: 14px;
   font-weight: 400;
   color: ${({ theme }) => theme.textColor};
   &:active {
-    background: ${({ theme }) => theme.ultraLightGreyColor};
     border-bottom-left-radius: ${({ last }) => last && '10px'};
     border-bottom-right-radius: ${({ last }) => last && '10px'};
+    background: ${({ theme }) => theme.ultraLightGreyColor};
   }
   &:nth-child(2) {
     color: #ed4956;

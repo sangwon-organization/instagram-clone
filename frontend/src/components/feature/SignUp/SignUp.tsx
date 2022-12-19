@@ -21,23 +21,23 @@ import {
 } from 'react-icons/io';
 
 const SignUpContainer = styled.div<{ error: any }>`
-  width: 347px;
-  height: ${({ error }) => (error ? ' 855px' : '768px')};
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  width: 347px;
+  height: ${({ error }) => (error ? ' 855px' : '768px')};
 `;
 
 const TopBox = styled.div<{ error: any }>`
-  width: 100%;
-  height: ${({ error }) => (error ? ' 660px' : '575px')};
-  border-radius: 1px;
-  border: solid 1px #dbdbdb;
-  background-color: #fff;
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;
   align-items: center;
+  width: 100%;
+  height: ${({ error }) => (error ? ' 660px' : '575px')};
+  border: solid 1px ${({ theme }) => theme.borderColor};
+  border-radius: 1px;
+  background-color: ${({ theme }) => theme.whiteColor};
 
   img {
     width: 171.1px;
@@ -46,10 +46,10 @@ const TopBox = styled.div<{ error: any }>`
   }
 
   p {
-    color: #8e8e8e;
+    width: 262px;
     font-size: 17px;
     font-weight: 700;
-    width: 262px;
+    color: ${({ theme }) => theme.greyTextColor};
   }
 `;
 
@@ -57,90 +57,80 @@ const FacebookLoginButton = styled.button`
   width: 262px;
   height: 33px;
   border: none;
-  background: #0095f6;
   border-radius: 5px;
+  background: ${({ theme }) => theme.buttonColor};
   font-size: 14px;
   font-weight: 600;
-  color: #fff;
+  color: ${({ theme }) => theme.whiteColor};
 `;
 
 const FacebookLogo = styled(AiFillFacebook)`
-  color: #fff;
   width: 20px;
   height: 20px;
   margin-right: 5px;
+  color: ${({ theme }) => theme.whiteColor};
 `;
 
 const OrBox = styled.div`
   width: 262px;
   height: 14.7px;
   p {
-    font-size: 12.7px;
-    font-weight: 600;
-    font-stretch: normal;
-    font-style: normal;
-    line-height: 1.15;
-    letter-spacing: normal;
-    color: #8e8e8e;
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 0 17px;
+    font-size: 12.7px;
+    font-weight: 600;
+    line-height: 1.15;
+    color: ${({ theme }) => theme.greyTextColor};
     &::before,
     &::after {
-      content: '';
       display: inline-block;
       width: 103.9px;
       height: 1px;
-      background: #dbdbdb;
+      background: ${({ theme }) => theme.borderColor};
+      content: '';
     }
   }
 `;
 const Form = styled.form`
-  width: 340.2px;
-  height: fit-content;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   gap: 5.9px 0;
+  width: 340.2px;
+  height: fit-content;
 `;
 
 const InputBox = styled.div<{ keyPress: boolean; clicked: boolean }>`
   position: relative;
   width: 262px;
   height: 37.1px;
+  border: solid 1px
+    ${({ clicked, theme }) => (clicked ? '#a2a1a1' : theme.borderColor)};
   border-radius: 2.9px;
-  border: solid 1px ${({ clicked }) => (clicked ? '#a2a1a1' : '#dbdbdb')};
-  background-color: #fafafa;
+  background-color: ${({ theme }) => theme.bgColor};
   input {
     position: absolute;
+    top: ${({ keyPress }) => (keyPress ? '0px' : '-3px')};
+    padding-top: 10px;
     width: 100%;
     height: 100%;
-    top: ${({ keyPress }) => (keyPress ? '0px' : '-3px')};
-    /* height: ${({ keyPress }) => (keyPress ? '30px' : '37.1px')}; */
     border: none;
     background: transparent;
     font-size: ${({ keyPress }) => (keyPress ? '8px' : '12px')};
-    /* &:focus {
-    border-color: #a2a1a1;
-  } */
-    z-index: 100;
-    padding-top: 10px;
     transition: all linear 0.1s;
+    z-index: 100;
   }
   span {
     position: absolute;
     top: ${({ keyPress }) => (keyPress ? '-5px' : '0')};
-    font-size: ${({ keyPress }) => (keyPress ? '8px' : '12px')};
-    font-weight: normal;
-    font-stretch: normal;
-    font-style: normal;
-    line-height: 3;
-    letter-spacing: normal;
-    text-align: left;
     padding-left: 10px;
-    color: #8e8e8e;
+    font-size: ${({ keyPress }) => (keyPress ? '8px' : '12px')};
+    color: ${({ theme }) => theme.greyTextColor};
+    line-height: 3;
+    text-align: left;
     transition: all linear 0.1s;
   }
 `;
@@ -149,35 +139,32 @@ const ShowHideText = styled.button`
   position: absolute;
   top: 8px;
   right: 5px;
-  font-size: 14px;
-  font-weight: 600;
-  border: none;
-  background: transparent;
-  z-index: 200;
-  &:active {
-    color: grey;
-  }
   width: fit-content;
   height: fit-content;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 600;
+  z-index: 200;
+  &:active {
+    color: ${({ theme }) => theme.greyTextColor};
+  }
 `;
 
 const SignupButton = styled.button<{ disabled: boolean }>`
+  position: relative;
   width: 262px;
   height: 29.3px;
-  border-radius: 3.9px;
-  background: ${({ disabled }) =>
-    disabled ? 'rgba(0, 149, 246, 0.3)' : '#0095F6'};
+  margin-top: 7.8px;
   border: none;
+  border-radius: 3.9px;
+  background: ${({ disabled, theme }) =>
+    disabled ? '#0095f64c' : theme.buttonColor};
   font-size: 13.7px;
   font-weight: 600;
-  font-stretch: normal;
-  font-style: normal;
+  color: ${({ theme }) => theme.whiteColor};
   line-height: 1.29;
-  letter-spacing: normal;
   text-align: center;
-  color: #fff;
-  margin-top: 7.8px;
-  position: relative;
 `;
 
 const NoticeBox = styled.div`
@@ -185,7 +172,7 @@ const NoticeBox = styled.div`
   height: fit-content;
   font-size: 12px;
   font-weight: 400;
-  color: #8e8e8e;
+  color: ${({ theme }) => theme.greyTextColor};
   line-height: 16px;
   text-align: center;
   letter-spacing: 0.4px;
@@ -195,36 +182,33 @@ const NoticeBox = styled.div`
 `;
 
 const ValidationTrueIcon = styled(IoIosCheckmarkCircleOutline)`
-  font-size: 25px;
-  color: ${({ theme }) => theme.greyTextColor};
   position: absolute;
   top: 5px;
   right: 5px;
+  font-size: 25px;
+  color: ${({ theme }) => theme.greyTextColor};
 `;
 
 const ValidationFalseIcon = styled(IoIosCloseCircleOutline)`
-  font-size: 25px;
-  color: #ed4956;
   position: absolute;
   top: 5px;
   right: 5px;
+  font-size: 25px;
+  color: ${({ theme }) => theme.errorColor};
 `;
 
 const ErrorMessageBox = styled.div`
-  width: 262px;
-  height: 80px;
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 262px;
+  height: 80px;
 
   p {
-    color: #ed4956;
+    color: ${({ theme }) => theme.errorColor};
     font-size: 14px;
     font-weight: 400;
-    font-stretch: normal;
-    font-style: normal;
     line-height: 1.29;
-    letter-spacing: normal;
     text-align: center;
     white-space: pre-line;
   }

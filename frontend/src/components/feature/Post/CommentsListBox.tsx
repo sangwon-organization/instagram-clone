@@ -5,24 +5,21 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { getCommentsList, likeComment } from '../../../api/api';
 
 const Container = styled.div`
-  width: 90%;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: fit-content;
+  width: 95%;
   height: fit-content;
+  margin: 0 10px 10px 10px;
   font-size: 14px;
   font-weight: 400;
-  margin: 0 10px 10px 10px;
-  /* border: 1px solid red; */
 `;
 
 const Wrapper = styled.div`
   display: flex;
-  gap: 0 5px;
   justify-content: flex-start;
   align-items: center;
-  /* border: 1px solid blue; */
+  gap: 0 5px;
   div {
     width: fit-content;
     height: fit-content;
@@ -50,8 +47,8 @@ const Wrapper = styled.div`
 const SmallHeartIcon = styled(BsHeart)`
   width: 10px;
   height: 10px;
-  cursor: pointer;
   color: ${({ theme }) => theme.textColor};
+  cursor: pointer;
   &:hover {
     color: ${({ theme }) => theme.greyTextColor};
   }
@@ -60,11 +57,11 @@ const SmallHeartIcon = styled(BsHeart)`
 const ColoredHeartIcon = styled(BsHeartFill)<{ likebuttonclicked: string }>`
   width: 10px;
   height: 10px;
-  color: #ed4956;
+  color: ${({ theme }) => theme.errorColor};
   cursor: pointer;
   animation: ${({ likebuttonclicked }) =>
-    likebuttonclicked === 'Y' ? 'pop 1s ease-in-out' : ''};
-  @keyframes pop {
+    likebuttonclicked === 'Y' ? 'likeHeart 1s ease-in-out' : ''};
+  @keyframes likeHeart {
     0% {
       transform: scale(1);
     }

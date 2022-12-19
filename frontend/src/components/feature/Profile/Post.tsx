@@ -10,19 +10,18 @@ import ModalContainer from '../Modal/ModalContainer';
 import PostWrapper from '../Post/PostWrapper';
 
 const PostContainer = styled.div`
-  width: 293px;
-  height: 293px;
   display: flex;
   justify-content: center;
   align-items: center;
   position: relative;
+  width: 293px;
+  height: 293px;
   cursor: pointer;
-  position: relative;
   img {
     width: 293px;
     height: 293px;
+    background: ${({ theme }) => theme.blackColor};
     object-fit: contain;
-    background: black;
     &:hover {
       filter: brightness(0.7);
     }
@@ -33,42 +32,42 @@ const PostContainer = styled.div`
 `;
 
 const LikeAndCommentWrapper = styled.div<{ postHover: boolean }>`
-  width: 230px;
-  height: fit-content;
   display: ${({ postHover }) => (postHover ? 'flex' : 'none')};
   justify-content: center;
   align-items: center;
   position: absolute;
+  width: 230px;
+  height: fit-content;
 `;
 const HeartIcon = styled(BsHeartFill)`
   width: 18px;
   height: 18px;
   margin-right: 10px;
-  color: #fff;
+  color: ${({ theme }) => theme.whiteColor};
 `;
 
 const CommentIcon = styled(IoChatbubble)`
   width: 18px;
   height: 18px;
   margin-right: 10px;
-  color: #fff;
+  color: ${({ theme }) => theme.whiteColor};
 `;
 
 const ItemBox = styled.div`
-  width: 100px;
-  height: fit-content;
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 100px;
+  height: fit-content;
   p {
-    color: #fff;
+    color: ${({ theme }) => theme.whiteColor};
     font-size: 16px;
     font-weight: 600;
   }
 `;
 
 const ImagesIcon = styled(IoIosPhotos)`
-  color: #fff;
+  color: ${({ theme }) => theme.whiteColor};
   position: absolute;
   top: 10px;
   right: 10px;

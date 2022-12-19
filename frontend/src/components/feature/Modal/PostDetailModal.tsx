@@ -6,11 +6,10 @@ import { useMutation } from '@tanstack/react-query';
 import { commentPost } from '../../../api/api';
 
 const Wrapper = styled.div`
+  display: flex;
   width: 930px;
   height: 600px;
   border: 1px solid ${({ theme }) => theme.borderColor};
-  display: flex;
-
   img {
     width: 593px;
     height: 598px;
@@ -18,10 +17,10 @@ const Wrapper = styled.div`
 `;
 
 const PostInfo = styled.div`
-  width: 100%;
-  height: 100%;
   display: flex;
   flex-direction: column;
+  width: 100%;
+  height: 100%;
 `;
 
 const PostHeader = styled.div`
@@ -31,9 +30,9 @@ const PostHeader = styled.div`
 `;
 
 const CommentsListBox = styled.div`
-  border-bottom: 1px solid ${({ theme }) => theme.ultraLightGreyColor};
   width: 100%;
   height: 348px;
+  border-bottom: 1px solid ${({ theme }) => theme.ultraLightGreyColor};
 `;
 
 const PostBottom = styled.div`
@@ -42,33 +41,33 @@ const PostBottom = styled.div`
 `;
 
 const AddCommentBox = styled.form`
-  width: 100%;
-  height: fit-content;
-  border-top: 1px solid ${({ theme }) => theme.borderColor};
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px;
   position: relative;
+  width: 100%;
+  height: fit-content;
+  padding: 10px;
+  border-top: 1px solid ${({ theme }) => theme.borderColor};
   textarea {
     width: 375px;
     height: 20px;
-    border: none;
-    resize: none;
-    outline: none;
     margin-left: 10px;
+    border: none;
     background: transparent;
     font-family: 'RobotoFont';
+    resize: none;
+    outline: none;
   }
   button {
+    border: none;
+    background: transparent;
     font-size: 14px;
     font-weight: 600;
-    color: #0095f6;
-    background: transparent;
-    border: none;
+    color: ${({ theme }) => theme.buttonColor};
     &:disabled {
-      pointer-events: none;
       opacity: 0.4;
+      pointer-events: none;
     }
   }
 `;
@@ -76,8 +75,8 @@ const AddCommentBox = styled.form`
 const SmileIcon = styled(HiOutlineEmojiHappy)`
   width: 30px;
   height: 30px;
-  cursor: pointer;
   color: ${({ theme }) => theme.textColor};
+  cursor: pointer;
 `;
 
 const PostDetailModal = () => {
@@ -94,11 +93,6 @@ const PostDetailModal = () => {
 
   const registerComment = (e: any) => {
     e.preventDefault();
-    // mutate({
-    //   postId: postId,
-    //   parentCommentId: '',
-    //   content: textareaRef.current.value,
-    // });
     if (isLoading) {
       postButtonRef.current.disabled = true;
     }

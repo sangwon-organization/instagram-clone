@@ -15,54 +15,50 @@ import SharesPhotosBox from '../../components/feature/Post/SharesPhotosBox';
 import { IoIosSettings } from 'react-icons/io';
 
 const MainContainer = styled.div`
-  width: 100%;
-  height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: ${({ theme }) => theme.bgColor};
+  width: 100%;
+  height: 100%;
   padding-top: 60px;
+  background: ${({ theme }) => theme.bgColor};
 `;
 
 const MainWrapper = styled.main`
-  width: 936px;
-  height: fit-content;
-  /* border: 1px solid red; */
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   align-items: flex-start;
+  width: 936px;
+  height: fit-content;
 `;
 
 const UserInfoHeader = styled.header`
-  width: 100%;
-  height: fit-content;
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 100%;
+  height: fit-content;
 `;
 
 const AvatarWrapper = styled.form`
-  width: 291px;
-  height: fit-content;
   display: flex;
   justify-content: center;
   align-items: center;
-  /* border: 1px solid red; */
+  width: 291px;
+  height: fit-content;
 `;
 
 const UserAvatar = styled.div<{ isloading: boolean; ismypage: boolean }>`
-  width: 168px;
-  height: 168px;
-  border-radius: 50%;
-  border: 2px solid transparent;
   display: flex;
   justify-content: center;
   align-items: center;
   position: relative;
-  cursor: ${({ isloading, ismypage }) =>
-    isloading || !ismypage ? 'default' : 'pointer'};
+  width: 168px;
+  height: 168px;
+  border: 2px solid transparent;
+  border-radius: 50%;
   background-image: linear-gradient(
       ${({ theme }) => theme.searchBarBgColor},
       ${({ theme }) => theme.searchBarBgColor}
@@ -70,34 +66,35 @@ const UserAvatar = styled.div<{ isloading: boolean; ismypage: boolean }>`
     linear-gradient(to right, red 0%, orange 100%);
   background-origin: border-box;
   background-clip: content-box, border-box;
+  cursor: ${({ isloading, ismypage }) =>
+    isloading || !ismypage ? 'default' : 'pointer'};
   img {
     width: 150px;
     height: 150px;
     border-radius: 50%;
-    z-index: 100;
     opacity: ${({ isloading }) => isloading && 0.4};
+    z-index: 100;
   }
   input {
     display: none;
   }
 `;
 const UserInfo = styled.section`
-  width: 613px;
-  height: fit-content;
   display: flex;
   flex-direction: column;
-  gap: 20px 0;
   align-items: start;
-  /* border: 1px solid blue; */
+  gap: 20px 0;
+  width: 613px;
+  height: fit-content;
   padding: 30px 0;
 `;
 
 const FirstBox = styled.div`
-  width: 100%;
   display: flex;
   justify-content: flex-start;
   align-items: center;
   gap: 0 30px;
+  width: 100%;
   h2 {
     font-size: 28px;
     font-weight: 400;
@@ -106,19 +103,19 @@ const FirstBox = styled.div`
 `;
 
 const ButtonBox = styled.div`
-  width: fit-content;
-  height: 100%;
   display: flex;
-  gap: 0 15px;
   justify-content: flex-start;
   align-items: center;
+  gap: 0 15px;
+  width: fit-content;
+  height: 100%;
 `;
 
 const SecondBox = styled.div`
-  width: fit-content;
-  height: 24px;
   display: flex;
   gap: 0 30px;
+  width: fit-content;
+  height: 24px;
   p {
     font-size: 16px;
     font-weight: 400;
@@ -139,9 +136,9 @@ const ThirdBox = styled.div`
 const FourthBox = styled.div`
   width: fit-content;
   height: 16px;
-  color: ${({ theme }) => theme.greyTextColor};
   font-size: 12px;
   font-weight: 600;
+  color: ${({ theme }) => theme.greyTextColor};
   span {
     color: ${({ theme }) => theme.textColor};
   }
@@ -150,9 +147,8 @@ const FourthBox = styled.div`
 const KebabMenuIcon = styled(GoKebabHorizontal)`
   width: 27px;
   height: 27px;
-  cursor: pointer;
   color: ${({ theme }) => theme.textColor};
-  /* border: 1px solid red; */
+  cursor: pointer;
 `;
 
 const ArrowDownIcon = styled(SlArrowDown)`
@@ -170,14 +166,16 @@ const MessageButton = styled.button`
   width: fit-content;
   height: 30px;
   padding: 5px 9px;
-  font-size: 14px;
-  font-weight: 600;
   border: 1px solid ${({ theme }) => theme.borderColor};
   border-radius: 5px;
   background: transparent;
+  font-size: 14px;
+  font-weight: 600;
   color: ${({ theme }) => theme.textColor};
 `;
+
 const UnFollowButton = styled.button`
+  position: relative;
   width: 38px;
   height: 30px;
   padding: 5px 9px;
@@ -185,20 +183,19 @@ const UnFollowButton = styled.button`
   border-radius: 5px;
   background: transparent;
   color: ${({ theme }) => theme.textColor};
-  position: relative;
 `;
 
 const FollowButon = styled.button`
+  position: relative;
   width: 62px;
   height: 30px;
   padding: 5px 9px;
-  border-radius: 5px;
   border: none;
-  background: #0095f6;
-  color: #fff;
+  border-radius: 5px;
+  background: ${({ theme }) => theme.buttonColor};
   font-size: 14px;
   font-weight: 600;
-  position: relative;
+  color: ${({ theme }) => theme.whiteColor};
   &:active {
     opacity: 0.7;
   }
@@ -217,37 +214,37 @@ const SuggestedButton = styled.button`
   color: ${({ theme }) => theme.textColor};
 `;
 const TabMenu = styled.div`
-  width: 100%;
-  height: 53px;
-  border-top: 1px solid ${({ theme }) => theme.borderColor};
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 100%;
+  height: 53px;
+  border-top: 1px solid ${({ theme }) => theme.borderColor};
 `;
 
 const MenuWrapper = styled.ul`
-  width: 280px;
-  height: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 280px;
+  height: 100%;
   li {
-    width: fit-content;
-    height: 100%;
-    font-size: 12px;
-    color: ${({ theme }) => theme.greyTextColor};
-    font-weight: 600;
-    letter-spacing: 1px;
     display: flex;
     justify-content: center;
     align-items: center;
+    width: fit-content;
+    height: 100%;
+    font-size: 12px;
+    font-weight: 600;
+    color: ${({ theme }) => theme.greyTextColor};
+    letter-spacing: 1px;
     cursor: pointer;
     &:active {
       opacity: 0.7;
     }
     &:first-child {
-      color: ${({ theme }) => theme.textColor};
       border-top: 1px solid ${({ theme }) => theme.textColor};
+      color: ${({ theme }) => theme.textColor};
     }
   }
 `;
@@ -276,11 +273,11 @@ const PostsIcon = styled(IoAppsSharp)`
 `;
 
 const PostsWrapper = styled.article`
-  width: 100%;
-  height: fit-content;
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 28px 28px;
+  width: 100%;
+  height: fit-content;
 `;
 
 interface ProfilePresenterType {

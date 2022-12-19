@@ -209,8 +209,8 @@ const BigLikedIcon = styled(BsHeartFill)<{ likebuttonclicked: boolean }>`
   filter: drop-shadow(5px 5px 30px rgba(0, 0, 0, 0.7));
   opacity: 0;
   animation: ${({ likebuttonclicked }) =>
-    likebuttonclicked && 'like-heart-animation 2s ease-in-out'};
-  @keyframes like-heart-animation {
+    likebuttonclicked && 'likeHeart 2s ease-in-out'};
+  @keyframes likeHeart {
     0%,
     to {
       opacity: 0;

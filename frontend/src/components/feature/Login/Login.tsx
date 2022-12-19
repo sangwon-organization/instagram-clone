@@ -12,24 +12,24 @@ import { useDispatch } from 'react-redux';
 import Loader from 'react-loader';
 
 const LoginContainer = styled.div`
-  width: 342.2px;
-  height: 568px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  width: 342.2px;
+  height: 568px;
   margin: 100px 0;
 `;
 
 const TopBox = styled.div`
-  width: 100%;
-  height: 387.1px;
-  border-radius: 1px;
-  border: solid 1px ${({ theme }) => theme.borderColor};
-  background-color: #fff;
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;
   align-items: center;
+  width: 100%;
+  height: 387.1px;
+  border: solid 1px ${({ theme }) => theme.borderColor};
+  border-radius: 1px;
+  background-color: #fff;
 
   img {
     width: 171.1px;
@@ -39,70 +39,73 @@ const TopBox = styled.div`
 `;
 
 const LoginForm = styled.form`
-  width: 340.2px;
-  height: 126px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   gap: 5.9px 0;
+  width: 340.2px;
+  height: 126px;
 `;
 
 const LoginButton = styled.button<{ disabled: boolean }>`
+  position: relative;
   width: 262px;
   height: 29.3px;
-  border-radius: 3.9px;
-  background: ${({ disabled }) =>
-    disabled ? 'rgba(0, 149, 246, 0.3)' : '#0095F6'};
+  margin-top: 7.8px;
   border: none;
+  border-radius: 3.9px;
+  background: ${({ disabled, theme }) =>
+    disabled ? '#0095f64c' : theme.buttonColor};
+  color: ${({ theme }) => theme.whiteColor};
   font-size: 13.7px;
   font-weight: 600;
-  font-stretch: normal;
-  font-style: normal;
   line-height: 1.29;
-  letter-spacing: normal;
   text-align: center;
-  color: #fff;
-  margin-top: 7.8px;
-  position: relative;
 `;
 
 const InputBox = styled.div<{ keyPress: boolean; clicked: boolean }>`
   position: relative;
   width: 262px;
   height: 37.1px;
-  border-radius: 2.9px;
   border: solid 1px
     ${({ theme, clicked }) => (clicked ? '#a2a1a1' : theme.borderColor)};
+  border-radius: 2.9px;
   background-color: ${({ theme }) => theme.bgColor};
   input {
     position: absolute;
+    top: ${({ keyPress }) => (keyPress ? '0px' : '-3px')};
     width: 100%;
     height: 100%;
-    top: ${({ keyPress }) => (keyPress ? '0px' : '-3px')};
-    /* height: ${({ keyPress }) => (keyPress ? '30px' : '37.1px')}; */
+    padding-top: 10px;
     border: none;
     background: transparent;
     font-size: ${({ keyPress }) => (keyPress ? '8px' : '12px')};
-    /* &:focus {
-    border-color: #a2a1a1;
-  } */
-    z-index: 100;
-    padding-top: 10px;
+    font-weight: 400;
     transition: all linear 0.1s;
+    z-index: 100;
+    &:autofill {
+      box-shadow: 0 0 0px 1000px transparent inset;
+    }
+    &:-webkit-autofill,
+    &:-webkit-autofill:hover,
+    &:-webkit-autofill:focus,
+    &:-webkit-autofill:active {
+      transition: background-color 5000s ease-in-out 0s;
+      -webkit-transition: background-color 9999s ease-out;
+      -webkit-box-shadow: 0 0 0px 1000px transparent inset;
+      box-shadow: 0 0 0px 1000px transparent inset;
+      -webkit-text-fill-color: ${({ theme }) => theme.textColor};
+    }
   }
   span {
     position: absolute;
     top: ${({ keyPress }) => (keyPress ? '-5px' : '0')};
-    font-size: ${({ keyPress }) => (keyPress ? '8px' : '12px')};
-    font-weight: normal;
-    font-stretch: normal;
-    font-style: normal;
-    line-height: 3;
-    letter-spacing: normal;
-    text-align: left;
     padding-left: 10px;
-    color: #8e8e8e;
+    font-size: ${({ keyPress }) => (keyPress ? '8px' : '12px')};
+    color: ${({ theme }) => theme.greyTextColor};
+    line-height: 3;
+    text-align: left;
     transition: all linear 0.1s;
   }
 `;
@@ -111,10 +114,10 @@ const ShowHideText = styled.button`
   position: absolute;
   top: 8px;
   right: 5px;
-  font-size: 14px;
-  font-weight: 600;
   border: none;
   background: transparent;
+  font-size: 14px;
+  font-weight: 600;
   z-index: 200;
   &:active {
     color: ${({ theme }) => theme.greyTextColor};
@@ -125,17 +128,14 @@ const OrBox = styled.div`
   width: 262px;
   height: 14.7px;
   p {
-    font-size: 12.7px;
-    font-weight: 600;
-    font-stretch: normal;
-    font-style: normal;
-    line-height: 1.15;
-    letter-spacing: normal;
-    color: ${({ theme }) => theme.greyTextColor};
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 0 17px;
+    font-size: 12.7px;
+    font-weight: 600;
+    line-height: 1.15;
+    color: ${({ theme }) => theme.greyTextColor};
     &::before,
     &::after {
       content: '';
@@ -152,12 +152,9 @@ const ErrorMessageBox = styled.div`
   height: 19.6px;
   font-size: 13.7px;
   font-weight: 600;
-  font-stretch: normal;
-  font-style: normal;
-  line-height: 1.29;
-  letter-spacing: normal;
-  text-align: center;
   color: #ed4956;
+  line-height: 1.29;
+  text-align: center;
   white-space: pre-line;
 `;
 
@@ -165,11 +162,7 @@ const ForgotPasswordBox = styled.div`
   width: 94.1px;
   height: 13.7px;
   font-size: 11.7px;
-  font-weight: normal;
-  font-stretch: normal;
-  font-style: normal;
   line-height: 1.33;
-  letter-spacing: normal;
   color: ${({ theme }) => theme.hashTagColor};
 `;
 

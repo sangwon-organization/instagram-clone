@@ -3,37 +3,39 @@ import styled from 'styled-components';
 import { BsCamera } from 'react-icons/bs';
 
 const Container = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 100%;
   height: 300px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 `;
 const Wrapper = styled.div`
-  width: 200px;
-  height: 200px;
   display: flex;
   flex-direction: column;
-  gap: 20px 0;
   justify-content: center;
   align-items: center;
+  gap: 20px 0;
+  width: 200px;
+  height: 200px;
   p {
     font-size: 28px;
     font-weight: 300;
+    color: ${({ theme }) => theme.textColor};
   }
 `;
 const Circle = styled.div`
-  width: 62px;
-  height: 62px;
-  border: 2px solid black;
-  border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 62px;
+  height: 62px;
+  border: 2px solid ${({ theme }) => theme.textColor};
+  border-radius: 50%;
 `;
 
 const CameraIcon = styled(BsCamera)`
   font-size: 25px;
+  color: ${({ theme }) => theme.textColor};
 `;
 
 const NoPostsBox = () => {

@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import userAvatar from '../../../assets/image/userAvatar.png';
 import {
   IoIosArrowDropleftCircle,
   IoIosArrowDroprightCircle,
@@ -9,31 +8,24 @@ import { useQuery } from '@tanstack/react-query';
 import { getFollowingList } from '../../../api/api';
 
 const StoryBoxContainer = styled.section`
-  width: 470px;
-  height: 119px;
-  border: 1px solid ${({ theme }) => theme.borderColor};
-  border-radius: 10px;
-  background: ${({ theme }) => theme.searchBarBgColor};
   display: flex;
   justify-content: center;
   align-items: center;
   position: relative;
+  width: 470px;
+  height: 119px;
   margin-top: 28px;
   margin-bottom: 4px;
-  @media ${({ theme }) => theme.mobile} {
-    width: 100vw;
-  }
-  @media ${({ theme }) => theme.tablet} {
-    width: 100vw;
-  }
+  border: 1px solid ${({ theme }) => theme.borderColor};
+  border-radius: 10px;
+  background: ${({ theme }) => theme.searchBarBgColor};
 `;
 
 const StoryBoxWrapper = styled.ul`
-  width: 100%;
-  height: 85px;
-  /* border: 1px solid blue; */
   display: flex;
   gap: 0 15px;
+  width: 100%;
+  height: 85px;
   padding: 0 15px;
   overflow-x: scroll;
   &::-webkit-scrollbar {
@@ -42,12 +34,12 @@ const StoryBoxWrapper = styled.ul`
 `;
 
 const StoryItem = styled.button`
-  width: 64px;
-  height: 84px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
+  width: 64px;
+  height: 84px;
   border: none;
   background: transparent;
   p {
@@ -57,7 +49,6 @@ const StoryItem = styled.button`
     font-weight: 400;
     letter-spacing: 0.12px;
     color: ${({ theme }) => theme.textColor};
-    /* border: 1px solid red; */
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
@@ -65,13 +56,13 @@ const StoryItem = styled.button`
 `;
 
 const UserAvatar = styled.div`
-  width: 66px;
-  height: 66px;
-  border-radius: 50%;
-  border: 2px solid transparent;
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 66px;
+  height: 66px;
+  border: 2px solid transparent;
+  border-radius: 50%;
   background-image: linear-gradient(
       ${({ theme }) => theme.searchBarBgColor},
       ${({ theme }) => theme.searchBarBgColor}
@@ -88,24 +79,25 @@ const UserAvatar = styled.div`
 `;
 
 const LeftArrowIcon = styled(IoIosArrowDropleftCircle)`
-  width: 30px;
-  height: 30px;
-  color: #fff;
   position: absolute;
-  z-index: 200;
   top: 44px;
   left: 15px;
-  cursor: pointer;
-`;
-const RightArrowIcon = styled(IoIosArrowDroprightCircle)`
   width: 30px;
   height: 30px;
-  color: #fff;
-  position: absolute;
+  color: ${({ theme }) => theme.whiteColor};
   z-index: 200;
+  cursor: pointer;
+`;
+
+const RightArrowIcon = styled(IoIosArrowDroprightCircle)`
+  position: absolute;
   top: 44px;
   right: 15px;
+  width: 30px;
+  height: 30px;
+  color: ${({ theme }) => theme.whiteColor};
   cursor: pointer;
+  z-index: 200;
 `;
 
 const StoryBox = () => {

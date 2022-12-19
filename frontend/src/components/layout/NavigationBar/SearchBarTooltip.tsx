@@ -1,9 +1,8 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import styled from 'styled-components';
 import { IoClose } from 'react-icons/io5';
-import userAvatar from '../../../assets/image/userAvatar.png';
 import useOutsideClick from '../../../hooks/useOutsideClick';
-import { matchPath, matchRoutes, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { addRecentSearchUser, deleteRecentSearchUser } from '../../../api/api';
 
@@ -12,26 +11,25 @@ const SearchBarTooltipContainer = styled.div<{
   ref: any;
 }>`
   display: ${({ showTooltip }) => (showTooltip ? 'block' : 'none')};
-  width: 374px;
-  height: 362px;
-  /* border: 1px solid red; */
-  border-radius: 5px;
-  filter: drop-shadow(0px 0px 10px rgba(0, 0, 0, 0.1));
   position: absolute;
-  background: ${({ theme }) => theme.dropDownBgColor};
   top: 60px;
   left: 220px;
+  width: 374px;
+  height: 362px;
+  border-radius: 5px;
+  filter: drop-shadow(0px 0px 10px rgba(0, 0, 0, 0.1));
+  background: ${({ theme }) => theme.dropDownBgColor};
   z-index: 500;
   &:after {
-    border-color: ${({ theme }) => theme.dropDownBgColor} transparent;
-    border-style: solid;
-    border-width: 0 6px 8px 6.5px;
-    content: '';
     display: block;
     position: absolute;
     top: -8px;
     right: 150px;
     width: 1px;
+    border-width: 0 6px 8px 6.5px;
+    border-style: solid;
+    border-color: ${({ theme }) => theme.dropDownBgColor} transparent;
+    content: '';
     z-index: 1;
   }
 `;
@@ -41,15 +39,15 @@ const SearchBarTooltipWrapper = styled.div`
   height: 362px;
   overflow-y: auto;
   &::-webkit-scrollbar-thumb {
-    background: rgba(147, 147, 147, 0.7);
-    border-radius: 10px;
-    background-clip: padding-box;
     border: 4px solid transparent;
+    border-radius: 10px;
+    background: #939393b2;
+    background-clip: padding-box;
     &:hover {
-      background: #939393;
-      border-radius: 10px;
-      background-clip: padding-box;
       border: 4px solid transparent;
+      border-radius: 10px;
+      background: #939393;
+      background-clip: padding-box;
     }
   }
   &::-webkit-scrollbar-track {
@@ -67,31 +65,27 @@ const TooltipHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 23px 10px 15px 10px;
-  /* border: 1px solid blue; */
 
   p {
     font-size: 16px;
     font-weight: 600;
-    /* border: 1px solid green; */
     color: ${({ theme }) => theme.textColor};
   }
   button {
-    font-size: 14px;
-    font-weight: 600;
-    color: #0095f6;
     border: none;
     background: transparent;
-    /* border: 1px solid green; */
+    font-size: 14px;
+    font-weight: 600;
+    color: ${({ theme }) => theme.buttonColor};
   }
 `;
 
 const RecentSearchItem = styled.div`
-  width: 100%;
-  height: 60px;
-  /* border: 1px solid pink; */
   display: flex;
   justify-content: flex-start;
   align-items: center;
+  width: 100%;
+  height: 60px;
   padding: 0 15px 0 10px;
   &:hover {
     background: ${({ theme }) => theme.bgColor};
@@ -109,21 +103,21 @@ const RecentSearchItem = styled.div`
 `;
 
 const UserAvatar = styled.div`
-  width: 54px;
-  height: 54px;
-  border-radius: 50%;
-  border: 2px solid transparent;
   display: flex;
   justify-content: center;
   align-items: center;
-  cursor: pointer;
+  width: 54px;
+  height: 54px;
+  border: 2px solid transparent;
+  border-radius: 50%;
   background-image: linear-gradient(
       ${({ theme }) => theme.searchBarBgColor},
       ${({ theme }) => theme.searchBarBgColor}
     ),
-    linear-gradient(to right, red 0%, orange 100%);
+    linear-gradient(to right, #ff0000 0%, #ffa500 100%);
   background-origin: border-box;
   background-clip: content-box, border-box;
+  cursor: pointer;
   img {
     width: 44px;
     height: 44px;
@@ -133,23 +127,22 @@ const UserAvatar = styled.div`
 `;
 
 const UserInfo = styled.div`
-  width: 250px;
-  height: 100%;
-  /* border: 1px solid red; */
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: 3px 0;
+  width: 250px;
+  height: 100%;
   margin-left: 10px;
   p:nth-child(1) {
-    color: ${({ theme }) => theme.textColor};
     font-size: 14px;
     font-weight: 600;
+    color: ${({ theme }) => theme.textColor};
   }
   p:nth-child(2) {
-    color: ${({ theme }) => theme.greyTextColor};
     font-size: 14px;
     font-weight: 400;
+    color: ${({ theme }) => theme.greyTextColor};
   }
 `;
 
@@ -161,11 +154,11 @@ const CloseIcon = styled(IoClose)`
 `;
 
 const EmptyRecentSearch = styled.div`
-  width: 100%;
-  height: 300px;
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 100%;
+  height: 300px;
   p {
     font-size: 14px;
     font-weight: 600;

@@ -5,25 +5,22 @@ import styled from 'styled-components';
 import { loginComponent, signupComponent } from '../../redux/slices/loginSlice';
 
 const Container = styled.div`
-  width: 100%;
-  height: 61.6px;
-  border-radius: 1px;
-  border: solid 1px #dbdbdb;
-  background-color: #fff;
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 100%;
+  height: 61.6px;
+  border: solid 1px ${({ theme }) => theme.borderColor};
+  border-radius: 1px;
+  background-color: ${({ theme }) => theme.whiteColor};
   p {
-    color: #262626;
-    font-size: 13.7px;
     font-family: 'RobotoFont';
+    font-size: 13.7px;
     font-weight: 400;
-    font-stretch: normal;
-    font-style: normal;
     line-height: 1.29;
-    letter-spacing: normal;
+    color: ${({ theme }) => theme.textColor};
     span {
-      color: #0095f6;
+      color: ${({ theme }) => theme.buttonColor};
       cursor: pointer;
     }
   }

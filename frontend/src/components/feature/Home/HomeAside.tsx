@@ -7,17 +7,12 @@ import {
   getNotFollowingList,
   getUserInformation,
 } from '../../../api/api';
-import userAvatar from '../../../assets/image/userAvatar.png';
 import Loader from 'react-loader';
 
 const HomeAsideContainer = styled.aside`
   width: 319px;
   height: 984px;
-  /* border: 1px solid red; */
   margin-top: 55px;
-  @media ${({ theme }) => theme.tablet} {
-    display: none;
-  }
 `;
 
 const UserAccountWrapper = styled.div`
@@ -37,20 +32,20 @@ const UserAccountWrapper = styled.div`
     height: 16px;
     border: none;
     background: transparent;
-    color: #0095f6;
     font-size: 12px;
     font-weight: 600;
+    color: ${({ theme }) => theme.buttonColor};
   }
 `;
 
 const UserInfoWrapper = styled.div`
-  width: 209px;
-  height: 30px;
   display: flex;
   flex-direction: column;
-  gap: 5px 0;
   justify-content: center;
   align-items: flex-start;
+  gap: 5px 0;
+  width: 209px;
+  height: 30px;
 
   p:nth-child(1) {
     font-size: 14px;
@@ -71,60 +66,59 @@ const SuggestionsWrapper = styled.div`
 `;
 
 const SuggestionsHeader = styled.div`
-  width: 100%;
-  height: 19px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100%;
+  height: 19px;
   margin-top: 8px;
   p {
-    color: ${({ theme }) => theme.greyTextColor};
     font-size: 14px;
     font-weight: 600;
+    color: ${({ theme }) => theme.greyTextColor};
   }
   button {
-    color: ${({ theme }) => theme.textColor};
-    font-size: 12px;
-    font-weight: 600;
+    padding: 0;
     border: none;
     background: transparent;
-    padding: 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: ${({ theme }) => theme.textColor};
   }
 `;
 
 const SuggestionsItem = styled.div`
-  width: 100%;
-  height: 48px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100%;
+  height: 48px;
   padding: 8px 0 8px 3px;
-  /* border: 1px solid blue; */
   img {
     width: 32px;
     height: 32px;
     border-radius: 50%;
   }
   button {
+    position: relative;
     width: 38px;
     height: 16px;
     border: none;
     background: transparent;
-    color: #0095f6;
     font-size: 12px;
     font-weight: 600;
-    position: relative;
+    color: ${({ theme }) => theme.buttonColor};
   }
 `;
 
 const ItemUserInfoWrapper = styled.div`
-  width: 209px;
-  height: 30px;
   display: flex;
   flex-direction: column;
-  gap: 5px 0;
   justify-content: center;
   align-items: flex-start;
+  gap: 5px 0;
+  width: 209px;
+  height: 30px;
 
   p:nth-child(1) {
     font-size: 14px;
@@ -140,12 +134,11 @@ const ItemUserInfoWrapper = styled.div`
 `;
 
 const AsideFooter = styled.footer`
-  width: 250px;
-  height: 74.5px;
-  /* border: 1px solid pink; */
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  width: 250px;
+  height: 74.5px;
   margin-top: 30px;
 `;
 
@@ -153,20 +146,20 @@ const FooterItems = styled.ul`
   display: flex;
   flex-wrap: wrap;
   li {
-    line-height: 18px;
     font-size: 12px;
     font-weight: 400;
+    line-height: 18px;
     color: ${({ theme }) => theme.footerTextColor};
     cursor: pointer;
     &:hover {
       text-decoration: underline;
     }
-  }
-  li::after {
-    content: '∙';
-  }
-  li:last-child::after {
-    content: '';
+    &::after {
+      content: '∙';
+    }
+    &:last-child::after {
+      content: '';
+    }
   }
 `;
 

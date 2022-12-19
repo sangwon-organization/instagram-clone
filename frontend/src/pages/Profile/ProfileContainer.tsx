@@ -1,7 +1,6 @@
 import React, { useRef, useState } from 'react';
 import MetaTag from '../../meta/MetaTag';
 import ProfilePresenter from '../Profile/ProfilePresenter';
-import thumbnail from '../../assets/image/thumbnail.png';
 import { useParams } from 'react-router-dom';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import {
