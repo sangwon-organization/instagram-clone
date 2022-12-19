@@ -22,6 +22,7 @@ import {
   searchUser,
 } from '../../../api/api';
 import CreatePostModal from '../../feature/Modal/CreatePostModal';
+import Loader from 'react-loader';
 
 const NavigationBarContainer = styled.nav`
   width: 100vw;
@@ -193,7 +194,7 @@ const NavigationBar = () => {
     document.body.style.overflow = 'unset';
   };
 
-  const searchUserQuery = useQuery(['searchUser'], () =>
+  const searchUserQuery = useQuery(['searchUser', userKeyword], () =>
     searchUser({ page: 1, keyword: userKeyword }),
   );
 
@@ -205,12 +206,6 @@ const NavigationBar = () => {
     const userId = Number(localStorage.getItem('userId'));
     return getUserInformation({ targetUserId: userId });
   });
-
-  // const isEmptyReset = (e: any) => {
-  //   if (e.target.value === '') {
-  //     searchUserQuery.remove();
-  //   }
-  // };
 
   return (
     <NavigationBarContainer>
@@ -237,11 +232,21 @@ const NavigationBar = () => {
             onBlurCapture={(e) => (e.target.value = '')}
             onChange={(e) => {
               setUserKeyword(e.target.value);
-              console.log(searchUserQuery.data?.data.userList);
+              console.log(e.target.value);
               searchUserQuery.refetch();
             }}
           />
-          <CancelButton searchbarclicked={searchBarClicked.toString()} />
+          {searchUserQuery.isLoading ? (
+            <Loader
+              loaded={!searchUserQuery.isLoading}
+              color="grey"
+              scale={0.4}
+              top="50%"
+              left="90%"
+            />
+          ) : (
+            <CancelButton searchbarclicked={searchBarClicked.toString()} />
+          )}
         </SearchBarWrapper>
         <SearchBarTooltip
           showTooltip={showTooltip}

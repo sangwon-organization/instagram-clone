@@ -209,14 +209,18 @@ const HomeAside = () => {
   };
 
   const { mutate: followingUserMutate, isLoading: followingUserIsLoading } =
-    useMutation(followingUser, {
-      onError: (err: any) => {
-        console.log(err.response.data);
+    useMutation(
+      // ['followingMutate', getNotFollowingListQuery.data?.data.userId],
+      followingUser,
+      {
+        onError: (err: any) => {
+          console.log(err.response.data);
+        },
+        onSuccess: (e: any) => {
+          console.log('유저 팔로우/언팔로우 성공!');
+        },
       },
-      onSuccess: (e: any) => {
-        console.log('유저 팔로우/언팔로우 성공!');
-      },
-    });
+    );
 
   // const toggleIsFollowing = () => {
   //   const [isFollowing, setIsFollowing] = useState(false);
@@ -263,8 +267,10 @@ const HomeAside = () => {
                   top="50%"
                   left="50%"
                 />
-              ) : (
+              ) : list.followYn ? (
                 'Follow'
+              ) : (
+                'Following'
               )}
             </button>
           </SuggestionsItem>

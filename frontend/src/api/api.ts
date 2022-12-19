@@ -239,7 +239,7 @@ export const deleteComment = async (requestParam: deleteCommentType) => {
 };
 
 interface likeCommentType {
-  commentId: string;
+  commentId: number;
   likeYn: string;
 }
 
@@ -259,11 +259,19 @@ export const getCommentsList = async (requestParam: getCommentsListType) => {
     const data = await bearerTokenApi.get(
       `/post/comment/list?page=${requestParam.page}&postId=${requestParam.postId}&parentCommentId=${requestParam.parentCommentId}`,
     );
+    // const adf = data.data.commentList.sort(
+    //   (a: any, b: any) => +new Date(b.createdAt) - +new Date(a.createdAt),
+    // );
+    // state.projectLists = action.payload.sort(
+    //   (a, b) => new Date(b.created_date) - new Date(a.created_date),
+    // );
+    // console.log(data);
     return data;
   } else {
     const data = await bearerTokenApi.get(
       `/post/comment/list?page=${requestParam.page}&postId=${requestParam.postId}`,
     );
+    // console.log(data);
     return data;
   }
 };
@@ -312,11 +320,11 @@ interface deleteRecentSearchUserType {
   toUserId: number;
 }
 
-export const deleteRecentSearchUser = async (
-  requestParam: deleteRecentSearchUserType,
-) => {
+export const deleteRecentSearchUser = async ({
+  toUserId,
+}: deleteRecentSearchUserType) => {
   const data = await bearerTokenApi.delete('/user/search/log', {
-    data: { toUserId: requestParam },
+    data: { toUserId: toUserId },
   });
   return data;
 };

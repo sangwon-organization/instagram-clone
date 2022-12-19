@@ -33,6 +33,7 @@ import DeleteConfirmModal from '../Modal/DeleteConfirmModal';
 import PostWrapper from '../Post/PostWrapper';
 import CommentsListBox from '../Post/CommentsListBox';
 import { useForm } from 'react-hook-form';
+import { AxiosError, AxiosResponse } from 'axios';
 
 type FormValues = {
   commentInput: string;
@@ -177,13 +178,20 @@ const ColoredHeartIcon = styled(BsHeartFill)<{ likebuttonclicked: string }>`
   color: #ed4956;
   cursor: pointer;
   animation: ${({ likebuttonclicked }) =>
-    likebuttonclicked === 'Y' ? 'pop 0.2s linear' : ''};
+    likebuttonclicked === 'Y' ? 'pop 1s ease-in-out' : ''};
   @keyframes pop {
     0% {
       transform: scale(1);
     }
-    100% {
+    15% {
       transform: scale(1.2);
+    }
+    30% {
+      transform: scale(0.95);
+    }
+    45%,
+    80% {
+      transform: scale(1);
     }
   }
 `;
@@ -520,10 +528,10 @@ const FeedCard = ({
   }, [currentSlide]);
 
   const { mutate, data, error, reset, isLoading } = useMutation(commentPost, {
-    onError: (err: any) => {
+    onError: (err: AxiosError) => {
       console.log(err.response.data);
     },
-    onSuccess: (e: any) => {
+    onSuccess: (e: AxiosResponse) => {
       console.log('댓글 등록 성공!');
       console.log(e);
       refetch();
@@ -556,10 +564,10 @@ const FeedCard = ({
   };
 
   const mutateLikePost = useMutation(likePost, {
-    onError: (err: any) => {
+    onError: (err: AxiosError) => {
       console.log(err.response.data);
     },
-    onSuccess: (e: any) => {
+    onSuccess: (e) => {
       console.log('포스트 좋아요 성공!');
       refetch();
     },
@@ -572,8 +580,6 @@ const FeedCard = ({
     } else {
       mutateLikePost.mutate({ postId: postId, likeYn: 'Y' });
     }
-
-    // refetchPage(pageIndex);
   };
 
   const mutateBookmarkPost = useMutation(bookmarkPost, {
@@ -582,6 +588,7 @@ const FeedCard = ({
     },
     onSuccess: (e: any) => {
       console.log('북마크 성공!');
+      refetch();
     },
   });
 
@@ -603,14 +610,6 @@ const FeedCard = ({
       mutateBookmarkPost.mutate({ postId: postId, bookmarkYn: 'N' });
     } else {
       mutateBookmarkPost.mutate({ postId: postId, bookmarkYn: 'Y' });
-    }
-  };
-
-  const isDisabled = (e: any) => {
-    if (e.target.value === '') {
-      postButtonRef.current.disabled = true;
-    } else {
-      postButtonRef.current.disabled = false;
     }
   };
 
@@ -658,15 +657,12 @@ const FeedCard = ({
             ) : (
               <HeartIcon onClick={likePostFunction(pageIndex)} />
             )}
-            {/* <Link to={`/post/${postId}`} state={{ background: location }}> */}
             <ChatIcon
               onClick={() => {
                 window.history.pushState('', '', `/post/${postId}`);
                 openPost();
               }}
             />
-            {/* <Outlet /> */}
-            {/* </Link> */}
             <LocationIcon />
           </LeftIconBox>
           <MeatballIconBox ref={circleRef}>
