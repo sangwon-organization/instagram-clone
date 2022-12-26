@@ -280,31 +280,13 @@ const PostsWrapper = styled.article`
   height: fit-content;
 `;
 
-interface ProfilePresenterType {
-  getUserInformationData: any;
-  onImageInputButtonClick: (event: React.MouseEvent<HTMLElement>) => void;
-  imageInputRef: any;
-  encodeFileToBase64: Function;
-  postImageRest: any;
-  imageRef: any;
-  onSubmit: any;
-  onError: any;
-  handleSubmit: any;
-  isLoading: any;
-  isMyPage: boolean;
-  followingUserIsLoading: any;
-  userFollowingUnFollowing: any;
-}
-
 const ProfilePresenter = ({
   getUserInformationData,
   onImageInputButtonClick,
   imageInputRef,
-  encodeFileToBase64,
   postImageRest,
   imageRef,
   onSubmit,
-  onError,
   handleSubmit,
   isLoading,
   isMyPage,
@@ -320,7 +302,7 @@ const ProfilePresenter = ({
             <AvatarWrapper>
               <UserAvatar isloading={isLoading} ismypage={isMyPage}>
                 <img
-                  src={getUserInformationData?.data.profileImage}
+                  src={getUserInformationData?.profileImage}
                   alt="기본이미지"
                   onClick={onImageInputButtonClick}
                 />
@@ -333,7 +315,7 @@ const ProfilePresenter = ({
                     imageRef(e);
                     imageInputRef.current = e;
                   }}
-                  onChange={handleSubmit(onSubmit, onError)}
+                  onChange={handleSubmit(onSubmit)}
                 />
                 {isLoading && (
                   <Loader
@@ -348,7 +330,7 @@ const ProfilePresenter = ({
             </AvatarWrapper>
             <UserInfo>
               <FirstBox>
-                <h2>{getUserInformationData?.data.username}</h2>
+                <h2>{getUserInformationData?.username}</h2>
                 {isMyPage ? (
                   <ButtonBox>
                     <MessageButton>Edit profile</MessageButton>
@@ -356,10 +338,10 @@ const ProfilePresenter = ({
                   </ButtonBox>
                 ) : (
                   <ButtonBox>
-                    {getUserInformationData?.data.followYn === 'Y' ? (
+                    {getUserInformationData?.followYn === 'Y' ? (
                       <MessageButton>Message</MessageButton>
                     ) : null}
-                    {getUserInformationData?.data.followYn === 'Y' ? (
+                    {getUserInformationData?.followYn === 'Y' ? (
                       <UnFollowButton onClick={userFollowingUnFollowing}>
                         {followingUserIsLoading ? (
                           <Loader
@@ -397,19 +379,18 @@ const ProfilePresenter = ({
               </FirstBox>
               <SecondBox>
                 <p>
-                  <span>{getUserInformationData?.data.postCount}</span> posts
+                  <span>{getUserInformationData?.postCount}</span> posts
                 </p>
                 <p>
-                  <span>{getUserInformationData?.data.followerCount}</span>{' '}
-                  followers
+                  <span>{getUserInformationData?.followerCount}</span> followers
                 </p>
                 <p>
-                  <span>{getUserInformationData?.data.followingCount}</span>{' '}
+                  <span>{getUserInformationData?.followingCount}</span>{' '}
                   following
                 </p>
               </SecondBox>
               <ThirdBox>
-                <p>{getUserInformationData?.data.name}</p>
+                <p>{getUserInformationData?.name}</p>
               </ThirdBox>
               <FourthBox>
                 {/* {getUserInformationData?.data.followerImFollowingList.length > 0 && ()} */}
@@ -436,9 +417,9 @@ const ProfilePresenter = ({
               </li>
             </MenuWrapper>
           </TabMenu>
-          {getUserInformationData?.data.postList.length > 0 ? (
+          {getUserInformationData?.postList.length > 0 ? (
             <PostsWrapper>
-              {getUserInformationData?.data.postList.map((post: any) => (
+              {getUserInformationData?.postList.map((post: any) => (
                 <Post
                   key={post.postId}
                   postImageList={post.postImageList}

@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -7,7 +7,8 @@ import {
   getNotFollowingList,
   getUserInformation,
 } from '../../../api/api';
-import Loader from 'react-loader';
+import { AxiosError } from 'axios';
+import SugesstionItem from './SugesstionItem';
 
 const HomeAsideContainer = styled.aside`
   width: 319px;
@@ -87,52 +88,6 @@ const SuggestionsHeader = styled.div`
   }
 `;
 
-const SuggestionsItem = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  height: 48px;
-  padding: 8px 0 8px 3px;
-  img {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-  }
-  button {
-    position: relative;
-    width: 38px;
-    height: 16px;
-    border: none;
-    background: transparent;
-    font-size: 12px;
-    font-weight: 600;
-    color: ${({ theme }) => theme.buttonColor};
-  }
-`;
-
-const ItemUserInfoWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 5px 0;
-  width: 209px;
-  height: 30px;
-
-  p:nth-child(1) {
-    font-size: 14px;
-    font-weight: 600;
-    color: ${({ theme }) => theme.textColor};
-    cursor: pointer;
-  }
-  p:nth-child(2) {
-    font-size: 12px;
-    font-weight: 400;
-    color: ${({ theme }) => theme.greyTextColor};
-  }
-`;
-
 const AsideFooter = styled.footer`
   display: flex;
   flex-direction: column;
@@ -173,47 +128,24 @@ const HomeAside = () => {
   const navigate = useNavigate();
   // const [isFollowing, setIsFollowing] = useState();
 
-  const getNotFollowingListQuery = useQuery(
-    ['getNotFollowingList'],
-    () => getNotFollowingList(),
-    { refetchOnWindowFocus: false },
-  );
+  const queryClient = useQueryClient();
 
-  const { data: getUserInformData } = useQuery(['getUserInform'], () => {
+  const { data: getNotFollowingListData } = useQuery<
+    getNotFollowingListType,
+    AxiosError
+  >(['getNotFollowingList'], () => getNotFollowingList(), {
+    refetchOnWindowFocus: false,
+  });
+  console.log(getNotFollowingListData);
+  const { data: getUserInformData } = useQuery<
+    GetUserInformationDataType,
+    AxiosError
+  >(['getUserInform'], () => {
     const userId = Number(localStorage.getItem('userId'));
     return getUserInformation({ targetUserId: userId });
   });
 
   const userId = localStorage.getItem('userId');
-
-  const userFollowingUnFollowing = (userId: number) => {
-    // e.preventDefault();
-    if (getNotFollowingListQuery.data?.data.followYn === 'Y') {
-      followingUserMutate({
-        followUserId: userId,
-        followYn: 'N',
-      });
-    } else {
-      followingUserMutate({
-        followUserId: userId,
-        followYn: 'Y',
-      });
-    }
-  };
-
-  const { mutate: followingUserMutate, isLoading: followingUserIsLoading } =
-    useMutation(
-      // ['followingMutate', getNotFollowingListQuery.data?.data.userId],
-      followingUser,
-      {
-        onError: (err: any) => {
-          console.log(err.response.data);
-        },
-        onSuccess: (e: any) => {
-          console.log('유저 팔로우/언팔로우 성공!');
-        },
-      },
-    );
 
   // const toggleIsFollowing = () => {
   //   const [isFollowing, setIsFollowing] = useState(false);
@@ -225,15 +157,15 @@ const HomeAside = () => {
     <HomeAsideContainer>
       <UserAccountWrapper>
         <img
-          src={getUserInformData?.data.profileImage}
+          src={getUserInformData?.profileImage}
           alt="유저아바타"
           onClick={() => navigate(`/user/${userId}`)}
         />
         <UserInfoWrapper>
           <p onClick={() => navigate(`/user/${userId}`)}>
-            {getUserInformData?.data.username}
+            {getUserInformData?.username}
           </p>
-          <p>{getUserInformData?.data.name}</p>
+          <p>{getUserInformData?.name}</p>
         </UserInfoWrapper>
         <button>Switch</button>
       </UserAccountWrapper>
@@ -242,32 +174,11 @@ const HomeAside = () => {
           <p>Suggestions For You</p>
           <button>See All</button>
         </SuggestionsHeader>
-        {getNotFollowingListQuery.data?.data.followingList.map((list: any) => (
-          <SuggestionsItem key={list.userId}>
-            <img src={list.profileImage} alt="유저아바타" />
-            <ItemUserInfoWrapper>
-              <p onClick={() => navigate(`/user/${list.userId}`)}>
-                {list.username}
-              </p>
-              <p>Suggested for you</p>
-            </ItemUserInfoWrapper>
-            <button onClick={() => userFollowingUnFollowing(list.userId)}>
-              {followingUserIsLoading ? (
-                <Loader
-                  loaded={!followingUserIsLoading}
-                  color="#000"
-                  scale={0.5}
-                  top="50%"
-                  left="50%"
-                />
-              ) : list.followYn ? (
-                'Follow'
-              ) : (
-                'Following'
-              )}
-            </button>
-          </SuggestionsItem>
-        ))}
+        {getNotFollowingListData?.followingList.map(
+          (list: followerImFollowingListType) => (
+            <SugesstionItem key={list.userId} list={list} />
+          ),
+        )}
       </SuggestionsWrapper>
       <AsideFooter>
         <FooterItems>

@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { BsHeart, BsHeartFill } from 'react-icons/bs';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getCommentsList, likeComment } from '../../../api/api';
+import { AxiosError } from 'axios';
 
 const Container = styled.div`
   display: flex;
@@ -16,31 +17,35 @@ const Container = styled.div`
 `;
 
 const Wrapper = styled.div`
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  gap: 0 5px;
-  div {
+  width: 95%;
+  height: fit-content;
+  word-break: break-all;
+  white-space: pre-wrap;
+  span:first-child {
+    float: left;
     width: fit-content;
     height: fit-content;
+    margin-right: 5px;
     font-size: 14px;
     font-weight: 600;
     color: ${({ theme }) => theme.textColor};
     cursor: pointer;
   }
   p {
-    width: 340px;
+    display: inline;
     height: fit-content;
     font-size: 14px;
     font-weight: 400;
     color: ${({ theme }) => theme.textColor};
-    span {
-      width: fit-content;
-      height: fit-content;
-      margin-right: 5px;
-      color: ${({ theme }) => theme.hashTagColor};
-      cursor: pointer;
-    }
+  }
+  button {
+    display: inline-block;
+    border: none;
+    background: transparent;
+    font-size: 14px;
+    font-weight: 400;
+    color: ${({ theme }) => theme.greyTextColor};
+    cursor: pointer;
   }
 `;
 
@@ -78,30 +83,28 @@ const ColoredHeartIcon = styled(BsHeartFill)<{ likebuttonclicked: string }>`
   }
 `;
 
-interface CommentsListBoxType {
-  postId: number;
-}
-
-const CommentsListBox = ({ postId }: CommentsListBoxType) => {
+const CommentsListBox = ({
+  postId,
+  getCommentsListData,
+}: CommentsListBoxType) => {
   const [likeButtonClicked, setLikeButtonClicked] = useState(false);
+  const [showMoreText, setShowMoreText] = useState(false);
 
-  const getCommentsListQuery = useQuery(['getCommentsList', postId], () =>
-    getCommentsList({ page: 1, postId: postId }),
-  );
+  const queryClient = useQueryClient();
 
   const { mutate: commentLikeMutate, isLoading: commentLikeIsLoading } =
-    useMutation(likeComment, {
-      onError: (err: any) => {
-        console.log(err.response.data);
+    useMutation<ResponseData, AxiosError, LikeCommentType>(likeComment, {
+      onError: (err) => {
+        console.log('댓글 좋아요 실패!', err.response.data);
       },
-      onSuccess: (e: any) => {
+      onSuccess: () => {
         console.log('댓글 좋아요 성공!');
-        getCommentsListQuery.refetch();
+        queryClient.invalidateQueries(['getCommentsList']);
       },
     });
 
   const likeCommentFunction = (commentId: number) => {
-    if (getCommentsListQuery.data?.data.commentList[0].likeYn === 'Y') {
+    if (getCommentsListData?.commentList[0].likeYn === 'Y') {
       commentLikeMutate({ commentId: commentId, likeYn: 'N' });
     } else {
       commentLikeMutate({ commentId: commentId, likeYn: 'Y' });
@@ -111,20 +114,30 @@ const CommentsListBox = ({ postId }: CommentsListBoxType) => {
   // console.log(getCommentsListQuery.data?.data);
   return (
     <>
-      {getCommentsListQuery.data?.data.commentList.length > 0 && (
+      {getCommentsListData?.commentList.length > 0 && (
         <Container>
           <Wrapper>
-            <div>{getCommentsListQuery.data?.data.commentList[0].username}</div>
-            <p>{getCommentsListQuery.data?.data.commentList[0].content}</p>
+            <span>{getCommentsListData?.commentList[0].username}</span>
+            <p>
+              {' '}
+              {showMoreText
+                ? getCommentsListData?.commentList[0].content
+                : getCommentsListData?.commentList[0].content.substring(0, 30)}
+            </p>
+            {getCommentsListData?.commentList[0].content.length > 30 &&
+              !showMoreText && (
+                <span>
+                  ...
+                  <button onClick={() => setShowMoreText(true)}>more</button>
+                </span>
+              )}
           </Wrapper>
-          {getCommentsListQuery.data?.data.commentList[0].likeYn === 'Y' ? (
+          {getCommentsListData?.commentList[0].likeYn === 'Y' ? (
             <ColoredHeartIcon
-              likebuttonclicked={
-                getCommentsListQuery.data?.data.commentList[0].likeYn
-              }
+              likebuttonclicked={getCommentsListData?.commentList[0].likeYn}
               onClick={() =>
                 likeCommentFunction(
-                  getCommentsListQuery.data?.data.commentList[0].commentId,
+                  getCommentsListData?.commentList[0].commentId,
                 )
               }
             />
@@ -132,7 +145,7 @@ const CommentsListBox = ({ postId }: CommentsListBoxType) => {
             <SmallHeartIcon
               onClick={() =>
                 likeCommentFunction(
-                  getCommentsListQuery.data?.data.commentList[0].commentId,
+                  getCommentsListData?.commentList[0].commentId,
                 )
               }
             />

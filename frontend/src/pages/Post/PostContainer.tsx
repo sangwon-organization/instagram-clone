@@ -1,34 +1,38 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { AxiosError } from 'axios';
 import React, { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Params, useNavigate, useParams } from 'react-router-dom';
 import { commentPost, getPost, likePost } from '../../api/api';
 import MetaTag from '../../meta/MetaTag';
 import PostPresenter from './PostPresenter';
 
-type FormValues = {
-  commentInput: string;
-};
-
 const PostContainer = () => {
   const [likeButtonClicked, setLikeButtonClicked] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
 
   const textareaRef = useRef(null);
   const postButtonRef = useRef(null);
   const slideRef = useRef(null);
 
   const navigate = useNavigate();
-  const [currentSlide, setCurrentSlide] = useState(0);
 
-  let params: any = useParams();
+  const queryClient = useQueryClient();
 
-  const getUserPost = useQuery(['getPost', params], () =>
-    getPost(params.postId),
+  let params = useParams();
+
+  let postId = parseInt(params.postId);
+
+  const myUserId = parseInt(localStorage.getItem('userId'));
+
+  const { data: getUserPostData } = useQuery<GetPostQueryType, AxiosError>(
+    ['getPost', postId],
+    () => getPost(postId),
   );
 
-  const totalSlide = getUserPost.data?.data.postImageList.length;
+  const isMyPost = myUserId === getUserPostData?.userId;
 
-  console.log(getUserPost.data?.data);
+  const totalSlide = getUserPostData?.postImageList.length;
 
   const doubleClickImage = () => {
     setLikeButtonClicked(true);
@@ -57,7 +61,7 @@ const PostContainer = () => {
     register,
     handleSubmit,
     formState: { isValid, errors, isDirty },
-  } = useForm<FormValues>({ mode: 'onChange' });
+  } = useForm<CommentPostFormValues>({ mode: 'onChange' });
 
   const { ref: commentRef, ...rest } = register('commentInput', {
     required: true,
@@ -69,55 +73,53 @@ const PostContainer = () => {
     error,
     reset,
     isLoading: commentPostIsLoading,
-  } = useMutation(commentPost, {
-    onError: (err: any) => {
-      console.log(err.response.data);
+  } = useMutation<ResponseData, AxiosError, CommentPostType>(commentPost, {
+    onError: (err) => {
+      console.log('댓글 등록 실패!', err.response.data);
     },
-    onSuccess: (e: any) => {
+    onSuccess: (e) => {
       console.log('댓글 등록 성공!');
-      getUserPost.refetch();
+      queryClient.invalidateQueries(['getPost']);
       textareaRef.current.value = '';
       textareaRef.current.focus();
     },
   });
 
-  const onSubmit = (dataInput: any) => {
+  const onSubmit = (dataInput: CommentPostFormValues) => {
     console.log(dataInput);
     commentPostMutate({
-      postId: params.postId,
+      postId: postId,
       parentCommentId: '',
       content: dataInput.commentInput,
     });
   };
 
-  const onError = (err: any) => {
-    console.log(err);
-  };
-
-  const likePostFunction = (e: any) => {
-    e.preventDefault();
-    if (getUserPost.data?.data.likeYn === 'Y') {
+  const likePostFunction = () => {
+    if (getUserPostData?.likeYn === 'Y') {
       mutateLikePost.mutate({
-        postId: getUserPost.data?.data.postId,
+        postId: getUserPostData?.postId,
         likeYn: 'N',
       });
     } else {
       mutateLikePost.mutate({
-        postId: getUserPost.data?.data.postId,
+        postId: getUserPostData?.postId,
         likeYn: 'Y',
       });
     }
   };
 
-  const mutateLikePost = useMutation(likePost, {
-    onError: (err: any) => {
-      console.log(err.response.data);
+  const mutateLikePost = useMutation<ResponseData, AxiosError, LikePostType>(
+    likePost,
+    {
+      onError: (err) => {
+        console.log('포스트 좋아요 실패!', err.response.data);
+      },
+      onSuccess: () => {
+        console.log('포스트 좋아요 성공!');
+        queryClient.invalidateQueries(['getPost']);
+      },
     },
-    onSuccess: (e: any) => {
-      console.log('포스트 좋아요 성공!');
-      getUserPost.refetch();
-    },
-  });
+  );
 
   // useEffect(() => {
   //   slideRef.current.style.transition = 'all 0.5s ease-in-out';
@@ -135,17 +137,14 @@ const PostContainer = () => {
     document.body.style.overflow = 'unset';
   };
 
-  const myUserId = parseInt(localStorage.getItem('userId'));
-
-  const isMyPost = myUserId === getUserPost.data?.data.userId;
   return (
     <>
       <MetaTag
-        title={`@${getUserPost.data?.data.username} on Clonestagram: "${getUserPost.data?.data.content}"`}
-        description={`${getUserPost.data?.data.followerCount} Likes, ${getUserPost.data?.data.followingCount} Comments - @${getUserPost.data?.data.username} on Clonestagram: "${getUserPost.data?.data.content}"`}
+        title={`@${getUserPostData?.username} on Clonestagram: "${getUserPostData?.content}"`}
+        description={`${getUserPostData?.likeCount} Likes, ${getUserPostData?.commentCount} Comments - @${getUserPostData?.username} on Clonestagram: "${getUserPostData?.content}"`}
         keywords="클론코딩, 인스타그램, clone coding"
-        url={`https://instagram-clone-sangwon.com/post/${params.postId}`}
-        imgsrc={getUserPost.data?.data.postImageList[0]}
+        url={`https://instagram-clone-sangwon.com/post/${postId}`}
+        imgsrc={getUserPostData?.postImageList[0]}
       />
       <PostPresenter
         nextSlide={nextSlide}
@@ -154,12 +153,10 @@ const PostContainer = () => {
         commentPostIsLoading={commentPostIsLoading}
         navigate={navigate}
         currentSlide={currentSlide}
-        getUserPost={getUserPost}
         slideRef={slideRef}
         totalSlide={totalSlide}
         textareaRef={textareaRef}
         onSubmit={onSubmit}
-        onError={onError}
         isValid={isValid}
         postButtonRef={postButtonRef}
         register={register}
@@ -174,7 +171,7 @@ const PostContainer = () => {
         openModal={openModal}
         closeModal={closeModal}
         isMyPost={isMyPost}
-        postId={params.postId}
+        postId={postId}
       />
     </>
   );

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import styled from 'styled-components';
 import clonestagramLogoBlack from '../../../assets/image/clonestagramLogoBlack.png';
 import clonestagramLogoWhite from '../../../assets/image/clonestagramLogoWhite.png';
@@ -21,6 +21,7 @@ import {
 } from '../../../api/api';
 import CreatePostModal from '../../feature/Modal/CreatePostModal';
 import Loader from 'react-loader';
+import { RootState } from '../../../redux/store/configureStore';
 
 const NavigationBarContainer = styled.nav`
   display: flex;
@@ -167,7 +168,9 @@ const NavigationBar = () => {
 
   const navigate = useNavigate();
 
-  const isDarkMode = useSelector((state: any) => state.themeMode.darkMode);
+  const isDarkMode = useSelector(
+    (state: RootState) => state.themeMode.darkMode,
+  );
 
   const openModal = () => {
     setCreatePostModalOpen(true);
@@ -179,15 +182,27 @@ const NavigationBar = () => {
     document.body.style.overflow = 'unset';
   };
 
-  const searchUserQuery = useQuery(['searchUser', userKeyword], () =>
-    searchUser({ page: 1, keyword: userKeyword }),
+  const {
+    data: searchUserData,
+    isSuccess: searchUserIsSuccess,
+    isLoading: searchUserIsLoading,
+  } = useQuery(
+    ['searchUser', userKeyword],
+    () => searchUser({ page: 1, keyword: userKeyword }),
+    {
+      enabled: !!userKeyword,
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
+      // initialData:userKeyword,
+    },
   );
 
-  const getRecentSearchUserListQuery = useQuery(['getSearchUserList'], () =>
-    getRecentSearchUsersList(),
+  const { data: getRecentSearchUserListData } = useQuery(
+    ['getSearchUserList'],
+    () => getRecentSearchUsersList(),
   );
 
-  const { data: getUserProfileImage } = useQuery(['getUserProfile'], () => {
+  const { data: getUserProfileImageData } = useQuery(['getUserProfile'], () => {
     const userId = Number(localStorage.getItem('userId'));
     return getUserInformation({ targetUserId: userId });
   });
@@ -214,16 +229,17 @@ const NavigationBar = () => {
               setShowTooltip(true);
               setSearchBarClicked(true);
             }}
-            onBlurCapture={(e) => (e.target.value = '')}
+            onBlurCapture={(e) => {
+              e.target.value = '';
+              setUserKeyword('');
+            }}
             onChange={(e) => {
               setUserKeyword(e.target.value);
-              console.log(e.target.value);
-              searchUserQuery.refetch();
             }}
           />
-          {searchUserQuery.isLoading ? (
+          {searchUserIsLoading ? (
             <Loader
-              loaded={!searchUserQuery.isLoading}
+              loaded={!searchUserIsLoading}
               color="grey"
               scale={0.4}
               top="50%"
@@ -237,12 +253,12 @@ const NavigationBar = () => {
           showTooltip={showTooltip}
           setShowTooltip={setShowTooltip}
           setSearchBarClicked={setSearchBarClicked}
-          userList={searchUserQuery.data?.data.userList}
-          searchUserQuery={searchUserQuery}
+          searchUserIsSuccess={searchUserIsSuccess}
+          searchUserIsLoading={searchUserIsLoading}
+          userList={searchUserData?.userList}
           getRecentSearchUserListData={
-            getRecentSearchUserListQuery.data?.data.userSearchLogList
+            getRecentSearchUserListData?.userSearchLogList
           }
-          getRecentSearchUserListQuery={getRecentSearchUserListQuery}
         />
         <MenuWrapper>
           <HomeIcon />
@@ -251,7 +267,7 @@ const NavigationBar = () => {
           <CompassIcon />
           <HeartIcon />
           <UserImage
-            src={getUserProfileImage?.data.profileImage}
+            src={getUserProfileImageData?.profileImage}
             alt="유저아바타"
             onClick={() => setShowDropdown(true)}
             showDropdown={showDropdown}
@@ -265,7 +281,9 @@ const NavigationBar = () => {
       {createPostModalOpen && (
         <ModalPortal>
           <ModalContainer createPost closeModal={closeModal}>
-            <CreatePostModal />
+            <CreatePostModal
+              profileImage={getUserProfileImageData?.profileImage}
+            />
           </ModalContainer>
         </ModalPortal>
       )}

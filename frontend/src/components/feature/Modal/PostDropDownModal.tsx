@@ -35,12 +35,6 @@ const Button = styled.button<{ first?: boolean; last?: boolean }>`
   }
 `;
 
-interface PostDropDownModalType {
-  isMyPost: boolean;
-  postId: number;
-  userId: number;
-}
-
 const PostDropDownModal = ({
   isMyPost,
   postId,
@@ -53,6 +47,7 @@ const PostDropDownModal = ({
   if (deleteButtonClicked) {
     return <DeleteConfirmModal postId={postId} userId={userId} />;
   }
+
   return (
     <Container ismypost={isMyPost}>
       {isMyPost ? (

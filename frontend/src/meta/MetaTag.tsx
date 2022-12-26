@@ -1,22 +1,13 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
 
-interface MetaTagProps {
-  title: string;
-  description: string;
-  keywords: string;
-  imgsrc: string;
-  url: string;
-}
-
 const MetaTag = ({
   title,
   description,
   keywords,
   imgsrc,
   url,
-}: MetaTagProps) => {
-  console.log(title);
+}: MetaTagType) => {
   return (
     <Helmet>
       <title>{title}</title>

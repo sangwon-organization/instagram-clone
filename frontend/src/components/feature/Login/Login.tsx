@@ -10,6 +10,7 @@ import LoginSignUpBottomBox from '../../share/LoginSignUpBottomBox';
 import LoginSignUpMiddleBox from '../../share/LoginSignUpMiddleBox';
 import { useDispatch } from 'react-redux';
 import Loader from 'react-loader';
+import { AxiosError } from 'axios';
 
 const LoginContainer = styled.div`
   display: flex;
@@ -166,11 +167,6 @@ const ForgotPasswordBox = styled.div`
   color: ${({ theme }) => theme.hashTagColor};
 `;
 
-type FormValues = {
-  email: string;
-  password: string;
-};
-
 const schema = yup.object().shape({
   email: yup.string().required(),
   password: yup.string().min(6).required(),
@@ -208,27 +204,31 @@ const Login = () => {
     setPasswordShowAndHide((prev: boolean) => !prev);
   };
 
-  const onError = (err: any) => {
-    console.log(err);
-  };
-
   const {
     register,
     handleSubmit,
     formState: { isValid, errors },
-  } = useForm<FormValues>({ mode: 'onChange', resolver: yupResolver(schema) });
+  } = useForm<LoginFormValues>({
+    mode: 'onChange',
+    resolver: yupResolver(schema),
+  });
 
-  const { mutate, data, error, reset, isLoading } = useMutation(loginUser, {
-    onError: (err: any) => {
-      console.log(err.response.data);
+  const { mutate, data, error, reset, isLoading } = useMutation<
+    LoginResponseData,
+    AxiosError,
+    LoginType
+  >(loginUser, {
+    onError: (err: AxiosError) => {
+      console.log('로그인 실패 ', err.response.data);
     },
-    onSuccess: (userInfo: any) => {
+    onSuccess: () => {
       console.log('로그인 성공!');
-      console.log(data);
     },
   });
+
   console.log(error);
-  const onSubmit = (dataInput: any) => {
+
+  const onSubmit = (dataInput: LoginFormValues) => {
     mutate(dataInput);
   };
 
@@ -236,7 +236,7 @@ const Login = () => {
     <LoginContainer>
       <TopBox>
         <img src={clonestagramLogoBlack} alt="인스타그램로고" />
-        <LoginForm onSubmit={handleSubmit(onSubmit, onError)}>
+        <LoginForm onSubmit={handleSubmit(onSubmit)}>
           <InputBox keyPress={usernameKeyPress} clicked={emailInputBoxClicked}>
             <input
               type="text"

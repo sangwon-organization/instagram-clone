@@ -20,12 +20,10 @@ interface PostPresenterType {
   commentPostIsLoading: boolean;
   navigate: any;
   currentSlide: number;
-  getUserPost: any;
   slideRef: any;
   totalSlide: number;
   textareaRef: any;
   onSubmit: Function;
-  onError: Function;
   isValid: any;
   postButtonRef: any;
   register: any;
@@ -50,12 +48,10 @@ const PostPresenter = ({
   commentPostIsLoading,
   navigate,
   currentSlide,
-  getUserPost,
   slideRef,
   totalSlide,
   textareaRef,
   onSubmit,
-  onError,
   isValid,
   postButtonRef,
   register,

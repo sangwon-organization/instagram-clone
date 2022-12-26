@@ -12,7 +12,7 @@ import { changeThemeMode } from '../../../redux/slices/themeModeSlice';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 
-const AvatarDropdownContainer = styled.div<{ showDropdown: boolean; ref: any }>`
+const AvatarDropdownContainer = styled.div<{ showDropdown: boolean }>`
   display: ${({ showDropdown }) => (showDropdown ? 'block' : 'none')};
   position: absolute;
   right: -30px;
@@ -89,15 +89,10 @@ const DropdownItem = styled.div<{ first?: boolean; last?: boolean }>`
   }
 `;
 
-interface AvatarDropdownProps {
-  showDropdown: boolean;
-  setShowDropdown: Function;
-}
-
 const AvatarDropdown = ({
   showDropdown,
   setShowDropdown,
-}: AvatarDropdownProps) => {
+}: AvatarDropdownType) => {
   const outsideRef = useRef();
   const dispatch = useDispatch();
   const navigate = useNavigate();

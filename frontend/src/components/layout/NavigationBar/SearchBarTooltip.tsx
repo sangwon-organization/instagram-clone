@@ -3,13 +3,12 @@ import styled from 'styled-components';
 import { IoClose } from 'react-icons/io5';
 import useOutsideClick from '../../../hooks/useOutsideClick';
 import { useNavigate } from 'react-router-dom';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { addRecentSearchUser, deleteRecentSearchUser } from '../../../api/api';
+import Loader from 'react-loader';
+import { AxiosError } from 'axios';
 
-const SearchBarTooltipContainer = styled.div<{
-  showTooltip: boolean;
-  ref: any;
-}>`
+const SearchBarTooltipContainer = styled.div<{ showTooltip: boolean }>`
   display: ${({ showTooltip }) => (showTooltip ? 'block' : 'none')};
   position: absolute;
   top: 60px;
@@ -158,7 +157,7 @@ const EmptyRecentSearch = styled.div`
   justify-content: center;
   align-items: center;
   width: 100%;
-  height: 300px;
+  height: 100%;
   p {
     font-size: 14px;
     font-weight: 600;
@@ -166,68 +165,120 @@ const EmptyRecentSearch = styled.div`
   }
 `;
 
-interface SearchBarTooltipProps {
-  showTooltip: boolean;
-  setShowTooltip: Function;
-  setSearchBarClicked: Function;
-  userList: [];
-  searchUserQuery: any;
-  getRecentSearchUserListData: [];
-  getRecentSearchUserListQuery: any;
-}
-
 const SearchBarTooltip = ({
   showTooltip,
   setShowTooltip,
   setSearchBarClicked,
   userList,
-  searchUserQuery,
+  searchUserIsLoading,
+  searchUserIsSuccess,
   getRecentSearchUserListData,
-  getRecentSearchUserListQuery,
-}: SearchBarTooltipProps) => {
+}: SearchBarTooltipType) => {
   const outsideRef = useRef();
   const [recentSearch, setRecentSearch] = useState(true);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   useOutsideClick(outsideRef, () => {
     setShowTooltip(false);
     setSearchBarClicked(false);
-    searchUserQuery.remove();
+    // searchUserQuery.remove();
   });
   // console.log(getRecentSearchUserListQuery);
 
-  const addSearchUserQuery = useMutation(addRecentSearchUser, {
-    onError: (err: any) => {
-      console.log('최근 검색 유저 추가 에러!');
-      console.log(err.response.data);
+  const addSearchUserQuery = useMutation<
+    ResponseData,
+    AxiosError,
+    AddRecentSearchUserType
+  >(addRecentSearchUser, {
+    onError: (err) => {
+      console.log('최근 검색 유저 추가 에러!', err.response.data);
     },
-    onSuccess: (userInfo: any) => {
+    onSuccess: () => {
       console.log('최근 검색 유저 추가 성공!');
-      console.log(addSearchUserQuery.data);
-      getRecentSearchUserListQuery.refetch();
+      // console.log(addSearchUserQuery.data);
+      queryClient.invalidateQueries(['getSearchUserList']);
     },
   });
 
-  const deleteSearchUserQuery = useMutation(deleteRecentSearchUser, {
-    onError: (err: any) => {
-      console.log('최근 검색 유저 삭제 에러!');
-      console.log(err.response.data);
+  const deleteSearchUserQuery = useMutation<
+    ResponseData,
+    AxiosError,
+    DeleteRecentSearchUserType
+  >(deleteRecentSearchUser, {
+    onError: (err) => {
+      console.log('최근 검색 유저 삭제 에러!', err.response.data);
     },
-    onSuccess: (userInfo: any) => {
+    onSuccess: () => {
       console.log('최근 검색 유저 삭제 성공!');
-      console.log(deleteSearchUserQuery.data);
-      getRecentSearchUserListQuery.refetch();
+      // console.log(deleteSearchUserQuery.data);
+      queryClient.invalidateQueries(['getSearchUserList']);
     },
   });
+
+  if (searchUserIsLoading) {
+    return (
+      <SearchBarTooltipContainer showTooltip={showTooltip} ref={outsideRef}>
+        <SearchBarTooltipWrapper>
+          <EmptyRecentSearch>
+            <Loader
+              loaded={!searchUserIsLoading}
+              color="#8e8e8e"
+              scale={0.5}
+              top="50%"
+              left="50%"
+            />
+          </EmptyRecentSearch>
+        </SearchBarTooltipWrapper>
+      </SearchBarTooltipContainer>
+    );
+  }
+
+  if (searchUserIsSuccess) {
+    return (
+      <SearchBarTooltipContainer showTooltip={showTooltip} ref={outsideRef}>
+        <SearchBarTooltipWrapper>
+          {userList.length > 0 ? (
+            userList.map((list: followerImFollowingListType) => (
+              <RecentSearchItem
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/user/${list.userId}`);
+                  setShowTooltip(false);
+                  // window.location.reload();
+                  addSearchUserQuery.mutate({ toUserId: list.userId });
+                }}>
+                <UserAvatar>
+                  <img src={list.profileImage} alt="유저아바타" />
+                </UserAvatar>
+                <UserInfo>
+                  <p>{list.username}</p>
+                  <p>{list.name}</p>
+                </UserInfo>
+              </RecentSearchItem>
+            ))
+          ) : (
+            <EmptyRecentSearch>
+              <p>No results found.</p>
+            </EmptyRecentSearch>
+          )}
+        </SearchBarTooltipWrapper>
+      </SearchBarTooltipContainer>
+    );
+  }
 
   return (
     <SearchBarTooltipContainer showTooltip={showTooltip} ref={outsideRef}>
       <SearchBarTooltipWrapper>
-        {userList?.length > 0 ? (
-          userList.map((list: any) => (
-            <>
+        <TooltipHeader>
+          <p>Recent</p>
+          <button>Clear all</button>
+        </TooltipHeader>
+        {getRecentSearchUserListData?.length > 0 ? (
+          getRecentSearchUserListData.map(
+            (list: followerImFollowingListType) => (
               <RecentSearchItem
-                onClick={(e) => {
+                onClick={() => {
                   setShowTooltip(false);
                   navigate(`/user/${list.userId}`);
                   // window.location.reload();
@@ -240,45 +291,18 @@ const SearchBarTooltip = ({
                   <p>{list.username}</p>
                   <p>{list.name}</p>
                 </UserInfo>
-              </RecentSearchItem>
-            </>
-          ))
-        ) : (
-          <>
-            <TooltipHeader>
-              <p>Recent</p>
-              <button>Clear all</button>
-            </TooltipHeader>
-            {getRecentSearchUserListData?.length > 0 ? (
-              getRecentSearchUserListData.map((list: any) => (
-                <RecentSearchItem
+                <CloseIcon
                   onClick={() => {
-                    setShowTooltip(false);
-                    navigate(`/user/${list.userId}`);
-                    // window.location.reload();
-                    addSearchUserQuery.mutate({ toUserId: list.userId });
-                  }}>
-                  <UserAvatar>
-                    <img src={list.profileImage} alt="유저아바타" />
-                  </UserAvatar>
-                  <UserInfo>
-                    <p>{list.username}</p>
-                    <p>{list.name}</p>
-                  </UserInfo>
-                  <CloseIcon
-                    onClick={(e: any) => {
-                      e.stopPropagation();
-                      deleteSearchUserQuery.mutate({ toUserId: list.userId });
-                    }}
-                  />
-                </RecentSearchItem>
-              ))
-            ) : (
-              <EmptyRecentSearch>
-                <p>No recent searches.</p>
-              </EmptyRecentSearch>
-            )}
-          </>
+                    deleteSearchUserQuery.mutate({ toUserId: list.userId });
+                  }}
+                />
+              </RecentSearchItem>
+            ),
+          )
+        ) : (
+          <EmptyRecentSearch>
+            <p>No recent searches.</p>
+          </EmptyRecentSearch>
         )}
       </SearchBarTooltipWrapper>
     </SearchBarTooltipContainer>

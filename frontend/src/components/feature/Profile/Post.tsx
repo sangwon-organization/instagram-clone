@@ -74,13 +74,6 @@ const ImagesIcon = styled(IoIosPhotos)`
   z-index: 100;
 `;
 
-interface PostType {
-  postImageList: string[];
-  postId: number;
-  likeCount: number;
-  commentCount: number;
-}
-
 const Post = ({ postImageList, postId, likeCount, commentCount }: PostType) => {
   const [postHover, setPostHover] = useState(false);
   const [showPostModal, setShowPostModal] = useState(false);
@@ -96,6 +89,7 @@ const Post = ({ postImageList, postId, likeCount, commentCount }: PostType) => {
     setShowPostModal(false);
     document.body.style.overflow = 'unset';
     navigate(-1);
+    // window.location.reload();
   };
 
   return (

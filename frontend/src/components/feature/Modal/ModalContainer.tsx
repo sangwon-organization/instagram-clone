@@ -51,8 +51,8 @@ const CloseIcon = styled(IoClose)`
 
 type ModalContainerProps = {
   closeModal: Function;
-  createPost?: any;
-  children: any;
+  createPost?: boolean;
+  children: JSX.Element;
 };
 
 function ModalContainer({
@@ -60,15 +60,15 @@ function ModalContainer({
   createPost,
   children,
 }: ModalContainerProps) {
-  const outsideRef = useRef();
+  // const outsideRef = useRef();
 
-  useOutsideClick(outsideRef, closeModal);
+  // useOutsideClick(outsideRef, closeModal);
   return (
     <Container>
-      <Background />
+      <Background onClick={() => closeModal()} />
       {createPost && <CloseIcon />}
       <ModalBlock>
-        <Contents ref={outsideRef}>{children}</Contents>
+        <Contents>{children}</Contents>
       </ModalBlock>
     </Container>
   );

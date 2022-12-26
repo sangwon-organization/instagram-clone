@@ -21,15 +21,15 @@ const HomeContainer = () => {
     hasPreviousPage,
     isFetchingNextPage,
     isFetchingPreviousPage,
-    data,
+    data: getPostsData,
     refetch,
   } = useInfiniteQuery({
     queryKey: ['getPosts'],
     queryFn: ({ pageParam = 1 }) => getPostsList({ page: pageParam }),
     getNextPageParam: (lastPage: any, allPages: any) =>
-      Number(lastPage.data.page) + 1,
+      Number(lastPage.page) + 1,
 
-    getPreviousPageParam: (firstPage: any, allPages: any) => undefined,
+    getPreviousPageParam: (firstPage: number, allPages: any) => undefined,
   });
 
   useEffect(() => {
@@ -39,17 +39,17 @@ const HomeContainer = () => {
     }
   }, [refetchPageIndex, refetch]);
 
-  const refetchPage = (pageIndex: number) => setRefetchPageIndex(pageIndex);
+  // const refetchPage = (pageIndex: number) => setRefetchPageIndex(pageIndex);
 
-  console.log(data);
+  console.log(getPostsData);
 
   useEffect(() => {
     if (inView) {
       console.log(inView);
       fetchNextPage();
-      console.log(data);
+      console.log(getPostsData);
     }
-  }, [inView, fetchNextPage, data]);
+  }, [inView, fetchNextPage, getPostsData]);
 
   return (
     <>
@@ -60,12 +60,7 @@ const HomeContainer = () => {
         url="https://instagram-clone-sangwon.com"
         imgsrc={thumbnail}
       />
-      <HomePresenter
-        data={data}
-        refetchPage={refetchPage}
-        scrollRef={ref}
-        refetch={refetch}
-      />
+      <HomePresenter getPostsData={getPostsData} scrollRef={ref} />
     </>
   );
 };

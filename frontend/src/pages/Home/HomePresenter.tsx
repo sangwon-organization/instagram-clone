@@ -32,19 +32,7 @@ const StoryAndFeedSection = styled.section`
   height: fit-content;
 `;
 
-interface HomePresenterType {
-  data: any;
-  refetchPage: any;
-  scrollRef: any;
-  refetch: any;
-}
-
-const HomePresenter = ({
-  data,
-  refetchPage,
-  scrollRef,
-  refetch,
-}: HomePresenterType) => {
+const HomePresenter = ({ getPostsData, scrollRef }: HomePresenterType) => {
   return (
     <>
       <NavigationBar />
@@ -52,8 +40,8 @@ const HomePresenter = ({
         <MainWrapper>
           <StoryAndFeedSection>
             <StoryBox />
-            {data?.pages.flatMap((page: any, pageIndex: any) =>
-              page.data.postList.map((post: any) => (
+            {getPostsData?.pages.flatMap((page: PageType) =>
+              page.postList.map((post: PostListType) => (
                 <FeedCard
                   key={post.postId}
                   postId={post.postId}
@@ -67,9 +55,6 @@ const HomePresenter = ({
                   content={post.content}
                   postImageList={post.postImageList}
                   userId={post.userId}
-                  refetchPage={refetchPage}
-                  pageIndex={pageIndex}
-                  refetch={refetch}
                 />
               )),
             )}

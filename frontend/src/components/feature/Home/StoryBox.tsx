@@ -80,31 +80,35 @@ const UserAvatar = styled.div`
 
 const LeftArrowIcon = styled(IoIosArrowDropleftCircle)`
   position: absolute;
-  top: 44px;
+  top: 50%;
   left: 15px;
   width: 30px;
   height: 30px;
   color: ${({ theme }) => theme.whiteColor};
+  transform: translate3d(0, -50%, 0);
+  filter: drop-shadow(0px 0px 3px rgba(0, 0, 0, 0.3));
   z-index: 200;
   cursor: pointer;
 `;
 
 const RightArrowIcon = styled(IoIosArrowDroprightCircle)`
   position: absolute;
-  top: 44px;
+  top: 50%;
   right: 15px;
   width: 30px;
   height: 30px;
   color: ${({ theme }) => theme.whiteColor};
+  transform: translate3d(0, -50%, 0);
+  filter: drop-shadow(0px 0px 3px rgba(0, 0, 0, 0.3));
   cursor: pointer;
   z-index: 200;
 `;
 
 const StoryBox = () => {
-  const ref = useRef(null);
+  const ref = useRef<HTMLUListElement>(null);
   const [currentScrollX, setCurrentScrollX] = useState('');
 
-  const getFollowingListQuery = useQuery(['getFollowingList'], () =>
+  const { data: getFollowingListData } = useQuery(['getFollowingList'], () =>
     getFollowingList({ page: 1 }),
   );
 
@@ -155,57 +159,22 @@ const StoryBox = () => {
 
   return (
     <>
-      {getFollowingListQuery.data?.data.followingList.length > 0 && (
+      {getFollowingListData?.followingList.length > 0 && (
         <StoryBoxContainer>
           <StoryBoxWrapper ref={ref}>
             {(currentScrollX === 'leftMax' || currentScrollX === 'middle') && (
               <LeftArrowIcon onClick={moveRight} />
             )}
-            {getFollowingListQuery.data?.data.followingList.map((list: any) => (
-              <StoryItem key={list.userId}>
-                <UserAvatar>
-                  <img src={list.profileImage} alt="유저아바타" />
-                </UserAvatar>
-                <p>{list.username}</p>
-              </StoryItem>
-            ))}
-            {/* <StoryItem>
-          <UserAvatar>
-            <img src={userAvatar} alt="유저아바타" />
-          </UserAvatar>
-          <p>username</p>
-        </StoryItem>
-        <StoryItem>
-          <UserAvatar>
-            <img src={userAvatar} alt="유저아바타" />
-          </UserAvatar>
-          <p>username</p>
-        </StoryItem>
-        <StoryItem>
-          <UserAvatar>
-            <img src={userAvatar} alt="유저아바타" />
-          </UserAvatar>
-          <p>username</p>
-        </StoryItem>
-        <StoryItem>
-          <UserAvatar>
-            <img src={userAvatar} alt="유저아바타" />
-          </UserAvatar>
-          <p>username</p>
-        </StoryItem>
-        <StoryItem>
-          <UserAvatar>
-            <img src={userAvatar} alt="유저아바타" />
-          </UserAvatar>
-          <p>username</p>
-        </StoryItem>
-        <StoryItem>
-          <UserAvatar>
-            <img src={userAvatar} alt="유저아바타" />
-          </UserAvatar>
-          <p>username</p>
-        </StoryItem> */}
-
+            {getFollowingListData?.followingList.map(
+              (list: followerImFollowingListType) => (
+                <StoryItem key={list.userId}>
+                  <UserAvatar>
+                    <img src={list.profileImage} alt="유저아바타" />
+                  </UserAvatar>
+                  <p>{list.username}</p>
+                </StoryItem>
+              ),
+            )}
             {(currentScrollX === 'rightMax' || currentScrollX === 'middle') && (
               <RightArrowIcon
                 onClick={() => {

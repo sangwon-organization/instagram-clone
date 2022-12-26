@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { Dispatch, SetStateAction, useState } from 'react';
 import styled from 'styled-components';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -19,8 +19,9 @@ import {
   IoIosCloseCircleOutline,
   IoIosCheckmarkCircleOutline,
 } from 'react-icons/io';
+import { AxiosError } from 'axios';
 
-const SignUpContainer = styled.div<{ error: any }>`
+const SignUpContainer = styled.div<{ error: AxiosError<Error, any> }>`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -28,7 +29,7 @@ const SignUpContainer = styled.div<{ error: any }>`
   height: ${({ error }) => (error ? ' 855px' : '768px')};
 `;
 
-const TopBox = styled.div<{ error: any }>`
+const TopBox = styled.div<{ error: AxiosError<Error, any> }>`
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;
@@ -214,13 +215,6 @@ const ErrorMessageBox = styled.div`
   }
 `;
 
-type FormValues = {
-  email: string;
-  name: string;
-  username: string;
-  password: string;
-};
-
 const schema = yup.object().shape({
   email: yup.string().required(),
   name: yup.string().required(),
@@ -246,18 +240,24 @@ const SignUp = () => {
     register,
     handleSubmit,
     formState: { isValid, errors },
-  } = useForm<FormValues>({ mode: 'onChange', resolver: yupResolver(schema) });
+  } = useForm<SignUpFormValues>({
+    mode: 'onChange',
+    resolver: yupResolver(schema),
+  });
 
-  const InputKeyPress = (e: any, setKeyPress: Function) => {
-    if (e.target.value === '') {
+  const InputKeyPress = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    setKeyPress: Dispatch<SetStateAction<boolean>>,
+  ) => {
+    if (e.currentTarget.value === '') {
       setKeyPress(false);
     } else {
       setKeyPress(true);
     }
   };
 
-  const passwordInputKeyPress = (e: any) => {
-    if (e.target.value === '') {
+  const passwordInputKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.currentTarget.value === '') {
       setPasswordKeyPress(false);
       setShowPassword(false);
     } else {
@@ -270,41 +270,45 @@ const SignUp = () => {
     setPasswordShowAndHide((prev: boolean) => !prev);
   };
 
-  const onSubmit = (dataInput: any) => {
-    console.log(dataInput);
-
+  const onSubmit = (dataInput: SignUpFormValues) => {
     mutate(dataInput);
   };
 
-  const onError = (err: any) => {
-    console.log(err);
-  };
-
-  const { mutate, data, error, reset, isLoading } = useMutation(signUpUser, {
-    onError: (err: any) => {
-      console.log(err.response.data);
+  const { mutate, data, error, reset, isLoading } = useMutation<
+    ResponseData,
+    AxiosError<Error>,
+    SignUpType
+  >(signUpUser, {
+    onError: (err) => {
+      console.log('회원가입 실패!', err.response.data);
     },
-    onSuccess: (userInfo: any) => {
+    onSuccess: () => {
       console.log('회원가입 성공!');
-      // console.log(userInfo);
-      // console.log(data);
     },
   });
 
-  const emailDuplicationChecking = useMutation(emailDuplicationCheck, {
-    onError: (err: any) => {
+  const emailDuplicationChecking = useMutation<
+    ResponseData,
+    AxiosError,
+    EmailDuplicationCheckType
+  >(emailDuplicationCheck, {
+    onError: (err) => {
       console.log(err.response.data);
     },
-    onSuccess: (userInfo: any) => {
+    onSuccess: () => {
       console.log('이메일 사용 가능!');
     },
   });
 
-  const usernameDuplicationChecking = useMutation(usernameDuplicationCheck, {
-    onError: (err: any) => {
+  const usernameDuplicationChecking = useMutation<
+    ResponseData,
+    AxiosError,
+    UsernameDuplicationCheckType
+  >(usernameDuplicationCheck, {
+    onError: (err) => {
       console.log(err.response.data);
     },
-    onSuccess: (userInfo: any) => {
+    onSuccess: () => {
       console.log('유저네임 사용 가능!');
     },
   });
@@ -320,14 +324,18 @@ const SignUp = () => {
         <OrBox>
           <p>OR</p>
         </OrBox>
-        <Form onSubmit={handleSubmit(onSubmit, onError)}>
+        <Form onSubmit={handleSubmit(onSubmit)}>
           <InputBox keyPress={emailKeyPress} clicked={emailInputBoxClicked}>
             <input
               type="text"
               onFocusCapture={() => setEmailInputBoxClicked(true)}
-              onBlurCapture={(e: any) => {
+              onBlurCapture={(
+                e: React.FocusEvent<HTMLInputElement, Element>,
+              ) => {
                 setEmailInputBoxClicked(false);
-                emailDuplicationChecking.mutate({ email: e.target.value });
+                emailDuplicationChecking.mutate({
+                  email: e.currentTarget.value,
+                });
               }}
               onKeyUp={(e) => InputKeyPress(e, setEmailKeyPress)}
               {...register('email', { required: true })}
@@ -354,10 +362,12 @@ const SignUp = () => {
             <input
               type="text"
               onFocusCapture={() => setUsernameInputBoxClicked(true)}
-              onBlurCapture={(e: any) => {
+              onBlurCapture={(
+                e: React.FocusEvent<HTMLInputElement, Element>,
+              ) => {
                 setUsernameInputBoxClicked(false);
                 usernameDuplicationChecking.mutate({
-                  username: e.target.value,
+                  username: e.currentTarget.value,
                 });
               }}
               onKeyUp={(e) => InputKeyPress(e, setUsernameKeyPress)}

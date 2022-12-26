@@ -11,8 +11,13 @@ import {
   IoIosArrowDropleftCircle,
   IoIosArrowDroprightCircle,
 } from 'react-icons/io';
-import { useMutation } from '@tanstack/react-query';
-import { bookmarkPost, commentPost, likePost } from '../../../api/api';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  bookmarkPost,
+  commentPost,
+  getCommentsList,
+  likePost,
+} from '../../../api/api';
 import Loader from 'react-loader';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { timeForToday } from '../../../utils/commons';
@@ -23,10 +28,6 @@ import PostWrapper from '../Post/PostWrapper';
 import CommentsListBox from '../Post/CommentsListBox';
 import { useForm } from 'react-hook-form';
 import { AxiosError, AxiosResponse } from 'axios';
-
-type FormValues = {
-  commentInput: string;
-};
 
 const FeedCardContainer = styled.div`
   display: flex;
@@ -152,8 +153,8 @@ const ColoredHeartIcon = styled(BsHeartFill)<{ likebuttonclicked: string }>`
   color: ${({ theme }) => theme.errorColor};
   cursor: pointer;
   animation: ${({ likebuttonclicked }) =>
-    likebuttonclicked === 'Y' ? 'likeHeart 1s ease-in-out' : ''};
-  @keyframes likeHeart {
+    likebuttonclicked === 'Y' ? 'feedLike 1s ease-in-out' : ''};
+  @keyframes feedLike {
     0% {
       transform: scale(1);
     }
@@ -224,6 +225,8 @@ const FeedDescriptionBox = styled.div`
   height: fit-content;
   padding: 0 10px 10px 10px;
   line-height: 18px;
+  word-break: break-all;
+  white-space: pre-wrap;
   span:first-child {
     float: left;
     margin-right: 5px;
@@ -325,8 +328,8 @@ const BigLikedIcon = styled(BsHeartFill)<{ likebuttonclicked: boolean }>`
   filter: drop-shadow(5px 5px 30px rgba(0, 0, 0, 0.7));
   opacity: 0;
   animation: ${({ likebuttonclicked }) =>
-    likebuttonclicked && 'likeHeart 2s ease-in-out'};
-  @keyframes likeHeart {
+    likebuttonclicked && 'bigFeedLike 2s ease-in-out'};
+  @keyframes bigFeedLike {
     0%,
     to {
       opacity: 0;
@@ -357,7 +360,9 @@ const LeftArrowIcon = styled(IoIosArrowDropleftCircle)<{
   width: 30px;
   height: 30px;
   color: ${({ theme }) => theme.whiteColor};
-  opacity: 0.6;
+  opacity: 0.7;
+  filter: drop-shadow(0px 0px 3px rgba(0, 0, 0, 0.3));
+  transform: translate3d(0, -50%, 0);
   cursor: pointer;
   z-index: 200;
 `;
@@ -374,9 +379,11 @@ const RightArrowIcon = styled(IoIosArrowDroprightCircle)<{
   width: 30px;
   height: 30px;
   color: ${({ theme }) => theme.whiteColor};
-  z-index: 200;
-  opacity: 0.6;
+  opacity: 0.7;
+  filter: drop-shadow(0px 0px 3px rgba(0, 0, 0, 0.3));
+  transform: translate3d(0, -50%, 0);
   cursor: pointer;
+  z-index: 200;
 `;
 
 const MeatballIconBox = styled.div`
@@ -397,23 +404,6 @@ const MeatballIcon = styled(FaCircle)<{ index: number; currentslide: number }>`
     index === currentslide ? theme.buttonColor : theme.greyTextColor};
 `;
 
-interface FeedCardProps {
-  postId: number;
-  username: string;
-  profileImage: string;
-  likeYn: string;
-  likeCount: number;
-  createdAt: string;
-  commentCount: number;
-  bookmarkYn: string;
-  content: string;
-  postImageList: string[];
-  userId: number;
-  refetchPage: (pageIndex: number) => void;
-  pageIndex: number;
-  refetch: any;
-}
-
 const FeedCard = ({
   userId,
   postId,
@@ -426,10 +416,7 @@ const FeedCard = ({
   bookmarkYn,
   content,
   postImageList,
-  refetchPage,
-  pageIndex,
-  refetch,
-}: FeedCardProps) => {
+}: FeedCardType) => {
   const [likeButtonClicked, setLikeButtonClicked] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showPostDropdown, setShowPostDropdown] = useState(false);
@@ -443,6 +430,8 @@ const FeedCard = ({
   const navigate = useNavigate();
 
   const location = useLocation();
+
+  const queryClient = useQueryClient();
 
   const TOTAL_SLIDES = postImageList.length;
 
@@ -495,30 +484,41 @@ const FeedCard = ({
     slideRef.current.style.transform = `translateX(-${currentSlide}00%)`;
   }, [currentSlide]);
 
-  const { mutate, data, error, reset, isLoading } = useMutation(commentPost, {
-    onError: (err: AxiosError) => {
-      console.log(err.response.data);
+  const { mutate, data, error, reset, isLoading } = useMutation<
+    ResponseData,
+    AxiosError,
+    CommentPostType
+  >(commentPost, {
+    onError: (err) => {
+      console.log('댓글 등록 실패!', err.response.data);
     },
-    onSuccess: (e: AxiosResponse) => {
+    onSuccess: () => {
       console.log('댓글 등록 성공!');
-      console.log(e);
-      refetch();
+      queryClient.invalidateQueries(['getPosts']);
+      queryClient.invalidateQueries(['getCommentsList']);
       textareaRef.current.value = '';
       textareaRef.current.focus();
     },
   });
 
+  const { data: getCommentsListData } = useQuery<
+    GetCommentsListQueryType,
+    AxiosError
+  >(['getCommentsList', postId], () =>
+    getCommentsList({ page: 1, postId: postId }),
+  );
+
   const {
     register,
     handleSubmit,
     formState: { isValid, errors, isDirty },
-  } = useForm<FormValues>({ mode: 'onChange' });
+  } = useForm<CommentPostFormValues>({ mode: 'onChange' });
 
   const { ref: commentRef, ...rest } = register('commentInput', {
     required: true,
   });
 
-  const onSubmit = (dataInput: any) => {
+  const onSubmit = (dataInput: CommentPostFormValues) => {
     console.log(dataInput);
     mutate({
       postId: postId,
@@ -527,22 +527,20 @@ const FeedCard = ({
     });
   };
 
-  const onError = (err: any) => {
-    console.log(err);
-  };
-
-  const mutateLikePost = useMutation(likePost, {
-    onError: (err: AxiosError) => {
-      console.log(err.response.data);
+  const mutateLikePost = useMutation<ResponseData, AxiosError, LikePostType>(
+    likePost,
+    {
+      onError: (err) => {
+        console.log('포스트 좋아요 실패!', err.response.data);
+      },
+      onSuccess: () => {
+        console.log('포스트 좋아요 성공!');
+        queryClient.invalidateQueries(['getPosts']);
+      },
     },
-    onSuccess: (e) => {
-      console.log('포스트 좋아요 성공!');
-      refetch();
-    },
-  });
+  );
 
-  const likePostFunction = (pageIndex: number) => (e: any) => {
-    e.preventDefault();
+  const likePostFunction = () => {
     if (likeYn === 'Y') {
       mutateLikePost.mutate({ postId: postId, likeYn: 'N' });
     } else {
@@ -550,18 +548,21 @@ const FeedCard = ({
     }
   };
 
-  const mutateBookmarkPost = useMutation(bookmarkPost, {
-    onError: (err: any) => {
-      console.log(err.response.data);
+  const mutateBookmarkPost = useMutation<
+    ResponseData,
+    AxiosError,
+    BookmarkPostType
+  >(bookmarkPost, {
+    onError: (err) => {
+      console.log('북마크 실패!', err.response.data);
     },
-    onSuccess: (e: any) => {
+    onSuccess: () => {
       console.log('북마크 성공!');
-      refetch();
+      queryClient.invalidateQueries(['getPosts']);
     },
   });
 
-  const registerComment = (e: any) => {
-    e.preventDefault();
+  const registerComment = () => {
     mutate({
       postId: postId,
       parentCommentId: '',
@@ -572,8 +573,7 @@ const FeedCard = ({
     }
   };
 
-  const bookmarkPostFunction = (e: any) => {
-    e.preventDefault();
+  const bookmarkPostFunction = () => {
     if (bookmarkYn === 'Y') {
       mutateBookmarkPost.mutate({ postId: postId, bookmarkYn: 'N' });
     } else {
@@ -603,7 +603,7 @@ const FeedCard = ({
         }}>
         <LeftArrowIcon currentslide={currentSlide} onClick={PrevSlide} />
         <ImageWrapper ref={slideRef}>
-          {postImageList.map((list: any) => (
+          {postImageList.map((list: string) => (
             <img src={list} key={list} alt="유저이미지" />
           ))}
         </ImageWrapper>
@@ -620,10 +620,10 @@ const FeedCard = ({
             {likeYn === 'Y' ? (
               <ColoredHeartIcon
                 likebuttonclicked={likeYn}
-                onClick={likePostFunction(pageIndex)}
+                onClick={likePostFunction}
               />
             ) : (
-              <HeartIcon onClick={likePostFunction(pageIndex)} />
+              <HeartIcon onClick={likePostFunction} />
             )}
             <ChatIcon
               onClick={() => {
@@ -634,9 +634,14 @@ const FeedCard = ({
             <LocationIcon />
           </LeftIconBox>
           <MeatballIconBox ref={circleRef}>
-            {postImageList.map((list: any, i) => (
-              <MeatballIcon key={list} currentslide={currentSlide} index={i} />
-            ))}
+            {postImageList.length > 1 &&
+              postImageList.map((list: string, i: number) => (
+                <MeatballIcon
+                  key={list}
+                  currentslide={currentSlide}
+                  index={i}
+                />
+              ))}
           </MeatballIconBox>
           {bookmarkYn === 'Y' ? (
             <BookmarkFilledIcon onClick={bookmarkPostFunction} />
@@ -666,15 +671,17 @@ const FeedCard = ({
               : `View all ${commentCount} comments`}
           </ViewAllCommentsBox>
         )}
-        <CommentsListBox postId={postId} />
+        <CommentsListBox
+          postId={postId}
+          getCommentsListData={getCommentsListData}
+        />
         <DateBox>{timeForToday(createdAt)}</DateBox>
       </CommentBoxWrapper>
-      <AddCommentBox onSubmit={handleSubmit(onSubmit, onError)}>
+      <AddCommentBox onSubmit={handleSubmit(onSubmit)}>
         <SmileIcon />
         <textarea
           name="commentInput"
           id="commentInput"
-          // onChange={(e: any) => isDisabled(e)}
           {...rest}
           ref={(e) => {
             commentRef(e);
@@ -694,7 +701,7 @@ const FeedCard = ({
           type="submit"
           ref={postButtonRef}
           disabled={!isValid}
-          onClick={(e: any) => registerComment(e)}>
+          onClick={registerComment}>
           Post
         </button>
       </AddCommentBox>

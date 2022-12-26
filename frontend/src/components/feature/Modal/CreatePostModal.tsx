@@ -2,18 +2,11 @@ import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { IoImagesOutline } from 'react-icons/io5';
 import { BiArrowBack } from 'react-icons/bi';
-import userAvatar from '../../../assets/image/userAvatar.png';
 import { addPost } from '../../../api/api';
-import * as url from 'url';
 import { useMutation } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import Loader from 'react-loader';
 import { FiCheck } from 'react-icons/fi';
-
-interface AddPostForm {
-  content: string;
-  postImage1: File;
-}
 
 const Container = styled.form<{ nextmodal?: boolean }>`
   width: ${({ nextmodal }) => (nextmodal ? '1120px' : '768px')};
@@ -189,7 +182,7 @@ const CheckIcon = styled(FiCheck)`
   color: #f60273;
 `;
 
-const CreatePostModal = () => {
+const CreatePostModal = ({ profileImage }: CreatePostModalType) => {
   const [imageSrc, setImageSrc] = useState<string>('');
   const [nextModal, setNextModal] = useState(false);
   const [textAreaText, setTextAreaText] = useState(0);
@@ -201,7 +194,7 @@ const CreatePostModal = () => {
     setTextAreaText(e.target.value.length);
   };
 
-  const encodeFileToBase64 = (fileBlob: any) => {
+  const encodeFileToBase64 = (fileBlob: Blob) => {
     const reader = new FileReader();
     reader.readAsDataURL(fileBlob);
     return new Promise((resolve: any) => {
@@ -217,7 +210,7 @@ const CreatePostModal = () => {
     register,
     handleSubmit,
     formState: { isValid, errors, isDirty },
-  } = useForm<AddPostForm>({ mode: 'onSubmit' });
+  } = useForm<AddPostFormValues>({ mode: 'onSubmit' });
 
   const { ref: contentRef, ...contentRest } = register('content', {
     required: true,
@@ -266,8 +259,7 @@ const CreatePostModal = () => {
     // console.log(imageSrc);
   };
 
-  const onImageInputButtonClick = (event: any) => {
-    event.preventDefault();
+  const onImageInputButtonClick = () => {
     imageInput.current.click();
   };
 
@@ -341,7 +333,7 @@ const CreatePostModal = () => {
         {nextModal && (
           <CaptionBox>
             <UserAccountWrapper>
-              <img src={userAvatar} alt="유저아바타" />
+              <img src={profileImage} alt="유저아바타" />
               <UserInfoWrapper>
                 <p>_leesangwon</p>
               </UserInfoWrapper>

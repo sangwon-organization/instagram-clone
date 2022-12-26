@@ -26,18 +26,15 @@ const Container = styled.div`
   }
 `;
 
-interface MiddleBoxProps {
-  question: string;
-  linkText: string;
-}
-
-const LoginSignUpMiddleBox = ({ question, linkText }: MiddleBoxProps) => {
+const LoginSignUpMiddleBox = ({ question, linkText }: MiddleBoxType) => {
   const dispatch: Dispatch = useDispatch();
 
-  const toggleComponent = (e: any) => {
-    if (e.target.textContent === ' Log in') {
+  const toggleComponent = (
+    e: React.MouseEvent<HTMLSpanElement, MouseEvent>,
+  ) => {
+    if (e.currentTarget.textContent === ' Log in') {
       dispatch(loginComponent());
-    } else if (e.target.textContent === ' Sign up') {
+    } else if (e.currentTarget.textContent === ' Sign up') {
       dispatch(signupComponent());
     }
   };
