@@ -1,45 +1,32 @@
 import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { HiOutlineEmojiHappy } from 'react-icons/hi';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  MutateFunction,
-  MutationObserverIdleResult,
-  UseMutateFunction,
-  useMutation,
-  useQuery,
-} from '@tanstack/react-query';
-import userAvatar from '../../assets/image/userAvatar.png';
-import { commentPost, getPost, likePost } from '../../../api/api';
+  bookmarkPost,
+  commentPost,
+  getPost,
+  likeComment,
+  likePost,
+} from '../../../api/api';
 import { GoKebabHorizontal } from 'react-icons/go';
-import userImage from '../../assets/image/userImage.png';
-import userImage2 from '../../assets/image/userImage2.png';
-import userImage3 from '../../assets/image/userImage3.png';
 import Loader from 'react-loader';
 import { RiChat3Line } from 'react-icons/ri';
 import { TbLocation } from 'react-icons/tb';
 import { BsHeart, BsHeartFill } from 'react-icons/bs';
-import {
-  Navigate,
-  NavigateFunction,
-  useLocation,
-  useNavigate,
-  useParams,
-} from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { FaBookmark, FaCircle, FaRegBookmark } from 'react-icons/fa';
 import {
   IoIosArrowDropleftCircle,
   IoIosArrowDroprightCircle,
 } from 'react-icons/io';
-import theme from '../../../styles/theme';
 import { timeForToday } from '../../../utils/commons';
 import { useForm } from 'react-hook-form';
 import ModalPortal from '../Modal/ModalPortal';
 import ModalContainer from '../Modal/ModalContainer';
 import PostDropDownModal from '../Modal/PostDropDownModal';
-
-type FormValues = {
-  commentInput: string;
-};
+import CommentItem from './CommentItem';
+import { AxiosError } from 'axios';
 
 const Wrapper = styled.div`
   width: 930px;
@@ -62,10 +49,10 @@ const ImageBoxWrapper = styled.div`
 `;
 
 const ImageWrapper = styled.div`
-  width: 100%;
-  height: 100%;
   display: flex;
   align-items: center;
+  width: 100%;
+  height: 100%;
   img {
     width: 100%;
     height: fit-content;
@@ -148,18 +135,6 @@ const CommentsListBox = styled.div`
   }
 `;
 
-const SmallHeartIcon = styled(BsHeart)`
-  /* width: 15px; */
-  /* height: 15px; */
-  font-size: 12px;
-  cursor: pointer;
-  color: ${({ theme }) => theme.textColor};
-  &:hover {
-    color: ${({ theme }) => theme.greyTextColor};
-  }
-  margin-top: 15px;
-`;
-
 const PostBottom = styled.div`
   width: 100%;
   height: fit-content;
@@ -209,8 +184,8 @@ const BigLikedIcon = styled(BsHeartFill)<{ likebuttonclicked: boolean }>`
   filter: drop-shadow(5px 5px 30px rgba(0, 0, 0, 0.7));
   opacity: 0;
   animation: ${({ likebuttonclicked }) =>
-    likebuttonclicked && 'like-heart-animation 2s ease-in-out'};
-  @keyframes like-heart-animation {
+    likebuttonclicked && 'bigPostLike 2s ease-in-out'};
+  @keyframes bigPostLike {
     0%,
     to {
       opacity: 0;
@@ -234,15 +209,17 @@ const BigLikedIcon = styled(BsHeartFill)<{ likebuttonclicked: boolean }>`
 const LeftArrowIcon = styled(IoIosArrowDropleftCircle)<{
   currentslide: number;
 }>`
-  width: 30px;
-  height: 30px;
-  color: #fff;
   position: absolute;
-  z-index: 200;
   top: 50%;
   left: 15px;
-  opacity: 0.6;
+  width: 30px;
+  height: 30px;
+  color: ${({ theme }) => theme.whiteColor};
+  opacity: 0.7;
+  filter: drop-shadow(0px 0px 3px rgba(0, 0, 0, 0.3));
+  transform: translate3d(0, -50%, 0);
   cursor: pointer;
+  z-index: 200;
   ${({ currentslide }) => currentslide === 0 && 'display: none'};
 `;
 
@@ -250,15 +227,17 @@ const RightArrowIcon = styled(IoIosArrowDroprightCircle)<{
   currentslide: number;
   totalslides: number;
 }>`
-  width: 30px;
-  height: 30px;
-  color: #fff;
   position: absolute;
-  z-index: 200;
   top: 50%;
   right: 15px;
-  opacity: 0.6;
+  width: 30px;
+  height: 30px;
+  color: ${({ theme }) => theme.whiteColor};
+  opacity: 0.7;
+  filter: drop-shadow(0px 0px 3px rgba(0, 0, 0, 0.3));
   cursor: pointer;
+  transform: translate3d(0, -50%, 0);
+  z-index: 200;
   ${({ currentslide, totalslides }) =>
     currentslide === totalslides - 1 && 'display: none'};
 `;
@@ -280,16 +259,24 @@ const SmileIcon = styled(HiOutlineEmojiHappy)`
 const ColoredHeartIcon = styled(BsHeartFill)<{ likebuttonclicked: string }>`
   width: 23px;
   height: 23px;
+  font-size: 12px;
   color: #ed4956;
   cursor: pointer;
   animation: ${({ likebuttonclicked }) =>
-    likebuttonclicked === 'Y' ? 'pop 0.2s linear' : ''};
-  @keyframes pop {
+    likebuttonclicked === 'Y' ? 'postLike 1s ease-in-out' : ''};
+  @keyframes postLike {
     0% {
       transform: scale(1);
     }
-    100% {
+    15% {
       transform: scale(1.2);
+    }
+    30% {
+      transform: scale(0.95);
+    }
+    45%,
+    80% {
+      transform: scale(1);
     }
   }
 `;
@@ -315,11 +302,11 @@ const LocationIcon = styled(TbLocation)`
 `;
 
 const LeftIconBox = styled.div`
-  width: 100px;
-  height: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100px;
+  height: 100%;
 `;
 
 const HeartIcon = styled(BsHeart)`
@@ -333,37 +320,42 @@ const HeartIcon = styled(BsHeart)`
 `;
 
 const ButtonBox = styled.div`
-  width: 100%;
-  height: 112px;
   display: flex;
   flex-direction: column;
+  width: 100%;
+  height: 112px;
   /* border: 1px solid red; */
 `;
 
 const IconBox = styled.div`
-  width: 100%;
-  height: 50px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100%;
+  height: 50px;
   padding: 0 10px;
 `;
 
 const MeatballIconBox = styled.div`
-  width: fit-content;
-  height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 0 3px;
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  width: fit-content;
+  height: fit-content;
   padding: 0 10px;
   margin-right: 80px;
+  transform: translate3d(-50%, 0, 0);
 `;
 
-const MeatballIcon = styled(FaCircle)`
+const MeatballIcon = styled(FaCircle)<{ index: number; currentslide: number }>`
   width: 6px;
   height: 6px;
-  color: ${({ theme }) => theme.greyTextColor};
+  color: ${({ theme, index, currentslide }) =>
+    index === currentslide ? theme.whiteColor : theme.greyTextColor};
 `;
 
 const BookmarkIcon = styled(FaRegBookmark)`
@@ -429,14 +421,18 @@ const Comment = styled.div`
   height: fit-content;
   margin-top: 5px;
   line-height: 18px;
-  /* border: 1px solid red; */
+  white-space: pre-wrap;
+  word-break: break-all;
   span {
-    color: ${({ theme }) => theme.textColor};
-    font-size: 14px;
-    font-weight: 600;
     float: left;
     margin-right: 5px;
+    font-size: 14px;
+    font-weight: 600;
+    color: ${({ theme }) => theme.textColor};
     cursor: pointer;
+    &:hover {
+      color: ${({ theme }) => theme.greyTextColor};
+    }
   }
   p {
     color: ${({ theme }) => theme.textColor};
@@ -448,8 +444,8 @@ const Comment = styled.div`
 const OptionBox = styled.div`
   width: 100%;
   height: 30px;
-  /* border: 1px solid red; */
   display: flex;
+  justify-content: flex-start;
   align-items: center;
   gap: 0 10px;
   button {
@@ -491,12 +487,9 @@ const ReplyBox = styled.div`
   }
 `;
 
-interface PostWrapperType {
-  postId: number;
-}
-
 const PostWrapper = ({ postId }: PostWrapperType) => {
   const [likeButtonClicked, setLikeButtonClicked] = useState(false);
+  const [showCommentMenuIcon, setShowCommentMenuIcon] = useState(false);
 
   const textareaRef = useRef(null);
   const postButtonRef = useRef(null);
@@ -505,13 +498,15 @@ const PostWrapper = ({ postId }: PostWrapperType) => {
   const navigate = useNavigate();
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  let params: any = useParams();
+  const queryClient = useQueryClient();
 
-  const getUserPost = useQuery(['getPost', params], () => getPost(postId));
+  const { data: getUserPostData } = useQuery(['getPost', postId], () =>
+    getPost(postId),
+  );
 
-  const totalSlide = getUserPost.data?.data.postImageList.length;
+  const totalSlide = getUserPostData?.postImageList.length;
 
-  console.log(getUserPost.data?.data);
+  console.log(getUserPostData);
 
   const doubleClickImage = () => {
     setLikeButtonClicked(true);
@@ -540,7 +535,7 @@ const PostWrapper = ({ postId }: PostWrapperType) => {
     register,
     handleSubmit,
     formState: { isValid, errors, isDirty },
-  } = useForm<FormValues>({ mode: 'onChange' });
+  } = useForm<CommentPostFormValues>({ mode: 'onChange' });
 
   const { ref: commentRef, ...rest } = register('commentInput', {
     required: true,
@@ -552,19 +547,19 @@ const PostWrapper = ({ postId }: PostWrapperType) => {
     error,
     reset,
     isLoading: commentPostIsLoading,
-  } = useMutation(commentPost, {
-    onError: (err: any) => {
+  } = useMutation<ResponseData, AxiosError, CommentPostType>(commentPost, {
+    onError: (err) => {
       console.log(err.response.data);
     },
-    onSuccess: (e: any) => {
+    onSuccess: () => {
       console.log('댓글 등록 성공!');
-      getUserPost.refetch();
+      queryClient.invalidateQueries(['getPost']);
       textareaRef.current.value = '';
       textareaRef.current.focus();
     },
   });
 
-  const onSubmit = (dataInput: any) => {
+  const onSubmit = (dataInput: CommentPostFormValues) => {
     console.log(dataInput);
     commentPostMutate({
       postId: postId,
@@ -573,34 +568,54 @@ const PostWrapper = ({ postId }: PostWrapperType) => {
     });
   };
 
-  const onError = (err: any) => {
-    console.log(err);
-  };
+  const mutateLikePost = useMutation<ResponseData, AxiosError, LikePostType>(
+    likePost,
+    {
+      onError: (err) => {
+        console.log(err.response.data);
+      },
+      onSuccess: () => {
+        console.log('포스트 좋아요 성공!');
+        queryClient.invalidateQueries(['getPost']);
+      },
+    },
+  );
 
-  const likePostFunction = (e: any) => {
-    e.preventDefault();
-    if (getUserPost.data?.data.likeYn === 'Y') {
+  const mutateBookmarkPost = useMutation<
+    ResponseData,
+    AxiosError,
+    BookmarkPostType
+  >(bookmarkPost, {
+    onError: (err) => {
+      console.log(err.response.data);
+    },
+    onSuccess: () => {
+      console.log('북마크 성공!');
+      queryClient.invalidateQueries(['getPost']);
+    },
+  });
+
+  const likePostFunction = () => {
+    if (getUserPostData?.likeYn === 'Y') {
       mutateLikePost.mutate({
-        postId: getUserPost.data?.data.postId,
+        postId: getUserPostData?.postId,
         likeYn: 'N',
       });
     } else {
       mutateLikePost.mutate({
-        postId: getUserPost.data?.data.postId,
+        postId: getUserPostData?.postId,
         likeYn: 'Y',
       });
     }
   };
 
-  const mutateLikePost = useMutation(likePost, {
-    onError: (err: any) => {
-      console.log(err.response.data);
-    },
-    onSuccess: (e: any) => {
-      console.log('포스트 좋아요 성공!');
-      getUserPost.refetch();
-    },
-  });
+  const bookmarkPostFunction = () => {
+    if (getUserPostData?.bookmarkYn === 'Y') {
+      mutateBookmarkPost.mutate({ postId: postId, bookmarkYn: 'N' });
+    } else {
+      mutateBookmarkPost.mutate({ postId: postId, bookmarkYn: 'Y' });
+    }
+  };
 
   useEffect(() => {
     slideRef.current.style.transition = 'all 0.5s ease-in-out';
@@ -608,6 +623,7 @@ const PostWrapper = ({ postId }: PostWrapperType) => {
   }, [currentSlide]);
 
   const [showPostDropdown, setShowPostDropdown] = useState(false);
+
   const openModal = () => {
     setShowPostDropdown(true);
     document.body.style.overflow = 'hidden';
@@ -620,7 +636,7 @@ const PostWrapper = ({ postId }: PostWrapperType) => {
 
   const myUserId = parseInt(localStorage.getItem('userId'));
 
-  const isMyPost = myUserId === getUserPost.data?.data.userId;
+  const isMyPost = myUserId === getUserPostData?.userId;
   return (
     <Wrapper>
       <ImageBoxWrapper>
@@ -630,14 +646,20 @@ const PostWrapper = ({ postId }: PostWrapperType) => {
           onDoubleClick={() => {
             doubleClickImage();
             mutateLikePost.mutate({
-              postId: getUserPost.data?.data.postId,
+              postId: getUserPostData?.postId,
               likeYn: 'Y',
             });
           }}>
-          {getUserPost.data?.data.postImageList.map((image: any) => (
+          {getUserPostData?.postImageList.map((image: string) => (
             <img src={image} key={image} alt="유저이미지" />
           ))}
         </ImageWrapper>
+        <MeatballIconBox>
+          {getUserPostData?.postImageList.length > 1 &&
+            getUserPostData?.postImageList.map((list: string, i: number) => (
+              <MeatballIcon key={list} currentslide={currentSlide} index={i} />
+            ))}
+        </MeatballIconBox>
         <RightArrowIcon
           totalslides={totalSlide}
           currentslide={currentSlide}
@@ -649,13 +671,10 @@ const PostWrapper = ({ postId }: PostWrapperType) => {
         <PostHeader>
           <UserInfo>
             <UserAvatar>
-              <img src={getUserPost.data?.data.profileImage} alt="유저아바타" />
+              <img src={getUserPostData?.profileImage} alt="유저아바타" />
             </UserAvatar>
-            <p
-              onClick={() =>
-                navigate(`/user/${getUserPost.data?.data.userId}`)
-              }>
-              {getUserPost.data?.data.username}
+            <p onClick={() => navigate(`/user/${getUserPostData?.userId}`)}>
+              {getUserPostData?.username}
             </p>
           </UserInfo>
           <KebabMenuIcon onClick={openModal} />
@@ -664,58 +683,49 @@ const PostWrapper = ({ postId }: PostWrapperType) => {
           <CommentBox>
             <AvatarBox>
               <UserAvatar>
-                <img
-                  src={getUserPost.data?.data.profileImage}
-                  alt="유저아바타"
-                />
+                <img src={getUserPostData?.profileImage} alt="유저아바타" />
               </UserAvatar>
             </AvatarBox>
             <Comment>
               <span
-                onClick={() =>
-                  navigate(`/user/${getUserPost.data?.data.userId}`)
-                }>
-                {getUserPost.data?.data.username}
+                onClick={() => {
+                  navigate(`/user/${getUserPostData?.userId}`);
+                  closeModal();
+                }}>
+                {getUserPostData?.username}
               </span>
-              <p>{getUserPost.data?.data.content}</p>
+              <p>{getUserPostData?.content}</p>
               <OptionBox>
-                <button>
-                  {timeForToday(getUserPost.data?.data.createdAt)}
-                </button>
+                <button>{timeForToday(getUserPostData?.createdAt)}</button>
               </OptionBox>
             </Comment>
-            <SmallHeartIcon />
           </CommentBox>
-          {getUserPost.data?.data.commentList.map((comment: any) => (
-            <CommentBox key={comment.commentId}>
-              <AvatarBox>
-                <UserAvatar>
-                  <img src={comment.profileImage} alt="유저아바타" />
-                </UserAvatar>
-              </AvatarBox>
-              <Comment>
-                <span onClick={() => navigate(`/user/${comment.userId}`)}>
-                  {comment.username}
-                </span>
-                <p>{comment.content}</p>
-                <OptionBox>
-                  <button>{timeForToday(comment.createdAt)}</button>
-                  <button>
-                    {comment.likeCount > 0 ? comment.likeCount + ' like' : ''}
-                  </button>
-                </OptionBox>
-              </Comment>
-              <SmallHeartIcon />
-            </CommentBox>
-          ))}
+          {getUserPostData?.commentList
+            .sort(
+              (a: CommentType, b: CommentType) =>
+                +new Date(b.createdAt) - +new Date(a.createdAt),
+            )
+            .map((comment: CommentType) => (
+              <CommentItem
+                key={comment.commentId}
+                commentId={comment.commentId}
+                content={comment.content}
+                createdAt={comment.createdAt}
+                likeYn={comment.likeYn}
+                likeCount={comment.likeCount}
+                profileImage={comment.profileImage}
+                userId={comment.userId}
+                username={comment.username}
+              />
+            ))}
         </CommentsListBox>
         <PostBottom>
           <ButtonBox>
             <IconBox>
               <LeftIconBox>
-                {getUserPost.data?.data.likeYn === 'Y' ? (
+                {getUserPostData?.likeYn === 'Y' ? (
                   <ColoredHeartIcon
-                    likebuttonclicked={'true'}
+                    likebuttonclicked={getUserPostData?.likeYn}
                     onClick={likePostFunction}
                   />
                 ) : (
@@ -724,18 +734,18 @@ const PostWrapper = ({ postId }: PostWrapperType) => {
                 <ChatIcon onClick={() => textareaRef.current.focus()} />
                 <LocationIcon />
               </LeftIconBox>
-              {getUserPost.data?.data.bookmarkYn === 'Y' ? (
-                <BookmarkFilledIcon />
+              {getUserPostData?.bookmarkYn === 'Y' ? (
+                <BookmarkFilledIcon onClick={bookmarkPostFunction} />
               ) : (
-                <BookmarkIcon />
+                <BookmarkIcon onClick={bookmarkPostFunction} />
               )}
             </IconBox>
             <LikeAndDateBox>
-              <p>{getUserPost.data?.data.likeCount} likes</p>
-              <p>{timeForToday(getUserPost.data?.data.createdAt)}</p>
+              <p>{getUserPostData?.likeCount} likes</p>
+              <p>{timeForToday(getUserPostData?.createdAt)}</p>
             </LikeAndDateBox>
           </ButtonBox>
-          <AddCommentBox onSubmit={handleSubmit(onSubmit, onError)}>
+          <AddCommentBox onSubmit={handleSubmit(onSubmit)}>
             <SmileIcon />
             <textarea
               name="commentInput"
@@ -767,8 +777,8 @@ const PostWrapper = ({ postId }: PostWrapperType) => {
           <ModalContainer closeModal={closeModal}>
             <PostDropDownModal
               isMyPost={isMyPost}
-              postId={params.postId}
-              userId={getUserPost.data?.data.userId}
+              postId={getUserPostData?.postId}
+              userId={getUserPostData?.userId}
             />
           </ModalContainer>
         </ModalPortal>

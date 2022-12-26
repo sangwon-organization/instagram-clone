@@ -2,34 +2,30 @@ import React from 'react';
 import styled from 'styled-components';
 
 const FooterContainer = styled.footer`
-  width: 100%;
-  height: 131px;
-  background-color: ${({ theme }) => theme.bgColor};
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 100%;
+  height: 131px;
+  background-color: ${({ theme }) => theme.bgColor};
   font-size: 11.7px;
-  font-weight: normal;
-  font-stretch: normal;
-  font-style: normal;
-  line-height: 1.33;
-  letter-spacing: normal;
   color: ${({ theme }) => theme.greyTextColor};
+  line-height: 1.33;
 `;
 
 const FooterWrapper = styled.div`
-  width: 1024px;
-  height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: space-around;
   align-items: center;
+  width: 1024px;
+  height: 100%;
 `;
 
 const NavigationContainer = styled.div`
-  width: 100%;
   display: flex;
   justify-content: space-between;
+  width: 100%;
 `;
 
 const CopyrightContainer = styled.div``;

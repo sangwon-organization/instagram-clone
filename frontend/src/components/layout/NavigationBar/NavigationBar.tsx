@@ -1,8 +1,7 @@
-import React, { useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import styled from 'styled-components';
 import clonestagramLogoBlack from '../../../assets/image/clonestagramLogoBlack.png';
 import clonestagramLogoWhite from '../../../assets/image/clonestagramLogoWhite.png';
-import userAvatar from '../../../assets/image/userAvatar.png';
 import { FiSearch, FiPlusSquare, FiHeart } from 'react-icons/fi';
 import { MdCancel } from 'react-icons/md';
 import { ImCompass2 } from 'react-icons/im';
@@ -11,7 +10,6 @@ import SearchBarTooltip from './SearchBarTooltip';
 import { useNavigate } from 'react-router-dom';
 import HomeIcon from './HomeIcon';
 import AvatarDropdown from './AvatarDropdown';
-import useOutsideClick from '../../../hooks/useOutsideClick';
 import { useSelector } from 'react-redux';
 import ModalPortal from '../../feature/Modal/ModalPortal';
 import ModalContainer from '../../feature/Modal/ModalContainer';
@@ -22,38 +20,28 @@ import {
   searchUser,
 } from '../../../api/api';
 import CreatePostModal from '../../feature/Modal/CreatePostModal';
+import Loader from 'react-loader';
+import { RootState } from '../../../redux/store/configureStore';
 
 const NavigationBarContainer = styled.nav`
-  width: 100vw;
-  height: 60px;
-  border-bottom: 1px solid ${({ theme }) => theme.borderColor};
-  background: ${({ theme }) => theme.searchBarBgColor};
   display: flex;
   justify-content: center;
   align-items: center;
   position: fixed;
+  width: 100vw;
+  height: 60px;
+  border-bottom: 1px solid ${({ theme }) => theme.borderColor};
+  background: ${({ theme }) => theme.searchBarBgColor};
   z-index: 500;
-  @media ${({ theme }) => theme.tablet} {
-    width: 100vw;
-  }
-  @media ${({ theme }) => theme.mobile} {
-    width: 100vw;
-  }
 `;
 
 const NavigationBarWrapper = styled.div`
-  width: 967px;
-  height: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
   position: relative;
-  @media ${({ theme }) => theme.tablet} {
-    width: 90vw;
-  }
-  @media ${({ theme }) => theme.mobile} {
-    width: 90vw;
-  }
+  width: 967px;
+  height: 100%;
 `;
 
 const LogoWrapper = styled.div`
@@ -64,67 +52,66 @@ const LogoWrapper = styled.div`
     height: 30px;
   }
   cursor: pointer;
-  /* border: 1px solid red; */
 `;
 
 const SearchBarWrapper = styled.div<{ searchbarclicked: string }>`
-  width: 270px;
-  height: 35px;
-  background: ${({ theme }) => theme.searchBarInputColor};
-  border-radius: 10px;
   display: flex;
   justify-content: flex-start;
   align-items: center;
   position: relative;
+  width: 270px;
+  height: 35px;
+  border-radius: 10px;
+  background: ${({ theme }) => theme.searchBarInputColor};
   input {
     width: 100%;
     height: 100%;
-    background: transparent;
-    padding-left: 40px;
     padding-left: ${({ searchbarclicked }) =>
       searchbarclicked === 'true' ? '15px' : '40px'};
     border: none;
-    z-index: 10;
+    background: transparent;
     font-size: 16px;
+    color: ${({ theme }) => theme.textColor};
+    z-index: 10;
   }
 `;
 
 const MenuWrapper = styled.div`
-  width: 286px;
-  height: 52px;
-  /* border: 1px solid red; */
   display: flex;
   justify-content: space-between;
   align-items: center;
   position: relative;
+  width: 286px;
+  height: 52px;
 `;
 
 const SearchIcon = styled(FiSearch)<{ searchbarclicked: string }>`
-  width: 18px;
-  height: 18px;
-  color: ${({ theme }) => theme.greyTextColor};
+  display: ${({ searchbarclicked }) =>
+    searchbarclicked === 'true' ? 'none' : 'block'};
   position: absolute;
   top: 8px;
   left: 12px;
-  display: ${({ searchbarclicked }) =>
-    searchbarclicked === 'true' ? 'none' : 'block'};
+  width: 18px;
+  height: 18px;
+  color: ${({ theme }) => theme.greyTextColor};
 `;
 
 const UserImage = styled.img<{ showDropdown: boolean }>`
   width: 29px;
   height: 29px;
-  border-radius: 50%;
-  cursor: pointer;
   padding: 1px;
   border: 1px solid
-    ${({ showDropdown }) => (showDropdown ? '#6f6f6f' : 'transparent')};
+    ${({ showDropdown, theme }) =>
+      showDropdown ? theme.greyTextColor : 'transparent'};
+  border-radius: 50%;
+  cursor: pointer;
 `;
 
 const LocationIcon = styled(TbLocation)`
   width: 30px;
   height: 30px;
-  cursor: pointer;
   color: ${({ theme }) => theme.textColor};
+  cursor: pointer;
   &:active {
     color: ${({ theme }) => theme.greyTextColor};
   }
@@ -133,8 +120,8 @@ const LocationIcon = styled(TbLocation)`
 const PlusSquareIcon = styled(FiPlusSquare)`
   width: 30px;
   height: 30px;
-  cursor: pointer;
   color: ${({ theme }) => theme.textColor};
+  cursor: pointer;
   &:active {
     color: ${({ theme }) => theme.greyTextColor};
   }
@@ -143,8 +130,8 @@ const PlusSquareIcon = styled(FiPlusSquare)`
 const CompassIcon = styled(ImCompass2)`
   width: 30px;
   height: 30px;
-  cursor: pointer;
   color: ${({ theme }) => theme.textColor};
+  cursor: pointer;
   &:active {
     color: ${({ theme }) => theme.greyTextColor};
   }
@@ -153,23 +140,23 @@ const CompassIcon = styled(ImCompass2)`
 const HeartIcon = styled(FiHeart)`
   width: 30px;
   height: 30px;
-  cursor: pointer;
   color: ${({ theme }) => theme.textColor};
+  cursor: pointer;
   &:active {
     color: ${({ theme }) => theme.greyTextColor};
   }
 `;
 
 const CancelButton = styled(MdCancel)<{ searchbarclicked: string }>`
-  width: 17px;
-  height: 17px;
+  display: ${({ searchbarclicked }) =>
+    searchbarclicked === 'true' ? 'block' : 'none'};
   position: absolute;
   right: 15px;
+  width: 17px;
+  height: 17px;
   color: ${({ theme }) => theme.greyTextColor};
   cursor: pointer;
   z-index: 10;
-  display: ${({ searchbarclicked }) =>
-    searchbarclicked === 'true' ? 'block' : 'none'};
 `;
 
 const NavigationBar = () => {
@@ -181,7 +168,9 @@ const NavigationBar = () => {
 
   const navigate = useNavigate();
 
-  const isDarkMode = useSelector((state: any) => state.themeMode.darkMode);
+  const isDarkMode = useSelector(
+    (state: RootState) => state.themeMode.darkMode,
+  );
 
   const openModal = () => {
     setCreatePostModalOpen(true);
@@ -193,24 +182,30 @@ const NavigationBar = () => {
     document.body.style.overflow = 'unset';
   };
 
-  const searchUserQuery = useQuery(['searchUser'], () =>
-    searchUser({ page: 1, keyword: userKeyword }),
+  const {
+    data: searchUserData,
+    isSuccess: searchUserIsSuccess,
+    isLoading: searchUserIsLoading,
+  } = useQuery(
+    ['searchUser', userKeyword],
+    () => searchUser({ page: 1, keyword: userKeyword }),
+    {
+      enabled: !!userKeyword,
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
+      // initialData:userKeyword,
+    },
   );
 
-  const getRecentSearchUserListQuery = useQuery(['getSearchUserList'], () =>
-    getRecentSearchUsersList(),
+  const { data: getRecentSearchUserListData } = useQuery(
+    ['getSearchUserList'],
+    () => getRecentSearchUsersList(),
   );
 
-  const { data: getUserProfileImage } = useQuery(['getUserProfile'], () => {
+  const { data: getUserProfileImageData } = useQuery(['getUserProfile'], () => {
     const userId = Number(localStorage.getItem('userId'));
     return getUserInformation({ targetUserId: userId });
   });
-
-  // const isEmptyReset = (e: any) => {
-  //   if (e.target.value === '') {
-  //     searchUserQuery.remove();
-  //   }
-  // };
 
   return (
     <NavigationBarContainer>
@@ -234,25 +229,36 @@ const NavigationBar = () => {
               setShowTooltip(true);
               setSearchBarClicked(true);
             }}
-            onBlurCapture={(e) => (e.target.value = '')}
+            onBlurCapture={(e) => {
+              e.target.value = '';
+              setUserKeyword('');
+            }}
             onChange={(e) => {
               setUserKeyword(e.target.value);
-              console.log(searchUserQuery.data?.data.userList);
-              searchUserQuery.refetch();
             }}
           />
-          <CancelButton searchbarclicked={searchBarClicked.toString()} />
+          {searchUserIsLoading ? (
+            <Loader
+              loaded={!searchUserIsLoading}
+              color="grey"
+              scale={0.4}
+              top="50%"
+              left="90%"
+            />
+          ) : (
+            <CancelButton searchbarclicked={searchBarClicked.toString()} />
+          )}
         </SearchBarWrapper>
         <SearchBarTooltip
           showTooltip={showTooltip}
           setShowTooltip={setShowTooltip}
           setSearchBarClicked={setSearchBarClicked}
-          userList={searchUserQuery.data?.data.userList}
-          searchUserQuery={searchUserQuery}
+          searchUserIsSuccess={searchUserIsSuccess}
+          searchUserIsLoading={searchUserIsLoading}
+          userList={searchUserData?.userList}
           getRecentSearchUserListData={
-            getRecentSearchUserListQuery.data?.data.userSearchLogList
+            getRecentSearchUserListData?.userSearchLogList
           }
-          getRecentSearchUserListQuery={getRecentSearchUserListQuery}
         />
         <MenuWrapper>
           <HomeIcon />
@@ -261,7 +267,7 @@ const NavigationBar = () => {
           <CompassIcon />
           <HeartIcon />
           <UserImage
-            src={getUserProfileImage?.data.profileImage}
+            src={getUserProfileImageData?.profileImage}
             alt="유저아바타"
             onClick={() => setShowDropdown(true)}
             showDropdown={showDropdown}
@@ -275,7 +281,9 @@ const NavigationBar = () => {
       {createPostModalOpen && (
         <ModalPortal>
           <ModalContainer createPost closeModal={closeModal}>
-            <CreatePostModal />
+            <CreatePostModal
+              profileImage={getUserProfileImageData?.profileImage}
+            />
           </ModalContainer>
         </ModalPortal>
       )}

@@ -5,10 +5,6 @@ import Home from './pages/Home';
 import Profile from './pages/Profile';
 import Post from './pages/Post';
 
-interface AppRouterType {
-  isLoggedIn: boolean;
-}
-
 const LoggedOutRoutes = () => (
   <Routes>
     <Route path="/" element={<Login />} />

@@ -1,37 +1,34 @@
 import React, { useRef, useState } from 'react';
 import styled from 'styled-components';
 import { IoClose } from 'react-icons/io5';
-import userAvatar from '../../../assets/image/userAvatar.png';
 import useOutsideClick from '../../../hooks/useOutsideClick';
 import { useNavigate } from 'react-router-dom';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { addRecentSearchUser, deleteRecentSearchUser } from '../../../api/api';
+import Loader from 'react-loader';
+import { AxiosError } from 'axios';
 
-const SearchBarTooltipContainer = styled.div<{
-  showTooltip: boolean;
-  ref: any;
-}>`
+const SearchBarTooltipContainer = styled.div<{ showTooltip: boolean }>`
   display: ${({ showTooltip }) => (showTooltip ? 'block' : 'none')};
-  width: 374px;
-  height: 362px;
-  /* border: 1px solid red; */
-  border-radius: 5px;
-  filter: drop-shadow(0px 0px 10px rgba(0, 0, 0, 0.1));
   position: absolute;
-  background: ${({ theme }) => theme.dropDownBgColor};
   top: 60px;
   left: 220px;
+  width: 374px;
+  height: 362px;
+  border-radius: 5px;
+  filter: drop-shadow(0px 0px 10px rgba(0, 0, 0, 0.1));
+  background: ${({ theme }) => theme.dropDownBgColor};
   z-index: 500;
   &:after {
-    border-color: ${({ theme }) => theme.dropDownBgColor} transparent;
-    border-style: solid;
-    border-width: 0 6px 8px 6.5px;
-    content: '';
     display: block;
     position: absolute;
     top: -8px;
     right: 150px;
     width: 1px;
+    border-width: 0 6px 8px 6.5px;
+    border-style: solid;
+    border-color: ${({ theme }) => theme.dropDownBgColor} transparent;
+    content: '';
     z-index: 1;
   }
 `;
@@ -41,15 +38,15 @@ const SearchBarTooltipWrapper = styled.div`
   height: 362px;
   overflow-y: auto;
   &::-webkit-scrollbar-thumb {
-    background: rgba(147, 147, 147, 0.7);
-    border-radius: 10px;
-    background-clip: padding-box;
     border: 4px solid transparent;
+    border-radius: 10px;
+    background: #939393b2;
+    background-clip: padding-box;
     &:hover {
-      background: #939393;
-      border-radius: 10px;
-      background-clip: padding-box;
       border: 4px solid transparent;
+      border-radius: 10px;
+      background: #939393;
+      background-clip: padding-box;
     }
   }
   &::-webkit-scrollbar-track {
@@ -67,30 +64,27 @@ const TooltipHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 23px 10px 15px 10px;
-  /* border: 1px solid blue; */
+
   p {
     font-size: 16px;
     font-weight: 600;
-    /* border: 1px solid green; */
     color: ${({ theme }) => theme.textColor};
   }
   button {
-    font-size: 14px;
-    font-weight: 600;
-    color: #0095f6;
     border: none;
     background: transparent;
-    /* border: 1px solid green; */
+    font-size: 14px;
+    font-weight: 600;
+    color: ${({ theme }) => theme.buttonColor};
   }
 `;
 
 const RecentSearchItem = styled.div`
-  width: 100%;
-  height: 60px;
-  /* border: 1px solid pink; */
   display: flex;
   justify-content: flex-start;
   align-items: center;
+  width: 100%;
+  height: 60px;
   padding: 0 15px 0 10px;
   &:hover {
     background: ${({ theme }) => theme.bgColor};
@@ -99,24 +93,30 @@ const RecentSearchItem = styled.div`
   &:active {
     opacity: 0.7;
   }
+  &:first-child {
+    margin-top: 10px;
+  }
+  &:last-child {
+    margin-bottom: 10px;
+  }
 `;
 
 const UserAvatar = styled.div`
-  width: 54px;
-  height: 54px;
-  border-radius: 50%;
-  border: 2px solid transparent;
   display: flex;
   justify-content: center;
   align-items: center;
-  cursor: pointer;
+  width: 54px;
+  height: 54px;
+  border: 2px solid transparent;
+  border-radius: 50%;
   background-image: linear-gradient(
       ${({ theme }) => theme.searchBarBgColor},
       ${({ theme }) => theme.searchBarBgColor}
     ),
-    linear-gradient(to right, red 0%, orange 100%);
+    linear-gradient(to right, #ff0000 0%, #ffa500 100%);
   background-origin: border-box;
   background-clip: content-box, border-box;
+  cursor: pointer;
   img {
     width: 44px;
     height: 44px;
@@ -126,23 +126,22 @@ const UserAvatar = styled.div`
 `;
 
 const UserInfo = styled.div`
-  width: 250px;
-  height: 100%;
-  /* border: 1px solid red; */
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: 3px 0;
+  width: 250px;
+  height: 100%;
   margin-left: 10px;
   p:nth-child(1) {
-    color: ${({ theme }) => theme.textColor};
     font-size: 14px;
     font-weight: 600;
+    color: ${({ theme }) => theme.textColor};
   }
   p:nth-child(2) {
-    color: ${({ theme }) => theme.greyTextColor};
     font-size: 14px;
     font-weight: 400;
+    color: ${({ theme }) => theme.greyTextColor};
   }
 `;
 
@@ -154,11 +153,11 @@ const CloseIcon = styled(IoClose)`
 `;
 
 const EmptyRecentSearch = styled.div`
-  width: 100%;
-  height: 300px;
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 100%;
+  height: 100%;
   p {
     font-size: 14px;
     font-weight: 600;
@@ -166,69 +165,87 @@ const EmptyRecentSearch = styled.div`
   }
 `;
 
-interface SearchBarTooltipProps {
-  showTooltip: boolean;
-  setShowTooltip: Function;
-  setSearchBarClicked: Function;
-  userList: [];
-  searchUserQuery: any;
-  getRecentSearchUserListData: [];
-  getRecentSearchUserListQuery: any;
-}
-
 const SearchBarTooltip = ({
   showTooltip,
   setShowTooltip,
   setSearchBarClicked,
   userList,
-  searchUserQuery,
+  searchUserIsLoading,
+  searchUserIsSuccess,
   getRecentSearchUserListData,
-  getRecentSearchUserListQuery,
-}: SearchBarTooltipProps) => {
+}: SearchBarTooltipType) => {
   const outsideRef = useRef();
   const [recentSearch, setRecentSearch] = useState(true);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   useOutsideClick(outsideRef, () => {
     setShowTooltip(false);
     setSearchBarClicked(false);
-    searchUserQuery.remove();
+    // searchUserQuery.remove();
   });
-  console.log(getRecentSearchUserListQuery);
+  // console.log(getRecentSearchUserListQuery);
 
-  const addSearchUserQuery = useMutation(addRecentSearchUser, {
-    onError: (err: any) => {
-      console.log(err.response.data);
+  const addSearchUserQuery = useMutation<
+    ResponseData,
+    AxiosError,
+    AddRecentSearchUserType
+  >(addRecentSearchUser, {
+    onError: (err) => {
+      console.log('최근 검색 유저 추가 에러!', err.response.data);
     },
-    onSuccess: (userInfo: any) => {
+    onSuccess: () => {
       console.log('최근 검색 유저 추가 성공!');
-      console.log(addSearchUserQuery.data);
+      // console.log(addSearchUserQuery.data);
+      queryClient.invalidateQueries(['getSearchUserList']);
     },
   });
 
-  const deleteSearchUserQuery = useMutation(deleteRecentSearchUser, {
-    onError: (err: any) => {
-      console.log(err.response.data);
+  const deleteSearchUserQuery = useMutation<
+    ResponseData,
+    AxiosError,
+    DeleteRecentSearchUserType
+  >(deleteRecentSearchUser, {
+    onError: (err) => {
+      console.log('최근 검색 유저 삭제 에러!', err.response.data);
     },
-    onSuccess: (userInfo: any) => {
+    onSuccess: () => {
       console.log('최근 검색 유저 삭제 성공!');
-      console.log(deleteSearchUserQuery.data);
+      // console.log(deleteSearchUserQuery.data);
+      queryClient.invalidateQueries(['getSearchUserList']);
     },
   });
-  return (
-    <SearchBarTooltipContainer showTooltip={showTooltip} ref={outsideRef}>
-      <SearchBarTooltipWrapper>
-        <TooltipHeader>
-          <p>Recent</p>
-          <button>Clear all</button>
-        </TooltipHeader>
-        {userList?.length > 0 ? (
-          userList.map((list: any) => (
-            <>
+
+  if (searchUserIsLoading) {
+    return (
+      <SearchBarTooltipContainer showTooltip={showTooltip} ref={outsideRef}>
+        <SearchBarTooltipWrapper>
+          <EmptyRecentSearch>
+            <Loader
+              loaded={!searchUserIsLoading}
+              color="#8e8e8e"
+              scale={0.5}
+              top="50%"
+              left="50%"
+            />
+          </EmptyRecentSearch>
+        </SearchBarTooltipWrapper>
+      </SearchBarTooltipContainer>
+    );
+  }
+
+  if (searchUserIsSuccess) {
+    return (
+      <SearchBarTooltipContainer showTooltip={showTooltip} ref={outsideRef}>
+        <SearchBarTooltipWrapper>
+          {userList.length > 0 ? (
+            userList.map((list: followerImFollowingListType) => (
               <RecentSearchItem
-                key={list.userId}
                 onClick={(e) => {
+                  e.stopPropagation();
                   navigate(`/user/${list.userId}`);
+                  setShowTooltip(false);
+                  // window.location.reload();
                   addSearchUserQuery.mutate({ toUserId: list.userId });
                 }}>
                 <UserAvatar>
@@ -239,15 +256,32 @@ const SearchBarTooltip = ({
                   <p>{list.name}</p>
                 </UserInfo>
               </RecentSearchItem>
-            </>
-          ))
-        ) : getRecentSearchUserListData?.length > 0 ? (
-          getRecentSearchUserListData.map((list: any) => (
-            <>
+            ))
+          ) : (
+            <EmptyRecentSearch>
+              <p>No results found.</p>
+            </EmptyRecentSearch>
+          )}
+        </SearchBarTooltipWrapper>
+      </SearchBarTooltipContainer>
+    );
+  }
+
+  return (
+    <SearchBarTooltipContainer showTooltip={showTooltip} ref={outsideRef}>
+      <SearchBarTooltipWrapper>
+        <TooltipHeader>
+          <p>Recent</p>
+          <button>Clear all</button>
+        </TooltipHeader>
+        {getRecentSearchUserListData?.length > 0 ? (
+          getRecentSearchUserListData.map(
+            (list: followerImFollowingListType) => (
               <RecentSearchItem
-                key={list.userId}
                 onClick={() => {
+                  setShowTooltip(false);
                   navigate(`/user/${list.userId}`);
+                  // window.location.reload();
                   addSearchUserQuery.mutate({ toUserId: list.userId });
                 }}>
                 <UserAvatar>
@@ -258,16 +292,13 @@ const SearchBarTooltip = ({
                   <p>{list.name}</p>
                 </UserInfo>
                 <CloseIcon
-                  onClick={(e: any) => {
-                    e.stopPropagation();
+                  onClick={() => {
                     deleteSearchUserQuery.mutate({ toUserId: list.userId });
-                    getRecentSearchUserListQuery.refetch();
-                    console.log(getRecentSearchUserListQuery);
                   }}
                 />
               </RecentSearchItem>
-            </>
-          ))
+            ),
+          )
         ) : (
           <EmptyRecentSearch>
             <p>No recent searches.</p>

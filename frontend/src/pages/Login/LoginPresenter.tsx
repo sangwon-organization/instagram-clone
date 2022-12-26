@@ -6,15 +6,14 @@ import Footer from '../../components/layout/footer/Footer';
 import { useSelector } from 'react-redux';
 
 const LoginWrapper = styled.div`
-  width: 100%;
-  height: fit-content;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: #fafafa;
-  /* border: 1px solid blue; */
+  width: 100%;
+  height: fit-content;
   padding: 20px 0;
+  background: ${({ theme }) => theme.bgColor};
 `;
 
 const LoginPresenter = () => {

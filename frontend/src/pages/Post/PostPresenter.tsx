@@ -5,11 +5,11 @@ import NavigationBar from '../../components/layout/NavigationBar/NavigationBar';
 import PostWrapper from '../../components/feature/Post/PostWrapper';
 
 const Container = styled.div`
-  width: 100%;
-  height: 75vh;
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 100%;
+  height: 75vh;
   padding-top: 60px;
 `;
 
@@ -20,12 +20,10 @@ interface PostPresenterType {
   commentPostIsLoading: boolean;
   navigate: any;
   currentSlide: number;
-  getUserPost: any;
   slideRef: any;
   totalSlide: number;
   textareaRef: any;
   onSubmit: Function;
-  onError: Function;
   isValid: any;
   postButtonRef: any;
   register: any;
@@ -50,12 +48,10 @@ const PostPresenter = ({
   commentPostIsLoading,
   navigate,
   currentSlide,
-  getUserPost,
   slideRef,
   totalSlide,
   textareaRef,
   onSubmit,
-  onError,
   isValid,
   postButtonRef,
   register,

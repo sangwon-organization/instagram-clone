@@ -1,18 +1,19 @@
-import { useQuery } from '@tanstack/react-query';
-import React from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { getNotFollowingList, getUserInformation } from '../../../api/api';
-import userAvatar from '../../../assets/image/userAvatar.png';
+import {
+  followingUser,
+  getNotFollowingList,
+  getUserInformation,
+} from '../../../api/api';
+import { AxiosError } from 'axios';
+import SugesstionItem from './SugesstionItem';
 
 const HomeAsideContainer = styled.aside`
   width: 319px;
   height: 984px;
-  /* border: 1px solid red; */
   margin-top: 55px;
-  @media ${({ theme }) => theme.tablet} {
-    display: none;
-  }
 `;
 
 const UserAccountWrapper = styled.div`
@@ -32,20 +33,20 @@ const UserAccountWrapper = styled.div`
     height: 16px;
     border: none;
     background: transparent;
-    color: #0095f6;
     font-size: 12px;
     font-weight: 600;
+    color: ${({ theme }) => theme.buttonColor};
   }
 `;
 
 const UserInfoWrapper = styled.div`
-  width: 209px;
-  height: 30px;
   display: flex;
   flex-direction: column;
-  gap: 5px 0;
   justify-content: center;
   align-items: flex-start;
+  gap: 5px 0;
+  width: 209px;
+  height: 30px;
 
   p:nth-child(1) {
     font-size: 14px;
@@ -66,80 +67,33 @@ const SuggestionsWrapper = styled.div`
 `;
 
 const SuggestionsHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   width: 100%;
   height: 19px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   margin-top: 8px;
   p {
-    color: ${({ theme }) => theme.greyTextColor};
     font-size: 14px;
     font-weight: 600;
+    color: ${({ theme }) => theme.greyTextColor};
   }
   button {
-    color: ${({ theme }) => theme.textColor};
-    font-size: 12px;
-    font-weight: 600;
-    border: none;
-    background: transparent;
     padding: 0;
-  }
-`;
-
-const SuggestionsItem = styled.div`
-  width: 100%;
-  height: 48px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 0 8px 3px;
-  /* border: 1px solid blue; */
-  img {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-  }
-  button {
-    width: 38px;
-    height: 16px;
     border: none;
     background: transparent;
-    color: #0095f6;
     font-size: 12px;
-    font-weight: 600;
-  }
-`;
-
-const ItemUserInfoWrapper = styled.div`
-  width: 209px;
-  height: 30px;
-  display: flex;
-  flex-direction: column;
-  gap: 5px 0;
-  justify-content: center;
-  align-items: flex-start;
-
-  p:nth-child(1) {
-    font-size: 14px;
     font-weight: 600;
     color: ${({ theme }) => theme.textColor};
-    cursor: pointer;
-  }
-  p:nth-child(2) {
-    font-size: 12px;
-    font-weight: 400;
-    color: ${({ theme }) => theme.greyTextColor};
   }
 `;
 
 const AsideFooter = styled.footer`
-  width: 250px;
-  height: 74.5px;
-  /* border: 1px solid pink; */
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  width: 250px;
+  height: 74.5px;
   margin-top: 30px;
 `;
 
@@ -147,20 +101,20 @@ const FooterItems = styled.ul`
   display: flex;
   flex-wrap: wrap;
   li {
-    line-height: 18px;
     font-size: 12px;
     font-weight: 400;
+    line-height: 18px;
     color: ${({ theme }) => theme.footerTextColor};
     cursor: pointer;
     &:hover {
       text-decoration: underline;
     }
-  }
-  li::after {
-    content: '∙';
-  }
-  li:last-child::after {
-    content: '';
+    &::after {
+      content: '∙';
+    }
+    &:last-child::after {
+      content: '';
+    }
   }
 `;
 
@@ -172,31 +126,46 @@ const Copyright = styled.div`
 
 const HomeAside = () => {
   const navigate = useNavigate();
+  // const [isFollowing, setIsFollowing] = useState();
 
-  const getNotFollowingListQuery = useQuery(['getNotFollowingList'], () =>
-    getNotFollowingList(),
-  );
+  const queryClient = useQueryClient();
 
-  const { data: getUserInformData } = useQuery(['getUserInform'], () => {
+  const { data: getNotFollowingListData } = useQuery<
+    getNotFollowingListType,
+    AxiosError
+  >(['getNotFollowingList'], () => getNotFollowingList(), {
+    refetchOnWindowFocus: false,
+  });
+  console.log(getNotFollowingListData);
+  const { data: getUserInformData } = useQuery<
+    GetUserInformationDataType,
+    AxiosError
+  >(['getUserInform'], () => {
     const userId = Number(localStorage.getItem('userId'));
     return getUserInformation({ targetUserId: userId });
   });
 
   const userId = localStorage.getItem('userId');
 
+  // const toggleIsFollowing = () => {
+  //   const [isFollowing, setIsFollowing] = useState(false);
+  //   setIsFollowing((prev) => !prev);
+
+  // };
+
   return (
     <HomeAsideContainer>
       <UserAccountWrapper>
         <img
-          src={getUserInformData?.data.profileImage}
+          src={getUserInformData?.profileImage}
           alt="유저아바타"
           onClick={() => navigate(`/user/${userId}`)}
         />
         <UserInfoWrapper>
           <p onClick={() => navigate(`/user/${userId}`)}>
-            {getUserInformData?.data.username}
+            {getUserInformData?.username}
           </p>
-          <p>{getUserInformData?.data.name}</p>
+          <p>{getUserInformData?.name}</p>
         </UserInfoWrapper>
         <button>Switch</button>
       </UserAccountWrapper>
@@ -205,18 +174,11 @@ const HomeAside = () => {
           <p>Suggestions For You</p>
           <button>See All</button>
         </SuggestionsHeader>
-        {getNotFollowingListQuery.data?.data.followingList.map((list: any) => (
-          <SuggestionsItem key={list.userId}>
-            <img src={list.profileImage} alt="유저아바타" />
-            <ItemUserInfoWrapper>
-              <p onClick={() => navigate(`/user/${list.userId}`)}>
-                {list.username}
-              </p>
-              <p>Suggested for you</p>
-            </ItemUserInfoWrapper>
-            <button>Follow</button>
-          </SuggestionsItem>
-        ))}
+        {getNotFollowingListData?.followingList.map(
+          (list: followerImFollowingListType) => (
+            <SugesstionItem key={list.userId} list={list} />
+          ),
+        )}
       </SuggestionsWrapper>
       <AsideFooter>
         <FooterItems>
