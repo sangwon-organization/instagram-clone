@@ -12,7 +12,18 @@ const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement,
 );
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      onError: (error: any) => {
+        if (error.response?.data.code === 401) {
+          localStorage.removeItem('accessToken');
+          window.location.reload();
+        }
+      },
+    },
+  },
+});
 
 root.render(
   <Provider store={store}>

@@ -118,7 +118,6 @@ const AvatarDropdown = ({
           first
           onClick={() => {
             navigate(`/user/${userId}`);
-            window.location.reload();
           }}>
           <ProfileIcon />
           <p>Profile</p>

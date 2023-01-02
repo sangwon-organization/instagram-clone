@@ -128,6 +128,9 @@ interface MetaTagType {
 interface HomePresenterType {
   getPostsData: any;
   scrollRef: any;
+  hasNextPage: any;
+  fetchNextPage: any;
+  isFetchingNextPage: boolean;
 }
 
 interface ProfilePresenterType {
@@ -138,10 +141,14 @@ interface ProfilePresenterType {
   imageRef: any;
   onSubmit: any;
   handleSubmit: any;
-  isLoading: any;
+  isLoading: boolean;
   isMyPage: boolean;
-  followingUserIsLoading: any;
+  followingUserIsLoading: boolean;
   userFollowingUnFollowing: any;
+  followerImFollowingList: any;
+  followerImFollowingRestCount: any;
+  getUserInformationLoading: boolean;
+  getUserInformationError: any;
 }
 
 interface MiddleBoxType {
@@ -154,9 +161,8 @@ interface SearchBarTooltipType {
   setShowTooltip: Function;
   setSearchBarClicked: Function;
   userList: [];
-  searchUserIsLoading: boolean;
+  searchUserIsFetching: boolean;
   searchUserIsSuccess: boolean;
-  getRecentSearchUserListData: [];
 }
 
 interface AvatarDropdownType {
@@ -173,6 +179,7 @@ interface PostType {
 
 interface PostWrapperType {
   postId: number;
+  setShowPostModal?: any;
 }
 
 interface CommentsListBoxType {
@@ -181,34 +188,38 @@ interface CommentsListBoxType {
 }
 
 interface CreatePostModalType {
-  profileImage: any;
+  profileImage: string;
 }
 
 interface DeleteConfirmModalType {
   postId: number;
   userId: number;
+  closeModal: any;
 }
 
 interface CommentItemType {
-  profileImage: any;
-  username: any;
-  content: any;
-  likeCount: any;
-  commentId: any;
-  createdAt: any;
-  likeYn: any;
-  userId: any;
+  profileImage: string;
+  username: string;
+  content: string;
+  likeCount: number;
+  commentId: number;
+  createdAt: Date;
+  likeYn: string;
+  userId: number;
+  setShowPostModal: any;
 }
 
 interface PostDropDownModalType {
   isMyPost: boolean;
   postId: number;
   userId: number;
+  closeModal: any;
 }
 
 interface CommentDropDownModalType {
   commentId: number;
   userId: number;
+  setShowCommentDropDown: any;
 }
 
 interface FeedCardType {

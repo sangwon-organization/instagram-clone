@@ -152,6 +152,9 @@ const HomeAside = () => {
   //   setIsFollowing((prev) => !prev);
 
   // };
+  const today = new Date();
+
+  const todayYear = today.getFullYear();
 
   return (
     <HomeAsideContainer>
@@ -192,7 +195,7 @@ const HomeAside = () => {
           <li>Locations</li>
           <li>Language</li>
         </FooterItems>
-        <Copyright>© 2022 CLONESTAGRAM</Copyright>
+        <Copyright>© {todayYear} CLONESTAGRAM</Copyright>
       </AsideFooter>
     </HomeAsideContainer>
   );

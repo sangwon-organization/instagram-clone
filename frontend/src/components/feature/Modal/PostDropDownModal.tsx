@@ -39,13 +39,20 @@ const PostDropDownModal = ({
   isMyPost,
   postId,
   userId,
+  closeModal,
 }: PostDropDownModalType) => {
   const [deleteButtonClicked, setdeleteButtonClicked] = useState(false);
   const navigate = useNavigate();
   const { postId: urlPostId } = useParams();
 
   if (deleteButtonClicked) {
-    return <DeleteConfirmModal postId={postId} userId={userId} />;
+    return (
+      <DeleteConfirmModal
+        postId={postId}
+        userId={userId}
+        closeModal={closeModal}
+      />
+    );
   }
 
   return (
@@ -61,12 +68,20 @@ const PostDropDownModal = ({
       {isMyPost && <Button>Unhide like count</Button>}
       {isMyPost && <Button>Turn on Commenting</Button>}
       {!urlPostId && (
-        <Button onClick={() => navigate(`/post/${postId}`)}>Go to post</Button>
+        <Button
+          onClick={() => {
+            navigate(`/post/${postId}`);
+            document.body.style.overflow = 'unset';
+          }}>
+          Go to post
+        </Button>
       )}
       <Button>Share to...</Button>
       <Button>Copy link</Button>
       <Button>Embed</Button>
-      <Button last>Cancel</Button>
+      <Button last onClick={closeModal}>
+        Cancel
+      </Button>
     </Container>
   );
 };

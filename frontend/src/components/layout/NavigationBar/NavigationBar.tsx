@@ -13,7 +13,7 @@ import AvatarDropdown from './AvatarDropdown';
 import { useSelector } from 'react-redux';
 import ModalPortal from '../../feature/Modal/ModalPortal';
 import ModalContainer from '../../feature/Modal/ModalContainer';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   getRecentSearchUsersList,
   getUserInformation,
@@ -22,6 +22,7 @@ import {
 import CreatePostModal from '../../feature/Modal/CreatePostModal';
 import Loader from 'react-loader';
 import { RootState } from '../../../redux/store/configureStore';
+import theme from '../../../styles/theme';
 
 const NavigationBarContainer = styled.nav`
   display: flex;
@@ -71,7 +72,8 @@ const SearchBarWrapper = styled.div<{ searchbarclicked: string }>`
     border: none;
     background: transparent;
     font-size: 16px;
-    color: ${({ theme }) => theme.textColor};
+    color: ${({ theme, searchbarclicked }) =>
+      searchbarclicked === 'true' ? theme.textColor : theme.greyTextColor};
     z-index: 10;
   }
 `;
@@ -185,7 +187,7 @@ const NavigationBar = () => {
   const {
     data: searchUserData,
     isSuccess: searchUserIsSuccess,
-    isLoading: searchUserIsLoading,
+    isFetching: searchUserIsFetching,
   } = useQuery(
     ['searchUser', userKeyword],
     () => searchUser({ page: 1, keyword: userKeyword }),
@@ -193,13 +195,7 @@ const NavigationBar = () => {
       enabled: !!userKeyword,
       refetchOnMount: false,
       refetchOnWindowFocus: false,
-      // initialData:userKeyword,
     },
-  );
-
-  const { data: getRecentSearchUserListData } = useQuery(
-    ['getSearchUserList'],
-    () => getRecentSearchUsersList(),
   );
 
   const { data: getUserProfileImageData } = useQuery(['getUserProfile'], () => {
@@ -229,17 +225,17 @@ const NavigationBar = () => {
               setShowTooltip(true);
               setSearchBarClicked(true);
             }}
-            onBlurCapture={(e) => {
-              e.target.value = '';
-              setUserKeyword('');
+            onBlurCapture={(e: React.FocusEvent<HTMLInputElement, Element>) => {
+              e.target.value = userKeyword;
+              setSearchBarClicked(false);
             }}
-            onChange={(e) => {
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
               setUserKeyword(e.target.value);
             }}
           />
-          {searchUserIsLoading ? (
+          {searchUserIsFetching ? (
             <Loader
-              loaded={!searchUserIsLoading}
+              loaded={!searchUserIsFetching}
               color="grey"
               scale={0.4}
               top="50%"
@@ -254,11 +250,8 @@ const NavigationBar = () => {
           setShowTooltip={setShowTooltip}
           setSearchBarClicked={setSearchBarClicked}
           searchUserIsSuccess={searchUserIsSuccess}
-          searchUserIsLoading={searchUserIsLoading}
+          searchUserIsFetching={searchUserIsFetching}
           userList={searchUserData?.userList}
-          getRecentSearchUserListData={
-            getRecentSearchUserListData?.userSearchLogList
-          }
         />
         <MenuWrapper>
           <HomeIcon />

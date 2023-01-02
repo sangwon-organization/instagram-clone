@@ -84,7 +84,11 @@ const SugesstionItem = ({ list }: SugesstionItemType) => {
     <SuggestionsItem
       key={list.userId}
       followbuttonclicked={followButtonClicked}>
-      <img src={list.profileImage} alt="유저아바타" />
+      <img
+        src={list.profileImage}
+        alt="유저아바타"
+        onClick={() => navigate(`/user/${list.userId}`)}
+      />
       <ItemUserInfoWrapper>
         <p onClick={() => navigate(`/user/${list.userId}`)}>{list.username}</p>
         <p>Suggested for you</p>

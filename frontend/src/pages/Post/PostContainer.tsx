@@ -25,9 +25,16 @@ const PostContainer = () => {
 
   const myUserId = parseInt(localStorage.getItem('userId'));
 
-  const { data: getUserPostData } = useQuery<GetPostQueryType, AxiosError>(
+  const {
+    data: getUserPostData,
+    error: getPostError,
+    isLoading: getPostLoading,
+  } = useQuery<GetPostQueryType, AxiosError<Error>>(
     ['getPost', postId],
     () => getPost(postId),
+    {
+      refetchOnWindowFocus: false,
+    },
   );
 
   const isMyPost = myUserId === getUserPostData?.userId;
@@ -172,6 +179,8 @@ const PostContainer = () => {
         closeModal={closeModal}
         isMyPost={isMyPost}
         postId={postId}
+        getPostError={getPostError}
+        getPostLoading={getPostLoading}
       />
     </>
   );

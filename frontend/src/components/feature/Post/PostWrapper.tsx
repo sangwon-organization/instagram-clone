@@ -1,7 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { HiOutlineEmojiHappy } from 'react-icons/hi';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  useInfiniteQuery,
+} from '@tanstack/react-query';
 import {
   bookmarkPost,
   commentPost,
@@ -14,7 +19,7 @@ import Loader from 'react-loader';
 import { RiChat3Line } from 'react-icons/ri';
 import { TbLocation } from 'react-icons/tb';
 import { BsHeart, BsHeartFill } from 'react-icons/bs';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { FaBookmark, FaCircle, FaRegBookmark } from 'react-icons/fa';
 import {
   IoIosArrowDropleftCircle,
@@ -27,6 +32,8 @@ import ModalContainer from '../Modal/ModalContainer';
 import PostDropDownModal from '../Modal/PostDropDownModal';
 import CommentItem from './CommentItem';
 import { AxiosError } from 'axios';
+import { BiPlusCircle } from 'react-icons/bi';
+import { getCommentsList } from '../../../api/api';
 
 const Wrapper = styled.div`
   width: 930px;
@@ -53,9 +60,10 @@ const ImageWrapper = styled.div`
   align-items: center;
   width: 100%;
   height: 100%;
+  aspect-ratio: 4/5;
   img {
     width: 100%;
-    height: fit-content;
+    height: 100%;
     object-fit: cover;
     background: black;
     flex: none;
@@ -125,14 +133,24 @@ const PostHeader = styled.div`
 `;
 
 const CommentsListBox = styled.div`
-  border-bottom: 1px solid ${({ theme }) => theme.ultraLightGreyColor};
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   width: 100%;
   height: 485px;
   padding: 10px;
+  border-bottom: 1px solid ${({ theme }) => theme.ultraLightGreyColor};
   overflow-y: scroll;
   &::-webkit-scrollbar {
     display: none;
   }
+`;
+
+const MoreCommentIcon = styled(BiPlusCircle)`
+  font-size: 25px;
+  color: ${({ theme }) => theme.textColor};
+  /* margin: 10px; */
+  cursor: pointer;
 `;
 
 const PostBottom = styled.div`
@@ -172,7 +190,7 @@ const AddCommentBox = styled.form`
   }
 `;
 
-const BigLikedIcon = styled(BsHeartFill)<{ likebuttonclicked: boolean }>`
+const BigLikedIcon = styled(BsHeartFill)<{ likebuttonclicked: string }>`
   width: 80px;
   height: 80px;
   color: #fff;
@@ -184,7 +202,7 @@ const BigLikedIcon = styled(BsHeartFill)<{ likebuttonclicked: boolean }>`
   filter: drop-shadow(5px 5px 30px rgba(0, 0, 0, 0.7));
   opacity: 0;
   animation: ${({ likebuttonclicked }) =>
-    likebuttonclicked && 'bigPostLike 2s ease-in-out'};
+    likebuttonclicked === 'true' && 'bigPostLike 2s ease-in-out'};
   @keyframes bigPostLike {
     0%,
     to {
@@ -487,8 +505,13 @@ const ReplyBox = styled.div`
   }
 `;
 
-const PostWrapper = ({ postId }: PostWrapperType) => {
-  const [likeButtonClicked, setLikeButtonClicked] = useState(false);
+const NextPageIconBox = styled.div<{ hasnextpage: boolean }>`
+  margin: 10px;
+  display: ${({ hasnextpage }) => (hasnextpage ? 'block' : 'none')};
+`;
+
+const PostWrapper = ({ postId, setShowPostModal }: PostWrapperType) => {
+  const [likeButtonClicked, setLikeButtonClicked] = useState('false');
   const [showCommentMenuIcon, setShowCommentMenuIcon] = useState(false);
 
   const textareaRef = useRef(null);
@@ -504,14 +527,40 @@ const PostWrapper = ({ postId }: PostWrapperType) => {
     getPost(postId),
   );
 
+  const {
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isFetching,
+    isLoading,
+    data: getCommentsListData,
+  } = useInfiniteQuery(
+    ['getCommentsList'],
+    ({ pageParam = 1 }) => getCommentsList({ page: pageParam, postId: postId }),
+    {
+      getNextPageParam: (lastPage: any, allPages: any) => {
+        console.log(allPages);
+        if (lastPage.commentList.length === 20) {
+          return allPages.length + 1;
+        } else {
+          return false;
+        }
+      },
+
+      getPreviousPageParam: (firstPage: number, allPages: any) => undefined,
+    },
+  );
+
+  console.log(getCommentsListData?.pages);
+
   const totalSlide = getUserPostData?.postImageList.length;
 
   console.log(getUserPostData);
 
   const doubleClickImage = () => {
-    setLikeButtonClicked(true);
+    setLikeButtonClicked('true');
     setTimeout(() => {
-      setLikeButtonClicked(false);
+      setLikeButtonClicked('false');
     }, 1200);
   };
 
@@ -553,7 +602,7 @@ const PostWrapper = ({ postId }: PostWrapperType) => {
     },
     onSuccess: () => {
       console.log('댓글 등록 성공!');
-      queryClient.invalidateQueries(['getPost']);
+      queryClient.invalidateQueries(['getCommentsList']);
       textareaRef.current.value = '';
       textareaRef.current.focus();
     },
@@ -617,21 +666,21 @@ const PostWrapper = ({ postId }: PostWrapperType) => {
     }
   };
 
+  const location = useLocation().pathname;
+
   useEffect(() => {
     slideRef.current.style.transition = 'all 0.5s ease-in-out';
     slideRef.current.style.transform = `translateX(-${currentSlide}00%)`;
-  }, [currentSlide]);
+  }, [location, currentSlide]);
 
   const [showPostDropdown, setShowPostDropdown] = useState(false);
 
   const openModal = () => {
     setShowPostDropdown(true);
-    document.body.style.overflow = 'hidden';
   };
 
   const closeModal = () => {
     setShowPostDropdown(false);
-    document.body.style.overflow = 'unset';
   };
 
   const myUserId = parseInt(localStorage.getItem('userId'));
@@ -671,9 +720,24 @@ const PostWrapper = ({ postId }: PostWrapperType) => {
         <PostHeader>
           <UserInfo>
             <UserAvatar>
-              <img src={getUserPostData?.profileImage} alt="유저아바타" />
+              <img
+                src={getUserPostData?.profileImage}
+                alt="유저아바타"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/user/${getUserPostData?.userId}`);
+                  setShowPostModal(false);
+                  document.body.style.overflow = 'unset';
+                }}
+              />
             </UserAvatar>
-            <p onClick={() => navigate(`/user/${getUserPostData?.userId}`)}>
+            <p
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/user/${getUserPostData?.userId}`);
+                setShowPostModal(false);
+                document.body.style.overflow = 'unset';
+              }}>
               {getUserPostData?.username}
             </p>
           </UserInfo>
@@ -683,14 +747,25 @@ const PostWrapper = ({ postId }: PostWrapperType) => {
           <CommentBox>
             <AvatarBox>
               <UserAvatar>
-                <img src={getUserPostData?.profileImage} alt="유저아바타" />
+                <img
+                  src={getUserPostData?.profileImage}
+                  alt="유저아바타"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/user/${getUserPostData?.userId}`);
+                    setShowPostModal(false);
+                    document.body.style.overflow = 'unset';
+                  }}
+                />
               </UserAvatar>
             </AvatarBox>
             <Comment>
               <span
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   navigate(`/user/${getUserPostData?.userId}`);
-                  closeModal();
+                  setShowPostModal(false);
+                  document.body.style.overflow = 'unset';
                 }}>
                 {getUserPostData?.username}
               </span>
@@ -700,24 +775,43 @@ const PostWrapper = ({ postId }: PostWrapperType) => {
               </OptionBox>
             </Comment>
           </CommentBox>
-          {getUserPostData?.commentList
-            .sort(
-              (a: CommentType, b: CommentType) =>
-                +new Date(b.createdAt) - +new Date(a.createdAt),
-            )
-            .map((comment: CommentType) => (
-              <CommentItem
-                key={comment.commentId}
-                commentId={comment.commentId}
-                content={comment.content}
-                createdAt={comment.createdAt}
-                likeYn={comment.likeYn}
-                likeCount={comment.likeCount}
-                profileImage={comment.profileImage}
-                userId={comment.userId}
-                username={comment.username}
+          {getCommentsListData?.pages.map((page: GetCommentsListQueryType) =>
+            page.commentList
+              .sort(
+                (a: CommentType, b: CommentType) =>
+                  +new Date(b.createdAt) - +new Date(a.createdAt),
+              )
+              .map((comment: CommentType) => (
+                <CommentItem
+                  key={comment.commentId}
+                  commentId={comment.commentId}
+                  content={comment.content}
+                  createdAt={comment.createdAt}
+                  likeYn={comment.likeYn}
+                  likeCount={comment.likeCount}
+                  profileImage={comment.profileImage}
+                  userId={comment.userId}
+                  username={comment.username}
+                  setShowPostModal={setShowPostModal}
+                />
+              )),
+          )}
+
+          <NextPageIconBox hasnextpage={hasNextPage}>
+            {isFetchingNextPage && (
+              <Loader
+                loaded={!isFetchingNextPage}
+                color="#8e8e8e"
+                scale={0.5}
+                top="50%"
+                left="50%"
+                position="relative"
               />
-            ))}
+            )}
+            {hasNextPage && !isFetchingNextPage && (
+              <MoreCommentIcon onClick={() => fetchNextPage()} />
+            )}
+          </NextPageIconBox>
         </CommentsListBox>
         <PostBottom>
           <ButtonBox>
@@ -779,6 +873,7 @@ const PostWrapper = ({ postId }: PostWrapperType) => {
               isMyPost={isMyPost}
               postId={getUserPostData?.postId}
               userId={getUserPostData?.userId}
+              closeModal={closeModal}
             />
           </ModalContainer>
         </ModalPortal>

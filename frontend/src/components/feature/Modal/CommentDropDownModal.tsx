@@ -43,6 +43,7 @@ const Button = styled.button<{
 const CommentDropDownModal = ({
   commentId,
   userId,
+  setShowCommentDropDown,
 }: CommentDropDownModalType) => {
   //   const [deleteButtonClicked, setdeleteButtonClicked] = useState(false);
   //   const { postId: urlPostId } = useParams();
@@ -60,7 +61,7 @@ const CommentDropDownModal = ({
     },
     onSuccess: () => {
       console.log('댓글 삭제 성공!');
-      queryClient.invalidateQueries(['getPost']);
+      queryClient.invalidateQueries(['getCommentsList']);
     },
   });
 
@@ -80,7 +81,9 @@ const CommentDropDownModal = ({
           Delete
         </Button>
       )}
-      <Button last>Cancel</Button>
+      <Button last onClick={() => setShowCommentDropDown(false)}>
+        Cancel
+      </Button>
     </Container>
   );
 };

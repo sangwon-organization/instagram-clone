@@ -1,7 +1,7 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import MetaTag from '../../meta/MetaTag';
 import ProfilePresenter from '../Profile/ProfilePresenter';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   followingUser,
@@ -44,7 +44,10 @@ const ProfileContainer = () => {
       },
       onSuccess: () => {
         console.log('유저이미지 등록 성공!');
-        queryClient.invalidateQueries(['getUserInformation', 'getUserProfile']);
+        Promise.all([
+          queryClient.invalidateQueries(['getUserInformation']),
+          queryClient.invalidateQueries(['getUserProfile']),
+        ]);
       },
     },
   );
@@ -53,12 +56,32 @@ const ProfileContainer = () => {
     imageInputRef.current.click();
   };
 
-  const { data: getUserInformationData } = useQuery<
-    GetUserInformationDataType,
-    AxiosError
-  >(['getUserInformation'], () =>
-    getUserInformation({ targetUserId: parseInt(params.userId) }),
+  const location = useLocation().pathname;
+
+  const {
+    data: getUserInformationData,
+    refetch: getUserInformationRefetch,
+    error: getUserInformationError,
+    isLoading: getUserInformationLoading,
+  } = useQuery<GetUserInformationDataType, AxiosError<Error, any>>(
+    ['getUserInformation'],
+    () => getUserInformation({ targetUserId: parseInt(params.userId) }),
+    {
+      refetchOnWindowFocus: false,
+    },
   );
+
+  useEffect(() => {
+    getUserInformationRefetch();
+  }, [location, getUserInformationRefetch]);
+
+  const followerImFollowingList =
+    getUserInformationData?.followerImFollowingList.slice(0, 3);
+
+  const followerImFollowingRestCount =
+    getUserInformationData?.followerImFollowingList.slice(3).length;
+
+  console.log(followerImFollowingList);
 
   const myUserId = localStorage.getItem('userId');
 
@@ -90,6 +113,7 @@ const ProfileContainer = () => {
         queryClient.invalidateQueries(['getUserInformation']);
       },
     });
+
   return (
     <>
       <MetaTag
@@ -112,6 +136,10 @@ const ProfileContainer = () => {
         isMyPage={isMyPage}
         userFollowingUnFollowing={userFollowingUnFollowing}
         followingUserIsLoading={followingUserIsLoading}
+        followerImFollowingList={followerImFollowingList}
+        followerImFollowingRestCount={followerImFollowingRestCount}
+        getUserInformationError={getUserInformationError}
+        getUserInformationLoading={getUserInformationLoading}
       />
     </>
   );

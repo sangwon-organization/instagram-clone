@@ -3,6 +3,8 @@ import styled from 'styled-components';
 import Footer from '../../components/layout/footer/Footer';
 import NavigationBar from '../../components/layout/NavigationBar/NavigationBar';
 import PostWrapper from '../../components/feature/Post/PostWrapper';
+import NotFoundContainer from '../NotFound404/NotFoundContainer';
+import LoadingPage from '../../components/share/LoadingPage';
 
 const Container = styled.div`
   display: flex;
@@ -39,6 +41,8 @@ interface PostPresenterType {
   closeModal: any;
   isMyPost: any;
   postId: any;
+  getPostError: any;
+  getPostLoading: any;
 }
 
 const PostPresenter = ({
@@ -67,7 +71,18 @@ const PostPresenter = ({
   closeModal,
   isMyPost,
   postId,
+  getPostError,
+  getPostLoading,
 }: PostPresenterType) => {
+  if (
+    getPostError?.response.data.message === '해당 포스트가 존재하지 않습니다.'
+  ) {
+    return <NotFoundContainer />;
+  }
+
+  if (getPostLoading) {
+    return <LoadingPage />;
+  }
   return (
     <>
       <NavigationBar />

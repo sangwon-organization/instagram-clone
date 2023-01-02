@@ -1,6 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BsCamera } from 'react-icons/bs';
 import styled from 'styled-components';
+import ModalPortal from '../Modal/ModalPortal';
+import ModalContainer from '../Modal/ModalContainer';
+import CreatePostModal from '../Modal/CreatePostModal';
+import { useQuery } from '@tanstack/react-query';
+import { getUserInformation } from '../../../api/api';
 
 const Container = styled.div`
   display: flex;
@@ -60,16 +65,45 @@ const CameraIcon = styled(BsCamera)`
 `;
 
 const SharesPhotosBox = () => {
+  const [createPostModalOpen, setCreatePostModalOpen] = useState(false);
+
+  const openModal = () => {
+    setCreatePostModalOpen(true);
+    document.body.style.overflow = 'hidden';
+  };
+
+  const closeModal = () => {
+    setCreatePostModalOpen(false);
+    document.body.style.overflow = 'unset';
+  };
+
+  const { data: getUserProfileSharesData } = useQuery(
+    ['getUserProfileShares'],
+    () => {
+      const userId = Number(localStorage.getItem('userId'));
+      return getUserInformation({ targetUserId: userId });
+    },
+  );
+
   return (
     <Container>
       <Wrapper>
-        <Circle>
+        <Circle onClick={() => openModal()}>
           <CameraIcon />
         </Circle>
         <h3>Share Photos</h3>
         <p>When you share photos, they will appear on your profile.</p>
-        <button>Share your first photo</button>
+        <button onClick={() => openModal()}>Share your first photo</button>
       </Wrapper>
+      {createPostModalOpen && (
+        <ModalPortal>
+          <ModalContainer createPost closeModal={closeModal}>
+            <CreatePostModal
+              profileImage={getUserProfileSharesData?.profileImage}
+            />
+          </ModalContainer>
+        </ModalPortal>
+      )}
     </Container>
   );
 };

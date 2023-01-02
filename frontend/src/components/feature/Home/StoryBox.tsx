@@ -14,7 +14,6 @@ const StoryBoxContainer = styled.section`
   position: relative;
   width: 470px;
   height: 119px;
-  margin-top: 28px;
   margin-bottom: 4px;
   border: 1px solid ${({ theme }) => theme.borderColor};
   border-radius: 10px;

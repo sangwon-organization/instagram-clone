@@ -17,11 +17,12 @@ const PostContainer = styled.div`
   width: 293px;
   height: 293px;
   cursor: pointer;
+  aspect-ratio: 1/1;
   img {
-    width: 293px;
-    height: 293px;
+    width: 100%;
+    height: 100%;
     background: ${({ theme }) => theme.blackColor};
-    object-fit: contain;
+    object-fit: cover;
     &:hover {
       filter: brightness(0.7);
     }
@@ -89,7 +90,6 @@ const Post = ({ postImageList, postId, likeCount, commentCount }: PostType) => {
     setShowPostModal(false);
     document.body.style.overflow = 'unset';
     navigate(-1);
-    // window.location.reload();
   };
 
   return (
@@ -115,7 +115,7 @@ const Post = ({ postImageList, postId, likeCount, commentCount }: PostType) => {
       {showPostModal && (
         <ModalPortal>
           <ModalContainer closeModal={closePost}>
-            <PostWrapper postId={postId} />
+            <PostWrapper postId={postId} setShowPostModal={setShowPostModal} />
           </ModalContainer>
         </ModalPortal>
       )}

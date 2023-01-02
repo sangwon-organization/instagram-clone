@@ -31,6 +31,9 @@ const NavigationContainer = styled.div`
 const CopyrightContainer = styled.div``;
 
 const Footer = () => {
+  const today = new Date();
+
+  const todayYear = today.getFullYear();
   return (
     <FooterContainer>
       <FooterWrapper>
@@ -50,7 +53,7 @@ const Footer = () => {
           <p>Contact Uploading & Non-Users</p>
         </NavigationContainer>
         <CopyrightContainer>
-          <p>© 2022 Clonestagram</p>
+          <p>© {todayYear} Clonestagram</p>
         </CopyrightContainer>
       </FooterWrapper>
     </FooterContainer>

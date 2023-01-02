@@ -92,15 +92,15 @@ const UserAvatar = styled.div`
 `;
 
 const CommentKebabMenuIcon = styled(GoKebabHorizontal)<{
-  showCommentMenuIcon: boolean;
+  $showCommentMenuIcon: boolean;
 }>`
   width: 15px;
   height: 15px;
   cursor: pointer;
   padding: 0;
   color: ${({ theme }) => theme.greyTextColor};
-  display: ${({ showCommentMenuIcon }) =>
-    showCommentMenuIcon ? 'block' : 'none'};
+  display: ${({ $showCommentMenuIcon }) =>
+    $showCommentMenuIcon ? 'block' : 'none'};
 `;
 
 const SmallHeartIcon = styled(BsHeart)`
@@ -152,6 +152,7 @@ const CommentItem = ({
   createdAt,
   likeYn,
   userId,
+  setShowPostModal,
 }: CommentItemType) => {
   const [showCommentMenuIcon, setShowCommentMenuIcon] = useState(false);
   const [showCommentDropDown, setShowCommentDropDown] = useState(false);
@@ -166,7 +167,7 @@ const CommentItem = ({
       },
       onSuccess: () => {
         console.log('댓글 좋아요 성공!');
-        queryClient.invalidateQueries(['getPost']);
+        queryClient.invalidateQueries(['getCommentsList']);
       },
     });
 
@@ -178,15 +179,13 @@ const CommentItem = ({
     }
   };
 
-  const openModal = () => {
-    setShowCommentDropDown(true);
-    document.body.style.overflow = 'hidden';
-  };
+  // const openModal = () => {
+  //   setShowCommentDropDown(true);
+  // };
 
-  const closeModal = () => {
-    setShowCommentDropDown(false);
-    document.body.style.overflow = 'unset';
-  };
+  // const closeModal = () => {
+  //   setShowCommentDropDown(false);
+  // };
 
   return (
     <Container
@@ -195,14 +194,25 @@ const CommentItem = ({
       onMouseOut={() => setShowCommentMenuIcon(false)}>
       <AvatarBox>
         <UserAvatar>
-          <img src={profileImage} alt="유저아바타" />
+          <img
+            src={profileImage}
+            alt="유저아바타"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(`/user/${userId}`);
+              setShowPostModal(false);
+              document.body.style.overflow = 'unset';
+            }}
+          />
         </UserAvatar>
       </AvatarBox>
       <Comment>
         <span
-          onClick={() => {
+          onClick={(e) => {
+            e.stopPropagation();
             navigate(`/user/${userId}`);
-            closeModal();
+            setShowPostModal(false);
+            document.body.style.overflow = 'unset';
           }}>
           {username}
         </span>
@@ -211,8 +221,8 @@ const CommentItem = ({
           <button>{timeForToday(createdAt)}</button>
           {likeCount > 0 && <button>{likeCount + ' like'}</button>}
           <CommentKebabMenuIcon
-            onClick={openModal}
-            showCommentMenuIcon={showCommentMenuIcon}
+            onClick={() => setShowCommentDropDown(true)}
+            $showCommentMenuIcon={showCommentMenuIcon}
           />
         </OptionBox>
       </Comment>
@@ -228,8 +238,12 @@ const CommentItem = ({
       )}
       {showCommentDropDown && (
         <ModalPortal>
-          <ModalContainer closeModal={closeModal}>
-            <CommentDropDownModal commentId={commentId} userId={userId} />
+          <ModalContainer closeModal={() => setShowCommentDropDown(false)}>
+            <CommentDropDownModal
+              commentId={commentId}
+              userId={userId}
+              setShowCommentDropDown={setShowCommentDropDown}
+            />
           </ModalContainer>
         </ModalPortal>
       )}

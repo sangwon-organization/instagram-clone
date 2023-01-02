@@ -60,12 +60,14 @@ function ModalContainer({
   createPost,
   children,
 }: ModalContainerProps) {
-  // const outsideRef = useRef();
-
-  // useOutsideClick(outsideRef, closeModal);
   return (
     <Container>
-      <Background onClick={() => closeModal()} />
+      <Background
+        onClick={(e) => {
+          e.stopPropagation();
+          closeModal();
+        }}
+      />
       {createPost && <CloseIcon />}
       <ModalBlock>
         <Contents>{children}</Contents>

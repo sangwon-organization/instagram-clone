@@ -123,7 +123,21 @@ const InputBox = styled.div<{ keyPress: boolean; clicked: boolean }>`
     font-size: ${({ keyPress }) => (keyPress ? '8px' : '12px')};
     transition: all linear 0.1s;
     z-index: 100;
+    &:autofill {
+      box-shadow: 0 0 0px 1000px transparent inset;
+    }
+    &:-webkit-autofill,
+    &:-webkit-autofill:hover,
+    &:-webkit-autofill:focus,
+    &:-webkit-autofill:active {
+      transition: background-color 5000s ease-in-out 0s;
+      -webkit-transition: background-color 9999s ease-out;
+      -webkit-box-shadow: 0 0 0px 1000px transparent inset;
+      box-shadow: 0 0 0px 1000px transparent inset;
+      -webkit-text-fill-color: ${({ theme }) => theme.textColor};
+    }
   }
+
   span {
     position: absolute;
     top: ${({ keyPress }) => (keyPress ? '-5px' : '0')};

@@ -77,11 +77,14 @@ const ImageWrapper = styled.div`
   align-items: center;
   width: 100%;
   height: 100%;
+  aspect-ratio: 4/5;
   img {
     flex: none;
     width: 100%;
-    height: 585px;
+    /* height: 585px; */
+    height: 100%;
     background: ${({ theme }) => theme.blackColor};
+
     object-fit: cover;
     -webkit-user-drag: none;
     -khtml-user-drag: none;
@@ -316,7 +319,7 @@ const KebabMenuIcon = styled(GoKebabHorizontal)`
   cursor: pointer;
 `;
 
-const BigLikedIcon = styled(BsHeartFill)<{ likebuttonclicked: boolean }>`
+const BigLikedIcon = styled(BsHeartFill)<{ likebuttonclicked: string }>`
   position: absolute;
   top: 50%;
   left: 50%;
@@ -328,7 +331,7 @@ const BigLikedIcon = styled(BsHeartFill)<{ likebuttonclicked: boolean }>`
   filter: drop-shadow(5px 5px 30px rgba(0, 0, 0, 0.7));
   opacity: 0;
   animation: ${({ likebuttonclicked }) =>
-    likebuttonclicked && 'bigFeedLike 2s ease-in-out'};
+    likebuttonclicked === 'true' && 'bigFeedLike 2s ease-in-out'};
   @keyframes bigFeedLike {
     0%,
     to {
@@ -456,7 +459,7 @@ const FeedCard = ({
     navigate(-1);
   };
 
-  const NextSlide = () => {
+  const nextSlide = () => {
     if (currentSlide >= TOTAL_SLIDES) {
       return;
     } else {
@@ -464,7 +467,7 @@ const FeedCard = ({
     }
   };
 
-  const PrevSlide = () => {
+  const prevSlide = () => {
     if (currentSlide === 0) {
       return;
     } else {
@@ -562,17 +565,6 @@ const FeedCard = ({
     },
   });
 
-  const registerComment = () => {
-    mutate({
-      postId: postId,
-      parentCommentId: '',
-      content: textareaRef.current.value,
-    });
-    if (isLoading) {
-      postButtonRef.current.disabled = true;
-    }
-  };
-
   const bookmarkPostFunction = () => {
     if (bookmarkYn === 'Y') {
       mutateBookmarkPost.mutate({ postId: postId, bookmarkYn: 'N' });
@@ -601,7 +593,7 @@ const FeedCard = ({
           doubleClickImage();
           mutateLikePost.mutate({ postId: postId, likeYn: 'Y' });
         }}>
-        <LeftArrowIcon currentslide={currentSlide} onClick={PrevSlide} />
+        <LeftArrowIcon currentslide={currentSlide} onClick={prevSlide} />
         <ImageWrapper ref={slideRef}>
           {postImageList.map((list: string) => (
             <img src={list} key={list} alt="유저이미지" />
@@ -610,9 +602,9 @@ const FeedCard = ({
         <RightArrowIcon
           totalslide={TOTAL_SLIDES}
           currentslide={currentSlide}
-          onClick={NextSlide}
+          onClick={nextSlide}
         />
-        <BigLikedIcon likebuttonclicked={likeButtonClicked} />
+        <BigLikedIcon likebuttonclicked={likeButtonClicked.toString()} />
       </ImageBoxWrapper>
       <CommentBoxWrapper>
         <IconBox>
@@ -690,18 +682,14 @@ const FeedCard = ({
           placeholder="Add a comment..."></textarea>
         {isLoading && (
           <Loader
-            loaded={false}
+            loaded={!isLoading}
             color="#8e8e8e"
             scale={0.7}
             top="50%"
             left="50%"
           />
         )}
-        <button
-          type="submit"
-          ref={postButtonRef}
-          disabled={!isValid}
-          onClick={registerComment}>
+        <button type="submit" ref={postButtonRef} disabled={!isValid}>
           Post
         </button>
       </AddCommentBox>
@@ -712,6 +700,7 @@ const FeedCard = ({
               isMyPost={isMyPost}
               postId={postId}
               userId={userId}
+              closeModal={closeModal}
             />
           </ModalContainer>
         </ModalPortal>
@@ -719,7 +708,7 @@ const FeedCard = ({
       {showPostModal && (
         <ModalPortal>
           <ModalContainer closeModal={closePost}>
-            <PostWrapper postId={postId} />
+            <PostWrapper postId={postId} setShowPostModal={setShowPostModal} />
           </ModalContainer>
         </ModalPortal>
       )}
