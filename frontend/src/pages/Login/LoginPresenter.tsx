@@ -1,9 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
-import Login from '../../components/feature/Login/Login';
-import SignUp from '../../components/feature/SignUp/SignUp';
-import Footer from '../../components/layout/footer/Footer';
-import { useSelector } from 'react-redux';
+import Login from '../../components/feature/LoginSignUp/Login';
+import SignUp from '../../components/feature/LoginSignUp/SignUp';
+import Footer from '../../components/feature/Footer/Footer';
 
 const LoginWrapper = styled.div`
   display: flex;
@@ -16,11 +15,10 @@ const LoginWrapper = styled.div`
   background: ${({ theme }) => theme.bgColor};
 `;
 
-const LoginPresenter = () => {
-  const selector = useSelector((state: any) => state.login.isLogin);
+const LoginPresenter = ({ isLogin }: { isLogin: boolean }) => {
   return (
     <>
-      <LoginWrapper>{selector ? <Login /> : <SignUp />}</LoginWrapper>
+      <LoginWrapper>{isLogin ? <Login /> : <SignUp />}</LoginWrapper>
       <Footer />
     </>
   );

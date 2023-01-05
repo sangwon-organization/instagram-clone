@@ -1,6 +1,5 @@
 import React from 'react';
 import styled from 'styled-components';
-import useOutsideClick from '../../../hooks/useOutsideClick';
 
 const Container = styled.div`
   width: 400px;
@@ -40,22 +39,13 @@ const Button = styled.button<{ last?: boolean }>`
   &:active {
     border-bottom-left-radius: ${({ last }) => last && '10px'};
     border-bottom-right-radius: ${({ last }) => last && '10px'};
-    background: ${({ theme }) => theme.ultraLightGreyColor};
+    backdrop-filter: brightness(0.9);
   }
   &:nth-child(2) {
     font-weight: 700;
     color: #ed4956;
   }
 `;
-
-interface DiscardPostModalType {
-  title: string;
-  question: string;
-  onClickDiscard?: any;
-  closeDiscard: Function;
-  imageIndex?: any;
-  handleDeleteImage?: any;
-}
 
 const DiscardPostModal = ({
   title,
@@ -73,7 +63,6 @@ const DiscardPostModal = ({
     }
   };
 
-  // useOutsideClick(outsideRef, closePreviewImagesModal);
   return (
     <Container>
       <Title>

@@ -28,8 +28,6 @@ const NavigationContainer = styled.div`
   width: 100%;
 `;
 
-const CopyrightContainer = styled.div``;
-
 const Footer = () => {
   const today = new Date();
 
@@ -52,9 +50,7 @@ const Footer = () => {
           <p>Instagram Lite</p>
           <p>Contact Uploading & Non-Users</p>
         </NavigationContainer>
-        <CopyrightContainer>
-          <p>© {todayYear} Clonestagram</p>
-        </CopyrightContainer>
+        <p>© {todayYear} Clonestagram</p>
       </FooterWrapper>
     </FooterContainer>
   );

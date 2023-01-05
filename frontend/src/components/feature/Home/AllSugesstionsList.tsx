@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import Footer from '../../layout/footer/Footer';
+import Footer from '../Footer/Footer';
 import AllSugesstionsListItem from './AllSugesstionsListItem';
 import { useQuery } from '@tanstack/react-query';
 import { getNotFollowingList } from '../../../api/api';
+import { AxiosError } from 'axios';
 
 const Container = styled.div`
   width: 100%;
@@ -72,14 +73,13 @@ const GetStartedButton = styled.button<{ followbuttonclicked?: boolean }>`
 
 const AllSugesstionsList = () => {
   const [showGetStarted, setShowGetStarted] = useState(false);
-  const { data: getNotFollowingData } = useQuery(
-    ['getNotFollowing'],
-    () => getNotFollowingList(),
-    {
-      refetchOnWindowFocus: false,
-      refetchOnMount: false,
-    },
-  );
+  const { data: getNotFollowingData } = useQuery<
+    getNotFollowingListType,
+    AxiosError
+  >(['getNotFollowing'], () => getNotFollowingList(), {
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
+  });
   return (
     <Container>
       <h4>Suggestions For You</h4>

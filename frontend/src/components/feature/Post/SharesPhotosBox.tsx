@@ -97,9 +97,10 @@ const SharesPhotosBox = () => {
       </Wrapper>
       {createPostModalOpen && (
         <ModalPortal>
-          <ModalContainer createPost closeModal={closeModal}>
+          <ModalContainer closeIcon closeModal={closeModal}>
             <CreatePostModal
               profileImage={getUserProfileSharesData?.profileImage}
+              username={getUserProfileSharesData?.username}
             />
           </ModalContainer>
         </ModalPortal>

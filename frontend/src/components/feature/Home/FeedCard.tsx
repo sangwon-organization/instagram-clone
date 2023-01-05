@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { BsHeart } from 'react-icons/bs';
 import { BsHeartFill } from 'react-icons/bs';
@@ -12,22 +12,22 @@ import {
   IoIosArrowDroprightCircle,
 } from 'react-icons/io';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import Loader from 'react-loader';
+import { useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
 import {
   bookmarkPost,
   commentPost,
   getCommentsList,
   likePost,
 } from '../../../api/api';
-import Loader from 'react-loader';
-import { useLocation, useNavigate } from 'react-router-dom';
 import { timeForToday } from '../../../utils/commons';
+import PostWrapper from '../Post/PostWrapper';
 import ModalPortal from '../Modal/ModalPortal';
 import ModalContainer from '../Modal/ModalContainer';
 import PostDropDownModal from '../Modal/PostDropDownModal';
-import PostWrapper from '../Post/PostWrapper';
 import CommentsListBox from '../Post/CommentsListBox';
-import { useForm } from 'react-hook-form';
-import { AxiosError, AxiosResponse } from 'axios';
+import { AxiosError } from 'axios';
 
 const FeedCardContainer = styled.div`
   display: flex;
@@ -285,12 +285,15 @@ const AddCommentBox = styled.form`
   textarea {
     width: 375px;
     height: 20px;
+    max-height: 100px;
     margin-left: 10px;
     border: none;
     background: transparent;
     font-family: 'RobotoFont';
+    color: ${({ theme }) => theme.textColor};
     outline: none;
     resize: none;
+    overflow-y: auto;
   }
   button {
     border: none;
@@ -425,6 +428,7 @@ const FeedCard = ({
   const [showPostDropdown, setShowPostDropdown] = useState(false);
   const [showPostModal, setShowPostModal] = useState(false);
   const [showMoreText, setShowMoreText] = useState(false);
+
   const slideRef = useRef(null);
   const circleRef = useRef(null);
   const textareaRef = useRef(null);
@@ -432,11 +436,14 @@ const FeedCard = ({
 
   const navigate = useNavigate();
 
-  const location = useLocation();
-
   const queryClient = useQueryClient();
 
   const TOTAL_SLIDES = postImageList.length;
+
+  const handleResizeHeight = useCallback(() => {
+    textareaRef.current.style.height = '20px';
+    textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
+  }, []);
 
   const openModal = () => {
     setShowPostDropdown(true);
@@ -459,7 +466,8 @@ const FeedCard = ({
     navigate(-1);
   };
 
-  const nextSlide = () => {
+  const nextSlide = (e: any) => {
+    e.stopPropagation();
     if (currentSlide >= TOTAL_SLIDES) {
       return;
     } else {
@@ -487,7 +495,7 @@ const FeedCard = ({
     slideRef.current.style.transform = `translateX(-${currentSlide}00%)`;
   }, [currentSlide]);
 
-  const { mutate, data, error, reset, isLoading } = useMutation<
+  const { mutate, isLoading } = useMutation<
     ResponseData,
     AxiosError,
     CommentPostType
@@ -514,7 +522,7 @@ const FeedCard = ({
   const {
     register,
     handleSubmit,
-    formState: { isValid, errors, isDirty },
+    formState: { isValid },
   } = useForm<CommentPostFormValues>({ mode: 'onChange' });
 
   const { ref: commentRef, ...rest } = register('commentInput', {
@@ -522,7 +530,6 @@ const FeedCard = ({
   });
 
   const onSubmit = (dataInput: CommentPostFormValues) => {
-    console.log(dataInput);
     mutate({
       postId: postId,
       parentCommentId: '',
@@ -589,7 +596,8 @@ const FeedCard = ({
         <KebabMenuIcon onClick={openModal} />
       </UserInformationWrapper>
       <ImageBoxWrapper
-        onDoubleClick={() => {
+        onDoubleClick={(e) => {
+          e.stopPropagation();
           doubleClickImage();
           mutateLikePost.mutate({ postId: postId, likeYn: 'Y' });
         }}>
@@ -602,7 +610,9 @@ const FeedCard = ({
         <RightArrowIcon
           totalslide={TOTAL_SLIDES}
           currentslide={currentSlide}
-          onClick={nextSlide}
+          onClick={(e) => {
+            nextSlide(e);
+          }}
         />
         <BigLikedIcon likebuttonclicked={likeButtonClicked.toString()} />
       </ImageBoxWrapper>
@@ -663,10 +673,7 @@ const FeedCard = ({
               : `View all ${commentCount} comments`}
           </ViewAllCommentsBox>
         )}
-        <CommentsListBox
-          postId={postId}
-          getCommentsListData={getCommentsListData}
-        />
+        <CommentsListBox getCommentsListData={getCommentsListData} />
         <DateBox>{timeForToday(createdAt)}</DateBox>
       </CommentBoxWrapper>
       <AddCommentBox onSubmit={handleSubmit(onSubmit)}>
@@ -679,7 +686,9 @@ const FeedCard = ({
             commentRef(e);
             textareaRef.current = e;
           }}
-          placeholder="Add a comment..."></textarea>
+          placeholder="Add a comment..."
+          onInput={handleResizeHeight}
+        />
         {isLoading && (
           <Loader
             loaded={!isLoading}
@@ -707,7 +716,7 @@ const FeedCard = ({
       )}
       {showPostModal && (
         <ModalPortal>
-          <ModalContainer closeModal={closePost}>
+          <ModalContainer closeIcon closeModal={closePost}>
             <PostWrapper postId={postId} setShowPostModal={setShowPostModal} />
           </ModalContainer>
         </ModalPortal>

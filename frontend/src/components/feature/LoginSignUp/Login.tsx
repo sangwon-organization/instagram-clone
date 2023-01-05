@@ -1,14 +1,13 @@
-import React, { useCallback, useState } from 'react';
-import styled, { css } from 'styled-components';
+import React, { useState } from 'react';
+import styled from 'styled-components';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useMutation } from '@tanstack/react-query';
 import { loginUser } from '../../../api/api';
 import clonestagramLogoBlack from '../../../assets/image/clonestagramLogoBlack.png';
-import LoginSignUpBottomBox from '../../share/LoginSignUpBottomBox';
-import LoginSignUpMiddleBox from '../../share/LoginSignUpMiddleBox';
-import { useDispatch } from 'react-redux';
+import LoginSignUpBottomBox from './LoginSignUpBottomBox';
+import LoginSignUpMiddleBox from './LoginSignUpMiddleBox';
 import Loader from 'react-loader';
 import { AxiosError } from 'axios';
 
@@ -152,7 +151,7 @@ const ErrorMessageBox = styled.div`
   width: 262px;
   height: 19.6px;
   font-size: 13.7px;
-  font-weight: 600;
+  font-weight: 400;
   color: #ed4956;
   line-height: 1.29;
   text-align: center;
@@ -169,7 +168,7 @@ const ForgotPasswordBox = styled.div`
 
 const schema = yup.object().shape({
   email: yup.string().required(),
-  password: yup.string().min(6).required(),
+  password: yup.string().min(8).max(15).required(),
 });
 
 const Login = () => {
@@ -180,18 +179,20 @@ const Login = () => {
   const [emailInputBoxClicked, setEmailInputBoxClicked] = useState(false);
   const [passwordInputBoxClicked, setPasswordInputBoxClicked] = useState(false);
 
-  const dispatch = useDispatch();
-
-  const userNameInputKeyPress = (e: any) => {
-    if (e.target.value === '') {
+  const userNameInputKeyPress = (
+    event: React.KeyboardEvent<HTMLInputElement>,
+  ) => {
+    if (event.currentTarget.value === '') {
       setUsernameKeyPress(false);
     } else {
       setUsernameKeyPress(true);
     }
   };
 
-  const passwordInputKeyPress = (e: any) => {
-    if (e.target.value === '') {
+  const passwordInputKeyPress = (
+    event: React.KeyboardEvent<HTMLInputElement>,
+  ) => {
+    if (event.currentTarget.value === '') {
       setPasswordKeyPress(false);
       setShowPassword(false);
     } else {
@@ -207,13 +208,13 @@ const Login = () => {
   const {
     register,
     handleSubmit,
-    formState: { isValid, errors },
+    formState: { isValid },
   } = useForm<LoginFormValues>({
     mode: 'onChange',
     resolver: yupResolver(schema),
   });
 
-  const { mutate, data, error, reset, isLoading } = useMutation<
+  const { mutate, error, isLoading } = useMutation<
     LoginResponseData,
     AxiosError,
     LoginType
@@ -225,8 +226,6 @@ const Login = () => {
       console.log('로그인 성공!');
     },
   });
-
-  console.log(error);
 
   const onSubmit = (dataInput: LoginFormValues) => {
     mutate(dataInput);
@@ -287,7 +286,7 @@ const Login = () => {
           <ErrorMessageBox>
             <p>
               {error.response.status === 401 &&
-                `이메일 또는 패스워드가 정확하지 않습니다.\n다시 입력해 주세요.`}
+                `Sorry, Your email or password is incorrect.\nPlease re-enter.`}
             </p>
           </ErrorMessageBox>
         )}

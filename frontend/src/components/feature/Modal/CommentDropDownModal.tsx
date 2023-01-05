@@ -1,7 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
-import React, { useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import React from 'react';
 import styled from 'styled-components';
 import { deleteComment } from '../../../api/api';
 
@@ -33,7 +32,7 @@ const Button = styled.button<{
     border-top-right-radius: ${({ first }) => first && '10px'};
     border-bottom-left-radius: ${({ last }) => last && '10px'};
     border-bottom-right-radius: ${({ last }) => last && '10px'};
-    background: ${({ theme }) => theme.ultraLightGreyColor};
+    backdrop-filter: brightness(0.9);
   }
   &:first-child {
     border-top: none;
@@ -45,8 +44,6 @@ const CommentDropDownModal = ({
   userId,
   setShowCommentDropDown,
 }: CommentDropDownModalType) => {
-  //   const [deleteButtonClicked, setdeleteButtonClicked] = useState(false);
-  //   const { postId: urlPostId } = useParams();
   const isMyPost = userId === parseInt(localStorage.getItem('userId'));
 
   const queryClient = useQueryClient();
@@ -61,11 +58,12 @@ const CommentDropDownModal = ({
     },
     onSuccess: () => {
       console.log('댓글 삭제 성공!');
-      queryClient.invalidateQueries(['getCommentsList']);
+      Promise.all([
+        queryClient.invalidateQueries(['getCommentsList']),
+        queryClient.invalidateQueries(['getUserInformation']),
+      ]);
     },
   });
-
-  console.log(commentId);
 
   return (
     <Container ismypost={isMyPost}>

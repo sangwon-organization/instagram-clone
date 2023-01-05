@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { IoImagesOutline } from 'react-icons/io5';
 import { BiArrowBack } from 'react-icons/bi';
 import { addPost } from '../../../api/api';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import Loader from 'react-loader';
 import { FiCheck } from 'react-icons/fi';
@@ -346,7 +346,7 @@ const AddMoreImageButtonWrapper = styled.div`
   height: 94px;
 `;
 
-const CreatePostModal = ({ profileImage }: CreatePostModalType) => {
+const CreatePostModal = ({ profileImage, username }: CreatePostModalType) => {
   const [imageSrc, setImageSrc] = useState([]);
   const [nextModal, setNextModal] = useState(false);
   const [textAreaText, setTextAreaText] = useState(0);
@@ -360,8 +360,10 @@ const CreatePostModal = ({ profileImage }: CreatePostModalType) => {
   const slideRef = useRef(null);
   const outsideRef = useRef(null);
 
-  const countTextLength = (e: any) => {
-    setTextAreaText(e.target.value.length);
+  const queryClient = useQueryClient();
+
+  const countTextLength = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setTextAreaText(event.target.value.length);
   };
 
   const handleAddImages = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -402,6 +404,10 @@ const CreatePostModal = ({ profileImage }: CreatePostModalType) => {
     },
     onSuccess: () => {
       console.log('포스트 등록 성공!');
+      Promise.all([
+        queryClient.invalidateQueries(['getUserInformation']),
+        queryClient.invalidateQueries(['getPosts']),
+      ]);
     },
   });
 
@@ -603,7 +609,7 @@ const CreatePostModal = ({ profileImage }: CreatePostModalType) => {
             <UserAccountWrapper>
               <img src={profileImage} alt="유저아바타" />
               <UserInfoWrapper>
-                <p>_leesangwon</p>
+                <p>{username}</p>
               </UserInfoWrapper>
             </UserAccountWrapper>
             <TextBox

@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useEffect } from 'react';
 import MetaTag from '../../meta/MetaTag';
 import ProfilePresenter from '../Profile/ProfilePresenter';
 import { useParams, useLocation } from 'react-router-dom';
@@ -13,20 +13,16 @@ import { AxiosError } from 'axios';
 
 const ProfileContainer = () => {
   const imageInputRef = useRef(null);
-  const [imageSrc, setImageSrc] = useState<string>('');
 
   const params = useParams();
 
   const queryClient = useQueryClient();
 
-  const {
-    register,
-    handleSubmit,
-    formState: { isValid, errors, isDirty },
-  } = useForm<PostUserProfileImageFormValues>({ mode: 'onChange' });
+  const { register, handleSubmit } = useForm<PostUserProfileImageFormValues>({
+    mode: 'onChange',
+  });
 
   const onSubmit = () => {
-    console.log('유저 프로필 저장 성공!');
     const formData = new FormData();
     formData.append('postImage', imageInputRef.current.files[0]);
     postUserProfileImage.mutate(formData);
@@ -63,7 +59,7 @@ const ProfileContainer = () => {
     refetch: getUserInformationRefetch,
     error: getUserInformationError,
     isLoading: getUserInformationLoading,
-  } = useQuery<GetUserInformationDataType, AxiosError<Error, any>>(
+  } = useQuery<GetUserInformationDataType, AxiosError<Error>>(
     ['getUserInformation'],
     () => getUserInformation({ targetUserId: parseInt(params.userId) }),
     {
@@ -81,13 +77,9 @@ const ProfileContainer = () => {
   const followerImFollowingRestCount =
     getUserInformationData?.followerImFollowingList.slice(3).length;
 
-  console.log(followerImFollowingList);
-
   const myUserId = localStorage.getItem('userId');
 
   const isMyPage = myUserId === params.userId;
-
-  console.log(getUserInformationData);
 
   const userFollowingUnFollowing = () => {
     if (getUserInformationData?.followYn === 'Y') {

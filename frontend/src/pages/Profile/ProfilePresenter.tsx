@@ -6,9 +6,9 @@ import { FaUserCheck } from 'react-icons/fa';
 import { RiAccountPinBoxLine } from 'react-icons/ri';
 import { BiMoviePlay } from 'react-icons/bi';
 import { IoAppsSharp } from 'react-icons/io5';
-import NavigationBar from '../../components/layout/NavigationBar/NavigationBar';
+import NavigationBar from '../../components/feature/NavigationBar/NavigationBar';
 import Post from '../../components/feature/Profile/Post';
-import Footer from '../../components/layout/footer/Footer';
+import Footer from '../../components/feature/Footer/Footer';
 import Loader from 'react-loader';
 import NoPostsBox from '../../components/feature/Post/NoPostsBox';
 import SharesPhotosBox from '../../components/feature/Post/SharesPhotosBox';
@@ -414,13 +414,15 @@ const ProfilePresenter = ({
                 {!isMyPage && followerImFollowingList?.length > 0 && (
                   <p>
                     Followed by{' '}
-                    {followerImFollowingList.map((list: any, i: any) => {
-                      return (
-                        <span key={`list_${i}`}>
-                          {(i ? ', ' : '') + list.username}
-                        </span>
-                      );
-                    })}{' '}
+                    {followerImFollowingList.map(
+                      (list: followerImFollowingListType, index: number) => {
+                        return (
+                          <span key={`list_${index}`}>
+                            {(index ? ', ' : '') + list.username}
+                          </span>
+                        );
+                      },
+                    )}{' '}
                     {followerImFollowingRestCount > 0 &&
                       `+ ${followerImFollowingRestCount} more`}
                   </p>

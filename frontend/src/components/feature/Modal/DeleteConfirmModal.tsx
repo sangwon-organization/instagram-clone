@@ -43,7 +43,7 @@ const Button = styled.button<{ last?: boolean }>`
   &:active {
     border-bottom-left-radius: ${({ last }) => last && '10px'};
     border-bottom-right-radius: ${({ last }) => last && '10px'};
-    background: ${({ theme }) => theme.ultraLightGreyColor};
+    backdrop-filter: brightness(0.9);
   }
   &:nth-child(2) {
     color: #ed4956;
@@ -68,8 +68,8 @@ const DeleteConfirmModal = ({
     },
     onSuccess: () => {
       console.log('포스트 삭제 성공!');
+      navigate(-1);
       window.location.reload();
-      // navigate(`/user/${userId}`);
     },
   });
 

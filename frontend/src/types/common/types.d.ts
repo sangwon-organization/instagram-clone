@@ -126,29 +126,28 @@ interface MetaTagType {
 }
 
 interface HomePresenterType {
-  getPostsData: any;
-  scrollRef: any;
-  hasNextPage: any;
-  fetchNextPage: any;
+  getPostsData: GetPostsQueryType;
+  scrollRef: (node?: Element) => void;
+  hasNextPage: boolean;
   isFetchingNextPage: boolean;
 }
 
 interface ProfilePresenterType {
-  getUserInformationData: any;
+  getUserInformationData: GetUserInformationDataType;
   onImageInputButtonClick: (event: React.MouseEvent<HTMLElement>) => void;
-  imageInputRef: any;
-  postImageRest: any;
-  imageRef: any;
-  onSubmit: any;
-  handleSubmit: any;
+  imageInputRef: React.MutableRefObject<any>;
+  postImageRest: Partial;
+  imageRef: RefCallBack;
+  onSubmit: () => void;
+  handleSubmit: UseFormHandleSubmit<PostUserProfileImageFormValues>;
   isLoading: boolean;
   isMyPage: boolean;
   followingUserIsLoading: boolean;
-  userFollowingUnFollowing: any;
-  followerImFollowingList: any;
-  followerImFollowingRestCount: any;
+  userFollowingUnFollowing: () => void;
+  followerImFollowingList: followerImFollowingListType[];
+  followerImFollowingRestCount: number;
   getUserInformationLoading: boolean;
-  getUserInformationError: any;
+  getUserInformationError: AxiosError<Error>;
 }
 
 interface MiddleBoxType {
@@ -167,7 +166,23 @@ interface SearchBarTooltipType {
 
 interface AvatarDropdownType {
   showDropdown: boolean;
-  setShowDropdown: Function;
+  setShowDropdown: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+interface AllSugesstionsListItemType {
+  list: followerImFollowingListType;
+  setShowGetStarted: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+interface PreviewImageType {
+  image: string;
+  setCurrentSlide: React.Dispatch<React.SetStateAction<number>>;
+  imageIndex: number;
+  currentSlide: number;
+  imageSrc: string[];
+  setImageSrc: React.Dispatch<React.SetStateAction<string[]>>;
+  setShowPreviewImagesModal: React.Dispatch<React.SetStateAction<boolean>>;
+  totalSlide: number;
 }
 
 interface PostType {
@@ -179,22 +194,28 @@ interface PostType {
 
 interface PostWrapperType {
   postId: number;
-  setShowPostModal?: any;
+  setShowPostModal?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 interface CommentsListBoxType {
-  postId: number;
-  getCommentsListData: any;
+  getCommentsListData: GetCommentsListQueryType;
 }
 
 interface CreatePostModalType {
   profileImage: string;
+  username: string;
 }
 
 interface DeleteConfirmModalType {
   postId: number;
   userId: number;
-  closeModal: any;
+  closeModal: () => void;
+}
+
+interface PostPresenterType {
+  postId: number;
+  getPostError: AxiosError<Error>;
+  getPostLoading: boolean;
 }
 
 interface CommentItemType {
@@ -206,20 +227,29 @@ interface CommentItemType {
   createdAt: Date;
   likeYn: string;
   userId: number;
-  setShowPostModal: any;
+  setShowPostModal: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 interface PostDropDownModalType {
   isMyPost: boolean;
   postId: number;
   userId: number;
-  closeModal: any;
+  closeModal: () => void;
+}
+
+interface DiscardPostModalType {
+  title: string;
+  question: string;
+  onClickDiscard?: () => void;
+  closeDiscard: React.Dispatch<React.SetStateAction<boolean>>;
+  imageIndex?: number;
+  handleDeleteImage?: (id: number) => void;
 }
 
 interface CommentDropDownModalType {
   commentId: number;
   userId: number;
-  setShowCommentDropDown: any;
+  setShowCommentDropDown: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 interface FeedCardType {
@@ -339,6 +369,11 @@ interface GetCommentsListQueryType extends ResponseData {
   commentList: CommentType[];
 }
 
-interface GetPostQueryType extends PostListType {
+interface GetPostQueryType extends PostListType, ResponseData {
   commentList: CommentType[];
+}
+
+interface GetPostsQueryType {
+  pageParams: number | unknown[];
+  pages: PageType[];
 }

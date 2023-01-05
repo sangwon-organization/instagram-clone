@@ -26,7 +26,7 @@ const Button = styled.button<{ first?: boolean; last?: boolean }>`
     border-top-right-radius: ${({ first }) => first && '10px'};
     border-bottom-left-radius: ${({ last }) => last && '10px'};
     border-bottom-right-radius: ${({ last }) => last && '10px'};
-    background: ${({ theme }) => theme.ultraLightGreyColor};
+    backdrop-filter: brightness(0.9);
   }
   &:first-child {
     border-top: none;

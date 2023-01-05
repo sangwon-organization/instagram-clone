@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { BiX } from 'react-icons/bi';
 import ModalPortal from './ModalPortal';
@@ -53,17 +53,6 @@ const DeleteIcon = styled(BiX)`
   color: ${({ theme }) => theme.whiteColor};
 `;
 
-interface PreviewImageType {
-  image: string;
-  setCurrentSlide: any;
-  imageIndex: any;
-  currentSlide: any;
-  imageSrc: any;
-  setImageSrc: any;
-  setShowPreviewImagesModal: any;
-  totalSlide: any;
-}
-
 const PreviewImage = ({
   image,
   setCurrentSlide,
@@ -90,12 +79,10 @@ const PreviewImage = ({
 
   const openModal = () => {
     setShowDiscardPhotoModal(true);
-    // document.body.style.overflow = 'hidden';
   };
 
   const closeModal = () => {
     setShowDiscardPhotoModal(false);
-    // document.body.style.overflow = 'unset';
   };
 
   const handleDeleteImage = (id: number) => {
@@ -127,7 +114,7 @@ const PreviewImage = ({
             <DiscardPostModal
               title="Discard photo?"
               question="This will remove the photo from your post."
-              closeDiscard={closeModal}
+              closeDiscard={setShowDiscardPhotoModal}
               handleDeleteImage={handleDeleteImage}
               imageIndex={imageIndex}
             />

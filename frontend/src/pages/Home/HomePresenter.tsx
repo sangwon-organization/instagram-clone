@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import FeedCard from '../../components/feature/Home/FeedCard';
 import HomeAside from '../../components/feature/Home/HomeAside';
 import StoryBox from '../../components/feature/Home/StoryBox';
-import NavigationBar from '../../components/layout/NavigationBar/NavigationBar';
+import NavigationBar from '../../components/feature/NavigationBar/NavigationBar';
 import Loader from 'react-loader';
 import AllSugesstionsList from '../../components/feature/Home/AllSugesstionsList';
 
@@ -36,11 +36,18 @@ const StoryAndFeedSection = styled.section`
   margin: 28px 0;
 `;
 
+const ScrollSensor = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100px;
+  height: 100px;
+`;
+
 const HomePresenter = ({
   getPostsData,
   scrollRef,
   hasNextPage,
-  fetchNextPage,
   isFetchingNextPage,
 }: HomePresenterType) => {
   return (
@@ -72,15 +79,7 @@ const HomePresenter = ({
                 )}
 
                 {hasNextPage && (
-                  <div
-                    ref={scrollRef}
-                    style={{
-                      width: '100px',
-                      height: '100px',
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'cetner',
-                    }}>
+                  <ScrollSensor ref={scrollRef}>
                     <Loader
                       loaded={!isFetchingNextPage}
                       color="#8e8e8e"
@@ -89,7 +88,7 @@ const HomePresenter = ({
                       left="50%"
                       position="relative"
                     />
-                  </div>
+                  </ScrollSensor>
                 )}
               </StoryAndFeedSection>
               <HomeAside />

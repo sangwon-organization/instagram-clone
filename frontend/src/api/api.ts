@@ -17,28 +17,6 @@ const bearerTokenApi = axios.create({
   },
 });
 
-// bearerTokenApi.interceptors.response.use(
-//   (response) => response,
-//   async (error) => {
-//     const {
-//       response: { status },
-//     } = error;
-
-//     if (status === 401) {
-//       try {
-//         localStorage.removeItem('accessToken');
-//         window.location.href = '/';
-//         window.location.reload();
-//         return;
-//       } catch (e) {
-//         console.log(e);
-//       }
-//     }
-
-//     return Promise.reject(error);
-//   },
-// );
-
 const multipartFormDataApi = axios.create({
   baseURL: 'http://59.187.205.70:3000',
   headers: {
@@ -77,7 +55,6 @@ export const emailDuplicationCheck = async ({
   email,
 }: EmailDuplicationCheckType) => {
   const { data } = await api.post('/user/checkEmail', { email });
-  console.log(data);
   return data;
 };
 
@@ -85,19 +62,6 @@ export const usernameDuplicationCheck = async ({
   username,
 }: UsernameDuplicationCheckType) => {
   const { data } = await api.post('/user/checkUsername', { username });
-  console.log(data);
-  return data;
-};
-
-export const changePassword = async ({
-  oldPassword,
-  newPassword,
-}: ChangePasswordType) => {
-  const { data } = await api.post('/user/changePassword', {
-    oldPassword,
-    newPassword,
-  });
-  console.log(data);
   return data;
 };
 
@@ -150,11 +114,6 @@ export const commentPost = async (requestParam: CommentPostType) => {
   return data;
 };
 
-export const modifyComment = async (requestParam: ModifyCommentType) => {
-  const { data } = await bearerTokenApi.put('/post/comment', requestParam);
-  return data;
-};
-
 export const deleteComment = async ({ commentId }: DeleteCommentType) => {
   const { data } = await bearerTokenApi.delete('/post/comment', {
     data: { commentId: commentId },
@@ -193,11 +152,6 @@ export const setUserProfileImage = async (requestParam: FormData) => {
     '/user/profileImage',
     requestParam,
   );
-  return data;
-};
-
-export const removeUserProfileImage = async () => {
-  const { data } = await multipartFormDataApi.delete('/user/profileImage');
   return data;
 };
 
@@ -244,16 +198,16 @@ export const getNotFollowingList = async () => {
   return data;
 };
 
+export const followingUser = async (requestBody: FollowingUserType) => {
+  const { data } = await bearerTokenApi.post(`/user/followUser`, requestBody);
+  return data;
+};
+
 export const getUserInformation = async ({
   targetUserId,
 }: GetUserInformationType) => {
   const { data } = await bearerTokenApi.get(
     `/user/info?targetUserId=${targetUserId}`,
   );
-  return data;
-};
-
-export const followingUser = async (requestBody: FollowingUserType) => {
-  const { data } = await bearerTokenApi.post(`/user/followUser`, requestBody);
   return data;
 };

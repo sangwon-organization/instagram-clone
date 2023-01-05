@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { BsHeartFill } from 'react-icons/bs';
 import { IoChatbubble } from 'react-icons/io5';
-import userImage from '../../../assets/image/userImage.png';
 import { useNavigate } from 'react-router-dom';
 import { IoIosPhotos } from 'react-icons/io';
 import ModalPortal from '../Modal/ModalPortal';
@@ -40,19 +39,6 @@ const LikeAndCommentWrapper = styled.div<{ postHover: boolean }>`
   width: 230px;
   height: fit-content;
 `;
-const HeartIcon = styled(BsHeartFill)`
-  width: 18px;
-  height: 18px;
-  margin-right: 10px;
-  color: ${({ theme }) => theme.whiteColor};
-`;
-
-const CommentIcon = styled(IoChatbubble)`
-  width: 18px;
-  height: 18px;
-  margin-right: 10px;
-  color: ${({ theme }) => theme.whiteColor};
-`;
 
 const ItemBox = styled.div`
   display: flex;
@@ -65,6 +51,20 @@ const ItemBox = styled.div`
     font-size: 16px;
     font-weight: 600;
   }
+`;
+
+const HeartIcon = styled(BsHeartFill)`
+  width: 18px;
+  height: 18px;
+  margin-right: 10px;
+  color: ${({ theme }) => theme.whiteColor};
+`;
+
+const CommentIcon = styled(IoChatbubble)`
+  width: 18px;
+  height: 18px;
+  margin-right: 10px;
+  color: ${({ theme }) => theme.whiteColor};
 `;
 
 const ImagesIcon = styled(IoIosPhotos)`
@@ -114,7 +114,7 @@ const Post = ({ postImageList, postId, likeCount, commentCount }: PostType) => {
       </LikeAndCommentWrapper>
       {showPostModal && (
         <ModalPortal>
-          <ModalContainer closeModal={closePost}>
+          <ModalContainer closeIcon closeModal={closePost}>
             <PostWrapper postId={postId} setShowPostModal={setShowPostModal} />
           </ModalContainer>
         </ModalPortal>

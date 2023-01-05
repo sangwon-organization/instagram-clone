@@ -1,9 +1,7 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
   isLogin: true,
-  isSignup: false,
 };
 
 export const loginSlice = createSlice({
@@ -12,11 +10,9 @@ export const loginSlice = createSlice({
   reducers: {
     loginComponent: (state) => {
       state.isLogin = true;
-      state.isSignup = false;
     },
     signupComponent: (state) => {
       state.isLogin = false;
-      state.isSignup = true;
     },
   },
 });

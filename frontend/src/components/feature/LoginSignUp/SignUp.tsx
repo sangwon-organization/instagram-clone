@@ -3,8 +3,8 @@ import styled from 'styled-components';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import LoginSignUpBottomBox from '../../share/LoginSignUpBottomBox';
-import LoginSignUpMiddleBox from '../../share/LoginSignUpMiddleBox';
+import LoginSignUpBottomBox from './LoginSignUpBottomBox';
+import LoginSignUpMiddleBox from './LoginSignUpMiddleBox';
 import clonestagramLogoBlack from '../../../assets/image/clonestagramLogoBlack.png';
 import { AiFillFacebook } from 'react-icons/ai';
 import Loader from 'react-loader';
@@ -231,9 +231,12 @@ const ErrorMessageBox = styled.div`
 
 const schema = yup.object().shape({
   email: yup.string().required(),
-  name: yup.string().required(),
-  username: yup.string().required(),
-  password: yup.string().min(6).required(),
+  name: yup.string().required().max(15),
+  username: yup
+    .string()
+    .required()
+    .matches(/^[a-zA-Z0-9_.]*$/),
+  password: yup.string().min(8).max(15).required(),
 });
 
 const SignUp = () => {
@@ -257,6 +260,45 @@ const SignUp = () => {
   } = useForm<SignUpFormValues>({
     mode: 'onChange',
     resolver: yupResolver(schema),
+  });
+
+  const { mutate, error, isLoading } = useMutation<
+    ResponseData,
+    AxiosError<Error>,
+    SignUpType
+  >(signUpUser, {
+    onError: (err) => {
+      console.log('회원가입 실패!', err.response.data);
+    },
+    onSuccess: () => {
+      console.log('회원가입 성공!');
+    },
+  });
+
+  const emailDuplicationChecking = useMutation<
+    ResponseData,
+    AxiosError,
+    EmailDuplicationCheckType
+  >(emailDuplicationCheck, {
+    onError: (err) => {
+      console.log('이메일 중복 체크 실패!', err.response.data);
+    },
+    onSuccess: () => {
+      console.log('이메일 중복 체크 성공!');
+    },
+  });
+
+  const usernameDuplicationChecking = useMutation<
+    ResponseData,
+    AxiosError,
+    UsernameDuplicationCheckType
+  >(usernameDuplicationCheck, {
+    onError: (err) => {
+      console.log('유저네임 중복 체크 실패!', err.response.data);
+    },
+    onSuccess: () => {
+      console.log('유저네임 중복 체크 성공!');
+    },
   });
 
   const InputKeyPress = (
@@ -288,44 +330,6 @@ const SignUp = () => {
     mutate(dataInput);
   };
 
-  const { mutate, data, error, reset, isLoading } = useMutation<
-    ResponseData,
-    AxiosError<Error>,
-    SignUpType
-  >(signUpUser, {
-    onError: (err) => {
-      console.log('회원가입 실패!', err.response.data);
-    },
-    onSuccess: () => {
-      console.log('회원가입 성공!');
-    },
-  });
-
-  const emailDuplicationChecking = useMutation<
-    ResponseData,
-    AxiosError,
-    EmailDuplicationCheckType
-  >(emailDuplicationCheck, {
-    onError: (err) => {
-      console.log(err.response.data);
-    },
-    onSuccess: () => {
-      console.log('이메일 사용 가능!');
-    },
-  });
-
-  const usernameDuplicationChecking = useMutation<
-    ResponseData,
-    AxiosError,
-    UsernameDuplicationCheckType
-  >(usernameDuplicationCheck, {
-    onError: (err) => {
-      console.log(err.response.data);
-    },
-    onSuccess: () => {
-      console.log('유저네임 사용 가능!');
-    },
-  });
   return (
     <SignUpContainer error={error}>
       <TopBox error={error}>
@@ -386,10 +390,15 @@ const SignUp = () => {
               }}
               onKeyUp={(e) => InputKeyPress(e, setUsernameKeyPress)}
               {...register('username', { required: true })}
+              maxLength={20}
             />
             <span>Username</span>
-            {usernameDuplicationChecking.isSuccess && <ValidationTrueIcon />}
-            {usernameDuplicationChecking.error && <ValidationFalseIcon />}
+            {!errors?.username && usernameDuplicationChecking.isSuccess && (
+              <ValidationTrueIcon />
+            )}
+            {(usernameDuplicationChecking.error || errors?.username) && (
+              <ValidationFalseIcon />
+            )}
           </InputBox>
           <InputBox
             keyPress={passwordKeyPress}
@@ -435,10 +444,14 @@ const SignUp = () => {
                   `This password isn't available. Minimum length of 8 to 15 characters, uppercase, lowercase, number, special characters (@,$,!,%,*,?,&) required.`}
                 {error.response.data.message ===
                   '이미 등록된 이메일입니다. 다시 입력해 주세요.' &&
-                  `This username isn't available. Please try another.`}
+                  `Another account is using the same email.`}
                 {error.response.data.message ===
                   '이미 등록된 닉네임입니다. 다시 입력해 주세요.' &&
-                  `This username isn't available. Please try another.`}
+                  `A user with that username already exists.`}
+                {error.response.data.message ===
+                  '이메일 형식이 맞지 않습니다. 다시 입력해 주세요.' &&
+                  `Enter a valid email address.`}
+                {errors?.username?.message}
               </p>
             </ErrorMessageBox>
           )}

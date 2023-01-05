@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import styled from 'styled-components';
 import { IoClose } from 'react-icons/io5';
 import useOutsideClick from '../../../hooks/useOutsideClick';
@@ -182,7 +182,6 @@ const SearchBarTooltip = ({
   searchUserIsSuccess,
 }: SearchBarTooltipType) => {
   const outsideRef = useRef();
-  const [recentSearch, setRecentSearch] = useState(true);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -209,7 +208,6 @@ const SearchBarTooltip = ({
     },
     onSuccess: () => {
       console.log('최근 검색 유저 추가 성공!');
-      // console.log(addSearchUserQuery.data);
       queryClient.invalidateQueries(['getSearchUserList']);
     },
   });
@@ -224,7 +222,6 @@ const SearchBarTooltip = ({
     },
     onSuccess: () => {
       console.log('최근 검색 유저 삭제 성공!');
-      // console.log(deleteSearchUserQuery.data);
       queryClient.invalidateQueries(['getSearchUserList']);
     },
   });

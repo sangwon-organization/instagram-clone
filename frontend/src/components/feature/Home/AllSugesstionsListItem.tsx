@@ -14,13 +14,6 @@ const UserAvatar = styled.div`
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  /* background-image: linear-gradient(
-      ${({ theme }) => theme.searchBarBgColor},
-      ${({ theme }) => theme.searchBarBgColor}
-    ),
-    linear-gradient(to right, red 0%, orange 100%); */
-  /* background-origin: border-box;
-  background-clip: content-box, border-box; */
   img {
     width: 44px;
     height: 44px;
@@ -91,10 +84,7 @@ const FollowButton = styled.button<{ followbuttonclicked: boolean }>`
 const AllSugesstionsListItem = ({
   list,
   setShowGetStarted,
-}: {
-  list: any;
-  setShowGetStarted: any;
-}) => {
+}: AllSugesstionsListItemType) => {
   const navigate = useNavigate();
   const [followButtonClicked, setFollowButtonClicked] = useState(false);
 

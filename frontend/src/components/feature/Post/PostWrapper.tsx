@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { HiOutlineEmojiHappy } from 'react-icons/hi';
 import {
@@ -7,19 +7,13 @@ import {
   useQueryClient,
   useInfiniteQuery,
 } from '@tanstack/react-query';
-import {
-  bookmarkPost,
-  commentPost,
-  getPost,
-  likeComment,
-  likePost,
-} from '../../../api/api';
+import { bookmarkPost, commentPost, getPost, likePost } from '../../../api/api';
 import { GoKebabHorizontal } from 'react-icons/go';
 import Loader from 'react-loader';
 import { RiChat3Line } from 'react-icons/ri';
 import { TbLocation } from 'react-icons/tb';
 import { BsHeart, BsHeartFill } from 'react-icons/bs';
-import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { FaBookmark, FaCircle, FaRegBookmark } from 'react-icons/fa';
 import {
   IoIosArrowDropleftCircle,
@@ -37,10 +31,11 @@ import { getCommentsList } from '../../../api/api';
 
 const Wrapper = styled.div`
   width: 930px;
-  height: 600px;
-  border: 1px solid ${({ theme }) => theme.borderColor};
+  height: 598px;
   display: flex;
-  background: ${({ theme }) => theme.dropDownBgColor};
+  border: 1px solid ${({ theme }) => theme.borderColor};
+  border-radius: 5px;
+  background: ${({ theme }) => theme.bgColor};
 `;
 
 const ImageBoxWrapper = styled.div`
@@ -48,24 +43,18 @@ const ImageBoxWrapper = styled.div`
   height: 598px;
   display: flex;
   overflow: hidden;
-  /* background-image: url('../../../assets/image/userImage.png');
-  background-position: center;
-  background-size: contain;
-  background-repeat: no-repeat; */
   position: relative;
+  background: black;
 `;
 
 const ImageWrapper = styled.div`
   display: flex;
   align-items: center;
   width: 100%;
-  height: 100%;
-  aspect-ratio: 4/5;
   img {
     width: 100%;
-    height: 100%;
+    aspect-ratio: 4/5;
     object-fit: cover;
-    background: black;
     flex: none;
     -webkit-user-drag: none;
     -khtml-user-drag: none;
@@ -125,7 +114,7 @@ const PostInfo = styled.div`
 const PostHeader = styled.div`
   width: 335px;
   height: 70px;
-  border-bottom: 1px solid ${({ theme }) => theme.ultraLightGreyColor};
+  border-bottom: 1px solid ${({ theme }) => theme.borderColor};
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -139,7 +128,7 @@ const CommentsListBox = styled.div`
   width: 100%;
   height: 485px;
   padding: 10px;
-  border-bottom: 1px solid ${({ theme }) => theme.ultraLightGreyColor};
+  border-bottom: 1px solid ${({ theme }) => theme.borderColor};
   overflow-y: scroll;
   &::-webkit-scrollbar {
     display: none;
@@ -170,12 +159,15 @@ const AddCommentBox = styled.form`
   textarea {
     width: 70%;
     height: 20px;
-    border: none;
-    resize: none;
-    outline: none;
+    max-height: 80px;
     margin-left: 10px;
+    border: none;
     background: transparent;
     font-family: 'RobotoFont';
+    color: ${({ theme }) => theme.textColor};
+    resize: none;
+    outline: none;
+    overflow-y: auto;
   }
   button {
     font-size: 14px;
@@ -476,35 +468,6 @@ const OptionBox = styled.div`
   }
 `;
 
-const ReplyBox = styled.div`
-  width: 100%;
-  height: fit-content;
-  border: 1px solid blue;
-  padding: 25px 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
-  p {
-    font-size: 12px;
-    font-weight: 600;
-    color: ${({ theme }) => theme.greyTextColor};
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    gap: 0 17px;
-    cursor: pointer;
-    &::before {
-      content: '';
-      display: inline-block;
-      width: 30px;
-      height: 1px;
-      background: ${({ theme }) => theme.greyTextColor};
-      margin-left: 3px;
-    }
-  }
-`;
-
 const NextPageIconBox = styled.div<{ hasnextpage: boolean }>`
   margin: 10px;
   display: ${({ hasnextpage }) => (hasnextpage ? 'block' : 'none')};
@@ -512,50 +475,113 @@ const NextPageIconBox = styled.div<{ hasnextpage: boolean }>`
 
 const PostWrapper = ({ postId, setShowPostModal }: PostWrapperType) => {
   const [likeButtonClicked, setLikeButtonClicked] = useState('false');
-  const [showCommentMenuIcon, setShowCommentMenuIcon] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [showPostDropdown, setShowPostDropdown] = useState(false);
 
   const textareaRef = useRef(null);
-  const postButtonRef = useRef(null);
   const slideRef = useRef(null);
 
   const navigate = useNavigate();
-  const [currentSlide, setCurrentSlide] = useState(0);
 
   const queryClient = useQueryClient();
 
-  const { data: getUserPostData } = useQuery(['getPost', postId], () =>
-    getPost(postId),
+  const location = useLocation().pathname;
+
+  const myUserId = parseInt(localStorage.getItem('userId'));
+
+  useEffect(() => {
+    slideRef.current.style.transition = 'all 0.5s ease-in-out';
+    slideRef.current.style.transform = `translateX(-${currentSlide}00%)`;
+  }, [location, currentSlide]);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { isValid },
+  } = useForm<CommentPostFormValues>({ mode: 'onChange' });
+
+  const { ref: commentRef, ...rest } = register('commentInput', {
+    required: true,
+  });
+
+  const { data: getUserPostData } = useQuery<GetPostQueryType, AxiosError>(
+    ['getPost', postId],
+    () => getPost(postId),
   );
 
   const {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-    isFetching,
-    isLoading,
     data: getCommentsListData,
-  } = useInfiniteQuery(
+  } = useInfiniteQuery<GetCommentsListQueryType, AxiosError>(
     ['getCommentsList'],
-    ({ pageParam = 1 }) => getCommentsList({ page: pageParam, postId: postId }),
+    ({ pageParam = 1 }) =>
+      getCommentsList({
+        page: pageParam,
+        postId: postId,
+      }),
     {
-      getNextPageParam: (lastPage: any, allPages: any) => {
-        console.log(allPages);
+      getNextPageParam: (lastPage, allPages) => {
         if (lastPage.commentList.length === 20) {
           return allPages.length + 1;
         } else {
           return false;
         }
       },
-
-      getPreviousPageParam: (firstPage: number, allPages: any) => undefined,
     },
   );
 
-  console.log(getCommentsListData?.pages);
+  const { mutate: commentPostMutate, isLoading: commentPostIsLoading } =
+    useMutation<ResponseData, AxiosError, CommentPostType>(commentPost, {
+      onError: (err) => {
+        console.log('댓글 등록 실패!', err.response.data);
+      },
+      onSuccess: () => {
+        console.log('댓글 등록 성공!');
+        Promise.all([
+          queryClient.invalidateQueries(['getCommentsList']),
+          queryClient.invalidateQueries(['getUserInformation']),
+        ]);
+        textareaRef.current.value = '';
+        textareaRef.current.focus();
+      },
+    });
+
+  const mutateLikePost = useMutation<ResponseData, AxiosError, LikePostType>(
+    likePost,
+    {
+      onError: (err) => {
+        console.log('포스트 좋아요 실패!', err.response.data);
+      },
+      onSuccess: () => {
+        console.log('포스트 좋아요 성공!');
+        Promise.all([
+          queryClient.invalidateQueries(['getPost']),
+          queryClient.invalidateQueries(['getUserInformation']),
+        ]);
+      },
+    },
+  );
+
+  const mutateBookmarkPost = useMutation<
+    ResponseData,
+    AxiosError,
+    BookmarkPostType
+  >(bookmarkPost, {
+    onError: (err) => {
+      console.log('북마크 실패!', err.response.data);
+    },
+    onSuccess: () => {
+      console.log('북마크 성공!');
+      Promise.all([
+        queryClient.invalidateQueries(['getPost']),
+        queryClient.invalidateQueries(['getPosts']),
+      ]);
+    },
+  });
 
   const totalSlide = getUserPostData?.postImageList.length;
-
-  console.log(getUserPostData);
 
   const doubleClickImage = () => {
     setLikeButtonClicked('true');
@@ -580,69 +606,13 @@ const PostWrapper = ({ postId, setShowPostModal }: PostWrapperType) => {
     }
   };
 
-  const {
-    register,
-    handleSubmit,
-    formState: { isValid, errors, isDirty },
-  } = useForm<CommentPostFormValues>({ mode: 'onChange' });
-
-  const { ref: commentRef, ...rest } = register('commentInput', {
-    required: true,
-  });
-
-  const {
-    mutate: commentPostMutate,
-    data,
-    error,
-    reset,
-    isLoading: commentPostIsLoading,
-  } = useMutation<ResponseData, AxiosError, CommentPostType>(commentPost, {
-    onError: (err) => {
-      console.log(err.response.data);
-    },
-    onSuccess: () => {
-      console.log('댓글 등록 성공!');
-      queryClient.invalidateQueries(['getCommentsList']);
-      textareaRef.current.value = '';
-      textareaRef.current.focus();
-    },
-  });
-
   const onSubmit = (dataInput: CommentPostFormValues) => {
-    console.log(dataInput);
     commentPostMutate({
       postId: postId,
       parentCommentId: '',
       content: dataInput.commentInput,
     });
   };
-
-  const mutateLikePost = useMutation<ResponseData, AxiosError, LikePostType>(
-    likePost,
-    {
-      onError: (err) => {
-        console.log(err.response.data);
-      },
-      onSuccess: () => {
-        console.log('포스트 좋아요 성공!');
-        queryClient.invalidateQueries(['getPost']);
-      },
-    },
-  );
-
-  const mutateBookmarkPost = useMutation<
-    ResponseData,
-    AxiosError,
-    BookmarkPostType
-  >(bookmarkPost, {
-    onError: (err) => {
-      console.log(err.response.data);
-    },
-    onSuccess: () => {
-      console.log('북마크 성공!');
-      queryClient.invalidateQueries(['getPost']);
-    },
-  });
 
   const likePostFunction = () => {
     if (getUserPostData?.likeYn === 'Y') {
@@ -666,15 +636,6 @@ const PostWrapper = ({ postId, setShowPostModal }: PostWrapperType) => {
     }
   };
 
-  const location = useLocation().pathname;
-
-  useEffect(() => {
-    slideRef.current.style.transition = 'all 0.5s ease-in-out';
-    slideRef.current.style.transform = `translateX(-${currentSlide}00%)`;
-  }, [location, currentSlide]);
-
-  const [showPostDropdown, setShowPostDropdown] = useState(false);
-
   const openModal = () => {
     setShowPostDropdown(true);
   };
@@ -683,11 +644,15 @@ const PostWrapper = ({ postId, setShowPostModal }: PostWrapperType) => {
     setShowPostDropdown(false);
   };
 
-  const myUserId = parseInt(localStorage.getItem('userId'));
+  const handleResizeHeight = useCallback(() => {
+    textareaRef.current.style.height = '20px';
+    textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
+  }, []);
 
   const isMyPost = myUserId === getUserPostData?.userId;
+
   return (
-    <Wrapper>
+    <Wrapper onClick={(e) => e.stopPropagation()}>
       <ImageBoxWrapper>
         <LeftArrowIcon currentslide={currentSlide} onClick={prevSlide} />
         <ImageWrapper
@@ -845,12 +810,13 @@ const PostWrapper = ({ postId, setShowPostModal }: PostWrapperType) => {
               name="commentInput"
               id="commentInput"
               {...rest}
-              // required
               ref={(e) => {
                 commentRef(e);
                 textareaRef.current = e;
               }}
-              placeholder="Add a comment..."></textarea>
+              placeholder="Add a comment..."
+              onInput={handleResizeHeight}
+            />
             {commentPostIsLoading && (
               <Loader
                 loaded={false}

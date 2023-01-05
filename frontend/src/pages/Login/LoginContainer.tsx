@@ -2,8 +2,12 @@ import React from 'react';
 import MetaTag from '../../meta/MetaTag';
 import LoginPresenter from './LoginPresenter';
 import thumbnail from '../../assets/image/thumbnail.png';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../redux/store/configureStore';
 
 const LoginContainer = () => {
+  const isLogin = useSelector((state: RootState) => state.login.isLogin);
+
   return (
     <>
       <MetaTag
@@ -13,7 +17,7 @@ const LoginContainer = () => {
         url="https://instagram-clone-sangwon.com"
         imgsrc={thumbnail}
       />
-      <LoginPresenter />
+      <LoginPresenter isLogin={isLogin} />
     </>
   );
 };

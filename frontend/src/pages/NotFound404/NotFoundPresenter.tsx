@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
-import Footer from '../../components/layout/footer/Footer';
-import NavigationBar from '../../components/layout/NavigationBar/NavigationBar';
+import Footer from '../../components/feature/Footer/Footer';
+import NavigationBar from '../../components/feature/NavigationBar/NavigationBar';
 
 const Container = styled.section`
   display: flex;

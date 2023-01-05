@@ -24,7 +24,7 @@ const StoryBoxWrapper = styled.ul`
   display: flex;
   gap: 0 15px;
   width: 100%;
-  height: 85px;
+  height: 90px;
   padding: 0 15px;
   overflow-x: scroll;
   &::-webkit-scrollbar {
@@ -37,8 +37,9 @@ const StoryItem = styled.button`
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
+  gap: 5px 0;
   width: 64px;
-  height: 84px;
+  height: 88px;
   border: none;
   background: transparent;
   p {
@@ -70,8 +71,8 @@ const UserAvatar = styled.div`
   background-origin: border-box;
   background-clip: content-box, border-box;
   img {
-    width: 57px;
-    height: 57px;
+    width: 56px;
+    height: 56px;
     border-radius: 50%;
     z-index: 100;
   }
@@ -104,8 +105,9 @@ const RightArrowIcon = styled(IoIosArrowDroprightCircle)`
 `;
 
 const StoryBox = () => {
-  const ref = useRef<HTMLUListElement>(null);
-  const [currentScrollX, setCurrentScrollX] = useState('');
+  const [showLeftArrow, setShowLeftArrow] = useState(false);
+  const [showRightArrow, setShowRightArrow] = useState(false);
+  const ref = useRef(null);
 
   const { data: getFollowingListData } = useQuery(['getFollowingList'], () =>
     getFollowingList({ page: 1 }),
@@ -115,38 +117,27 @@ const StoryBox = () => {
     if (!ref.current) {
       return;
     }
-
     const getScrollState = () => {
       const element = ref.current;
-
-      if (element.scrollLeft === 0) {
-        setCurrentScrollX('rightMax');
-      } else if (
-        element.scrollWidth ===
-        element.clientWidth + element.scrollLeft
-      ) {
-        setCurrentScrollX('leftMax');
-      } else if (
-        element.scrollLeft !== 0 ||
-        element.scrollWidth !== element.clientWidth + element.scrollLeft
-      ) {
-        setCurrentScrollX('middle');
+      if (element.scrollWidth > element.clientWidth) {
+        setShowRightArrow(true);
+      }
+      if (element.scrollLeft === element.scrollWidth - element.clientWidth) {
+        setShowRightArrow(false);
+      }
+      if (element.scrollLeft !== 0) {
+        setShowLeftArrow(true);
+      } else {
+        setShowLeftArrow(false);
       }
     };
+    getScrollState();
 
     ref.current?.addEventListener('scroll', getScrollState);
     return () => {
       ref.current?.removeEventListener('scroll', getScrollState);
     };
-  }, [ref.current]);
-
-  const moveRight = () => {
-    ref.current.scrollBy({
-      top: 0,
-      left: -200,
-      behavior: 'smooth',
-    });
-  };
+  });
 
   const moveLeft = () => {
     ref.current.scrollBy({
@@ -156,36 +147,37 @@ const StoryBox = () => {
     });
   };
 
+  const moveRight = () => {
+    ref.current.scrollBy({
+      top: 0,
+      left: -200,
+      behavior: 'smooth',
+    });
+  };
+
   return (
-    <>
-      {getFollowingListData?.followingList.length > 0 && (
-        <StoryBoxContainer>
-          <StoryBoxWrapper ref={ref}>
-            {(currentScrollX === 'leftMax' || currentScrollX === 'middle') && (
-              <LeftArrowIcon onClick={moveRight} />
-            )}
-            {getFollowingListData?.followingList.map(
-              (list: followerImFollowingListType) => (
-                <StoryItem key={list.userId}>
-                  <UserAvatar>
-                    <img src={list.profileImage} alt="유저아바타" />
-                  </UserAvatar>
-                  <p>{list.username}</p>
-                </StoryItem>
-              ),
-            )}
-            {(currentScrollX === 'rightMax' || currentScrollX === 'middle') && (
-              <RightArrowIcon
-                onClick={() => {
-                  moveLeft();
-                  console.log(ref.current?.scrollLeft);
-                }}
-              />
-            )}
-          </StoryBoxWrapper>
-        </StoryBoxContainer>
-      )}
-    </>
+    <StoryBoxContainer>
+      <StoryBoxWrapper ref={ref}>
+        {showLeftArrow && <LeftArrowIcon onClick={() => moveRight()} />}
+        {getFollowingListData?.followingList.map(
+          (list: followerImFollowingListType) => (
+            <StoryItem key={list.userId}>
+              <UserAvatar>
+                <img src={list.profileImage} alt="유저아바타" />
+              </UserAvatar>
+              <p>{list.username}</p>
+            </StoryItem>
+          ),
+        )}
+        {showRightArrow && (
+          <RightArrowIcon
+            onClick={() => {
+              moveLeft();
+            }}
+          />
+        )}
+      </StoryBoxWrapper>
+    </StoryBoxContainer>
   );
 };
 

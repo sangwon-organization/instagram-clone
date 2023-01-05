@@ -1,67 +1,37 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import MetaTag from '../../meta/MetaTag';
 import HomePresenter from './HomePresenter';
 import thumbnail from '../../assets/image/thumbnail.png';
 import { useInView } from 'react-intersection-observer';
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
-import {
-  getCommentsList,
-  getPostsList,
-  getUserInformation,
-} from '../../api/api';
+import { getPostsList } from '../../api/api';
 
 const HomeContainer = () => {
   const [ref, inView] = useInView();
 
-  // const [refetchPageIndex, setRefetchPageIndex] = useState<number | null>(null);
   const {
     fetchNextPage,
-    fetchPreviousPage,
     hasNextPage,
-    hasPreviousPage,
     isFetchingNextPage,
-    isFetchingPreviousPage,
     data: getPostsData,
-  } = useInfiniteQuery({
-    queryKey: ['getPosts'],
-    queryFn: ({ pageParam = 1 }) => getPostsList({ page: pageParam }),
-    getNextPageParam: (lastPage: any, allPages: any) => {
-      // console.log(allPages);
-      if (lastPage.postList.length === 10) {
-        return allPages.length + 1;
-      } else {
-        return false;
-      }
+  } = useInfiniteQuery<PageType, AxiosError>(
+    ['getPosts'],
+    ({ pageParam = 1 }) => getPostsList({ page: pageParam }),
+    {
+      getNextPageParam: (lastPage, allPages) => {
+        if (lastPage.postList.length === 10) {
+          return allPages.length + 1;
+        } else {
+          return false;
+        }
+      },
     },
-
-    getPreviousPageParam: (firstPage: number, allPages: any) => undefined,
-    onError: (error: any) => {
-      if (error.response?.data.code === 401) {
-        localStorage.removeItem('accessToken');
-        window.location.reload();
-      }
-    },
-  });
-
-  console.log(getPostsData);
-
-  // useEffect(() => {
-  //   if (refetchPageIndex !== null) {
-  //     refetch({ refetchPage: (page, index) => index === refetchPageIndex });
-  //     setRefetchPageIndex(null);
-  //   }
-  // }, [refetchPageIndex, refetch]);
-
-  // const refetchPage = (pageIndex: number) => setRefetchPageIndex(pageIndex);
-
-  // console.log(getPostsData);
+  );
 
   useEffect(() => {
     if (inView && hasNextPage) {
-      console.log('next~!');
       fetchNextPage();
-      // console.log(getPostsData);
     }
   }, [inView, fetchNextPage, hasNextPage]);
 
@@ -78,7 +48,6 @@ const HomeContainer = () => {
         getPostsData={getPostsData}
         scrollRef={ref}
         hasNextPage={hasNextPage}
-        fetchNextPage={fetchNextPage}
         isFetchingNextPage={isFetchingNextPage}
       />
     </>

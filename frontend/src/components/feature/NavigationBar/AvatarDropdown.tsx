@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import styled from 'styled-components';
 import { CgProfile } from 'react-icons/cg';
 import { BiBookmark } from 'react-icons/bi';
@@ -9,8 +9,7 @@ import { CgSync } from 'react-icons/cg';
 import useOutsideClick from '../../../hooks/useOutsideClick';
 import { useDispatch } from 'react-redux';
 import { changeThemeMode } from '../../../redux/slices/themeModeSlice';
-import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const AvatarDropdownContainer = styled.div<{ showDropdown: boolean }>`
   display: ${({ showDropdown }) => (showDropdown ? 'block' : 'none')};
@@ -97,6 +96,10 @@ const AvatarDropdown = ({
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  const userId = localStorage.getItem('userId');
+
+  const location = useLocation().pathname;
+
   useOutsideClick(outsideRef, () => setShowDropdown(false));
 
   const logout = () => {
@@ -104,12 +107,8 @@ const AvatarDropdown = ({
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('userId');
     navigate('/');
-    setTimeout(() => {
-      window.location.reload();
-    }, 600);
+    window.location.reload();
   };
-
-  const userId = localStorage.getItem('userId');
 
   return (
     <AvatarDropdownContainer showDropdown={showDropdown} ref={outsideRef}>
@@ -118,6 +117,7 @@ const AvatarDropdown = ({
           first
           onClick={() => {
             navigate(`/user/${userId}`);
+            if (location === `/user/${userId}`) window.location.reload();
           }}>
           <ProfileIcon />
           <p>Profile</p>
