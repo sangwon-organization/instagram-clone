@@ -21,8 +21,28 @@ const Container = styled.div`
   padding: 10px 0;
 `;
 
-const AvatarBox = styled.div`
-  /* border: 1px solid red; */
+const UserAvatar = styled.div`
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1.5px solid transparent;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  background-image: linear-gradient(
+      ${({ theme }) => theme.searchBarBgColor},
+      ${({ theme }) => theme.searchBarBgColor}
+    ),
+    linear-gradient(to right, red 0%, orange 100%);
+  background-origin: border-box;
+  background-clip: content-box, border-box;
+  img {
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    z-index: 100;
+  }
 `;
 
 const Comment = styled.div`
@@ -67,45 +87,19 @@ const OptionBox = styled.div`
   }
 `;
 
-const UserAvatar = styled.div`
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 1.5px solid transparent;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  background-image: linear-gradient(
-      ${({ theme }) => theme.searchBarBgColor},
-      ${({ theme }) => theme.searchBarBgColor}
-    ),
-    linear-gradient(to right, red 0%, orange 100%);
-  background-origin: border-box;
-  background-clip: content-box, border-box;
-  img {
-    width: 25px;
-    height: 25px;
-    border-radius: 50%;
-    z-index: 100;
-  }
-`;
-
 const CommentKebabMenuIcon = styled(GoKebabHorizontal)<{
-  showCommentMenuIcon: boolean;
+  $showCommentMenuIcon: boolean;
 }>`
   width: 15px;
   height: 15px;
   cursor: pointer;
   padding: 0;
   color: ${({ theme }) => theme.greyTextColor};
-  display: ${({ showCommentMenuIcon }) =>
-    showCommentMenuIcon ? 'block' : 'none'};
+  display: ${({ $showCommentMenuIcon }) =>
+    $showCommentMenuIcon ? 'block' : 'none'};
 `;
 
 const SmallHeartIcon = styled(BsHeart)`
-  /* width: 15px; */
-  /* height: 15px; */
   font-size: 12px;
   cursor: pointer;
   color: ${({ theme }) => theme.textColor};
@@ -118,8 +112,6 @@ const SmallHeartIcon = styled(BsHeart)`
 const ColoredSmallHeartIcon = styled(BsHeartFill)<{
   likebuttonclicked: string;
 }>`
-  /* width: 23px; */
-  /* height: 23px; */
   font-size: 12px;
   color: #ed4956;
   cursor: pointer;
@@ -152,23 +144,28 @@ const CommentItem = ({
   createdAt,
   likeYn,
   userId,
+  setShowPostModal,
 }: CommentItemType) => {
   const [showCommentMenuIcon, setShowCommentMenuIcon] = useState(false);
   const [showCommentDropDown, setShowCommentDropDown] = useState(false);
+
   const navigate = useNavigate();
 
   const queryClient = useQueryClient();
 
-  const { mutate: commentLikeMutate, isLoading: commentLikeIsLoading } =
-    useMutation<ResponseData, AxiosError, LikeCommentType>(likeComment, {
-      onError: (err) => {
-        console.log('댓글 좋아요 실패!', err.response.data);
-      },
-      onSuccess: () => {
-        console.log('댓글 좋아요 성공!');
-        queryClient.invalidateQueries(['getPost']);
-      },
-    });
+  const { mutate: commentLikeMutate } = useMutation<
+    ResponseData,
+    AxiosError,
+    LikeCommentType
+  >(likeComment, {
+    onError: (err) => {
+      console.log('댓글 좋아요 실패!', err.response.data);
+    },
+    onSuccess: () => {
+      console.log('댓글 좋아요 성공!');
+      queryClient.invalidateQueries(['getCommentsList']);
+    },
+  });
 
   const likeCommentFunction = (likeYn: string, commentId: number) => {
     if (likeYn === 'Y') {
@@ -178,31 +175,30 @@ const CommentItem = ({
     }
   };
 
-  const openModal = () => {
-    setShowCommentDropDown(true);
-    document.body.style.overflow = 'hidden';
-  };
-
-  const closeModal = () => {
-    setShowCommentDropDown(false);
-    document.body.style.overflow = 'unset';
-  };
-
   return (
     <Container
       key={commentId}
       onMouseOver={() => setShowCommentMenuIcon(true)}
       onMouseOut={() => setShowCommentMenuIcon(false)}>
-      <AvatarBox>
-        <UserAvatar>
-          <img src={profileImage} alt="유저아바타" />
-        </UserAvatar>
-      </AvatarBox>
+      <UserAvatar>
+        <img
+          src={profileImage}
+          alt="유저아바타"
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate(`/user/${userId}`);
+            setShowPostModal(false);
+            document.body.style.overflow = 'unset';
+          }}
+        />
+      </UserAvatar>
       <Comment>
         <span
-          onClick={() => {
+          onClick={(e) => {
+            e.stopPropagation();
             navigate(`/user/${userId}`);
-            closeModal();
+            setShowPostModal(false);
+            document.body.style.overflow = 'unset';
           }}>
           {username}
         </span>
@@ -211,8 +207,8 @@ const CommentItem = ({
           <button>{timeForToday(createdAt)}</button>
           {likeCount > 0 && <button>{likeCount + ' like'}</button>}
           <CommentKebabMenuIcon
-            onClick={openModal}
-            showCommentMenuIcon={showCommentMenuIcon}
+            onClick={() => setShowCommentDropDown(true)}
+            $showCommentMenuIcon={showCommentMenuIcon}
           />
         </OptionBox>
       </Comment>
@@ -228,8 +224,12 @@ const CommentItem = ({
       )}
       {showCommentDropDown && (
         <ModalPortal>
-          <ModalContainer closeModal={closeModal}>
-            <CommentDropDownModal commentId={commentId} userId={userId} />
+          <ModalContainer closeModal={() => setShowCommentDropDown(false)}>
+            <CommentDropDownModal
+              commentId={commentId}
+              userId={userId}
+              setShowCommentDropDown={setShowCommentDropDown}
+            />
           </ModalContainer>
         </ModalPortal>
       )}

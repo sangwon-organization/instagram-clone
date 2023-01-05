@@ -1,13 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import {
-  followingUser,
-  getNotFollowingList,
-  getUserInformation,
-} from '../../../api/api';
 import { AxiosError } from 'axios';
+import { getNotFollowingList, getUserInformation } from '../../../api/api';
 import SugesstionItem from './SugesstionItem';
 
 const HomeAsideContainer = styled.aside`
@@ -111,6 +107,8 @@ const FooterItems = styled.ul`
     }
     &::after {
       content: '∙';
+      display: inline-block;
+      padding: 2px;
     }
     &:last-child::after {
       content: '';
@@ -126,9 +124,12 @@ const Copyright = styled.div`
 
 const HomeAside = () => {
   const navigate = useNavigate();
-  // const [isFollowing, setIsFollowing] = useState();
 
-  const queryClient = useQueryClient();
+  const userId = localStorage.getItem('userId');
+
+  const today = new Date();
+
+  const todayYear = today.getFullYear();
 
   const { data: getNotFollowingListData } = useQuery<
     getNotFollowingListType,
@@ -136,7 +137,7 @@ const HomeAside = () => {
   >(['getNotFollowingList'], () => getNotFollowingList(), {
     refetchOnWindowFocus: false,
   });
-  console.log(getNotFollowingListData);
+
   const { data: getUserInformData } = useQuery<
     GetUserInformationDataType,
     AxiosError
@@ -144,14 +145,6 @@ const HomeAside = () => {
     const userId = Number(localStorage.getItem('userId'));
     return getUserInformation({ targetUserId: userId });
   });
-
-  const userId = localStorage.getItem('userId');
-
-  // const toggleIsFollowing = () => {
-  //   const [isFollowing, setIsFollowing] = useState(false);
-  //   setIsFollowing((prev) => !prev);
-
-  // };
 
   return (
     <HomeAsideContainer>
@@ -192,7 +185,7 @@ const HomeAside = () => {
           <li>Locations</li>
           <li>Language</li>
         </FooterItems>
-        <Copyright>© 2022 CLONESTAGRAM</Copyright>
+        <Copyright>© {todayYear} CLONESTAGRAM</Copyright>
       </AsideFooter>
     </HomeAsideContainer>
   );

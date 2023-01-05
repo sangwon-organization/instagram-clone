@@ -1,7 +1,6 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 import { IoClose } from 'react-icons/io5';
-import useOutsideClick from '../../../hooks/useOutsideClick';
 
 const Container = styled.div`
   display: flex;
@@ -41,7 +40,7 @@ const Contents = styled.div`
 `;
 
 const CloseIcon = styled(IoClose)`
-  position: absolute;
+  position: fixed;
   top: 10px;
   right: 10px;
   font-size: 30px;
@@ -51,22 +50,24 @@ const CloseIcon = styled(IoClose)`
 
 type ModalContainerProps = {
   closeModal: Function;
-  createPost?: boolean;
+  closeIcon?: boolean;
   children: JSX.Element;
 };
 
 function ModalContainer({
   closeModal,
-  createPost,
+  closeIcon,
   children,
 }: ModalContainerProps) {
-  // const outsideRef = useRef();
-
-  // useOutsideClick(outsideRef, closeModal);
   return (
     <Container>
-      <Background onClick={() => closeModal()} />
-      {createPost && <CloseIcon />}
+      <Background
+        onClick={(e) => {
+          e.stopPropagation();
+          closeModal();
+        }}
+      />
+      {closeIcon && <CloseIcon />}
       <ModalBlock>
         <Contents>{children}</Contents>
       </ModalBlock>

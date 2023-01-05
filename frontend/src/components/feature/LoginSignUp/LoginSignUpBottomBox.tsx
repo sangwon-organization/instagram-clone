@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
-import AppStoreImage from '../../assets/image/AppStoreImage.png';
-import GooglePlayImage from '../../assets/image/GooglePlayImage.png';
+import AppStoreImage from '../../../assets/image/AppStoreImage.png';
+import GooglePlayImage from '../../../assets/image/GooglePlayImage.png';
 
 const Container = styled.div`
   display: flex;

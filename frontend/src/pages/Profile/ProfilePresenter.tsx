@@ -6,13 +6,15 @@ import { FaUserCheck } from 'react-icons/fa';
 import { RiAccountPinBoxLine } from 'react-icons/ri';
 import { BiMoviePlay } from 'react-icons/bi';
 import { IoAppsSharp } from 'react-icons/io5';
-import NavigationBar from '../../components/layout/NavigationBar/NavigationBar';
+import NavigationBar from '../../components/feature/NavigationBar/NavigationBar';
 import Post from '../../components/feature/Profile/Post';
-import Footer from '../../components/layout/footer/Footer';
+import Footer from '../../components/feature/Footer/Footer';
 import Loader from 'react-loader';
 import NoPostsBox from '../../components/feature/Post/NoPostsBox';
 import SharesPhotosBox from '../../components/feature/Post/SharesPhotosBox';
 import { IoIosSettings } from 'react-icons/io';
+import NotFound from '../NotFound404';
+import LoadingPage from '../../components/share/LoadingPage';
 
 const MainContainer = styled.div`
   display: flex;
@@ -129,7 +131,8 @@ const ThirdBox = styled.div`
   width: 100%;
   height: fit-content;
   p {
-    line-height: 24px;
+    font-size: 16px;
+    font-weight: 600;
     color: ${({ theme }) => theme.textColor};
   }
 `;
@@ -252,6 +255,7 @@ const MenuWrapper = styled.ul`
 const SettingsIcon = styled(IoIosSettings)`
   font-size: 30px;
   color: ${({ theme }) => theme.textColor};
+  cursor: pointer;
 `;
 
 const TaggedIcon = styled(RiAccountPinBoxLine)`
@@ -292,7 +296,21 @@ const ProfilePresenter = ({
   isMyPage,
   followingUserIsLoading,
   userFollowingUnFollowing,
+  followerImFollowingList,
+  followerImFollowingRestCount,
+  getUserInformationError,
+  getUserInformationLoading,
 }: ProfilePresenterType) => {
+  if (
+    getUserInformationError?.response.data.message ===
+    `Cannot read property 'userId' of null`
+  ) {
+    return <NotFound />;
+  }
+
+  if (getUserInformationLoading) {
+    return <LoadingPage />;
+  }
   return (
     <>
       <NavigationBar />
@@ -393,11 +411,22 @@ const ProfilePresenter = ({
                 <p>{getUserInformationData?.name}</p>
               </ThirdBox>
               <FourthBox>
-                {/* {getUserInformationData?.data.followerImFollowingList.length > 0 && ()} */}
-                <p>
-                  Followed by <span>from_minju</span>, <span>_yooohyun_</span>,
-                  <span>_heon</span> + 27 more
-                </p>
+                {!isMyPage && followerImFollowingList?.length > 0 && (
+                  <p>
+                    Followed by{' '}
+                    {followerImFollowingList.map(
+                      (list: followerImFollowingListType, index: number) => {
+                        return (
+                          <span key={`list_${index}`}>
+                            {(index ? ', ' : '') + list.username}
+                          </span>
+                        );
+                      },
+                    )}{' '}
+                    {followerImFollowingRestCount > 0 &&
+                      `+ ${followerImFollowingRestCount} more`}
+                  </p>
+                )}
               </FourthBox>
             </UserInfo>
           </UserInfoHeader>
@@ -419,7 +448,7 @@ const ProfilePresenter = ({
           </TabMenu>
           {getUserInformationData?.postList.length > 0 ? (
             <PostsWrapper>
-              {getUserInformationData?.postList.map((post: any) => (
+              {getUserInformationData?.postList.map((post: PostListType) => (
                 <Post
                   key={post.postId}
                   postImageList={post.postImageList}

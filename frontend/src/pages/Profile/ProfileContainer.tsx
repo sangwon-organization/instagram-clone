@@ -1,7 +1,7 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useEffect } from 'react';
 import MetaTag from '../../meta/MetaTag';
 import ProfilePresenter from '../Profile/ProfilePresenter';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   followingUser,
@@ -13,20 +13,16 @@ import { AxiosError } from 'axios';
 
 const ProfileContainer = () => {
   const imageInputRef = useRef(null);
-  const [imageSrc, setImageSrc] = useState<string>('');
 
   const params = useParams();
 
   const queryClient = useQueryClient();
 
-  const {
-    register,
-    handleSubmit,
-    formState: { isValid, errors, isDirty },
-  } = useForm<PostUserProfileImageFormValues>({ mode: 'onChange' });
+  const { register, handleSubmit } = useForm<PostUserProfileImageFormValues>({
+    mode: 'onChange',
+  });
 
   const onSubmit = () => {
-    console.log('유저 프로필 저장 성공!');
     const formData = new FormData();
     formData.append('postImage', imageInputRef.current.files[0]);
     postUserProfileImage.mutate(formData);
@@ -44,7 +40,10 @@ const ProfileContainer = () => {
       },
       onSuccess: () => {
         console.log('유저이미지 등록 성공!');
-        queryClient.invalidateQueries(['getUserInformation', 'getUserProfile']);
+        Promise.all([
+          queryClient.invalidateQueries(['getUserInformation']),
+          queryClient.invalidateQueries(['getUserProfile']),
+        ]);
       },
     },
   );
@@ -53,18 +52,34 @@ const ProfileContainer = () => {
     imageInputRef.current.click();
   };
 
-  const { data: getUserInformationData } = useQuery<
-    GetUserInformationDataType,
-    AxiosError
-  >(['getUserInformation'], () =>
-    getUserInformation({ targetUserId: parseInt(params.userId) }),
+  const location = useLocation().pathname;
+
+  const {
+    data: getUserInformationData,
+    refetch: getUserInformationRefetch,
+    error: getUserInformationError,
+    isLoading: getUserInformationLoading,
+  } = useQuery<GetUserInformationDataType, AxiosError<Error>>(
+    ['getUserInformation'],
+    () => getUserInformation({ targetUserId: parseInt(params.userId) }),
+    {
+      refetchOnWindowFocus: false,
+    },
   );
+
+  useEffect(() => {
+    getUserInformationRefetch();
+  }, [location, getUserInformationRefetch]);
+
+  const followerImFollowingList =
+    getUserInformationData?.followerImFollowingList.slice(0, 3);
+
+  const followerImFollowingRestCount =
+    getUserInformationData?.followerImFollowingList.slice(3).length;
 
   const myUserId = localStorage.getItem('userId');
 
   const isMyPage = myUserId === params.userId;
-
-  console.log(getUserInformationData);
 
   const userFollowingUnFollowing = () => {
     if (getUserInformationData?.followYn === 'Y') {
@@ -90,6 +105,7 @@ const ProfileContainer = () => {
         queryClient.invalidateQueries(['getUserInformation']);
       },
     });
+
   return (
     <>
       <MetaTag
@@ -112,6 +128,10 @@ const ProfileContainer = () => {
         isMyPage={isMyPage}
         userFollowingUnFollowing={userFollowingUnFollowing}
         followingUserIsLoading={followingUserIsLoading}
+        followerImFollowingList={followerImFollowingList}
+        followerImFollowingRestCount={followerImFollowingRestCount}
+        getUserInformationError={getUserInformationError}
+        getUserInformationLoading={getUserInformationLoading}
       />
     </>
   );

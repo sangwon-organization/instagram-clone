@@ -2,7 +2,10 @@ import React from 'react';
 import { useDispatch } from 'react-redux';
 import { Dispatch } from 'redux';
 import styled from 'styled-components';
-import { loginComponent, signupComponent } from '../../redux/slices/loginSlice';
+import {
+  loginComponent,
+  signupComponent,
+} from '../../../redux/slices/loginSlice';
 
 const Container = styled.div`
   display: flex;

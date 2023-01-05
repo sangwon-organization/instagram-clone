@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
@@ -55,6 +55,7 @@ const ItemUserInfoWrapper = styled.div`
 
 const SugesstionItem = ({ list }: SugesstionItemType) => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [followButtonClicked, setFollowButtonClicked] = useState(false);
 
   const userFollowingUnFollowing = (userId: number) => {
@@ -78,13 +79,21 @@ const SugesstionItem = ({ list }: SugesstionItemType) => {
       },
       onSuccess: () => {
         console.log('유저 팔로우/언팔로우 성공!');
+        Promise.all([
+          queryClient.invalidateQueries(['getPosts']),
+          queryClient.invalidateQueries(['getFollowingList']),
+        ]);
       },
     });
   return (
     <SuggestionsItem
       key={list.userId}
       followbuttonclicked={followButtonClicked}>
-      <img src={list.profileImage} alt="유저아바타" />
+      <img
+        src={list.profileImage}
+        alt="유저아바타"
+        onClick={() => navigate(`/user/${list.userId}`)}
+      />
       <ItemUserInfoWrapper>
         <p onClick={() => navigate(`/user/${list.userId}`)}>{list.username}</p>
         <p>Suggested for you</p>

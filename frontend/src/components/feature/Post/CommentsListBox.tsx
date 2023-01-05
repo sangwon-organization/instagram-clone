@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { BsHeart, BsHeartFill } from 'react-icons/bs';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { getCommentsList, likeComment } from '../../../api/api';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
+import { BsHeart, BsHeartFill } from 'react-icons/bs';
+import { likeComment } from '../../../api/api';
 
 const Container = styled.div`
   display: flex;
@@ -83,25 +83,24 @@ const ColoredHeartIcon = styled(BsHeartFill)<{ likebuttonclicked: string }>`
   }
 `;
 
-const CommentsListBox = ({
-  postId,
-  getCommentsListData,
-}: CommentsListBoxType) => {
-  const [likeButtonClicked, setLikeButtonClicked] = useState(false);
+const CommentsListBox = ({ getCommentsListData }: CommentsListBoxType) => {
   const [showMoreText, setShowMoreText] = useState(false);
 
   const queryClient = useQueryClient();
 
-  const { mutate: commentLikeMutate, isLoading: commentLikeIsLoading } =
-    useMutation<ResponseData, AxiosError, LikeCommentType>(likeComment, {
-      onError: (err) => {
-        console.log('댓글 좋아요 실패!', err.response.data);
-      },
-      onSuccess: () => {
-        console.log('댓글 좋아요 성공!');
-        queryClient.invalidateQueries(['getCommentsList']);
-      },
-    });
+  const { mutate: commentLikeMutate } = useMutation<
+    ResponseData,
+    AxiosError,
+    LikeCommentType
+  >(likeComment, {
+    onError: (err) => {
+      console.log('댓글 좋아요 실패!', err.response.data);
+    },
+    onSuccess: () => {
+      console.log('댓글 좋아요 성공!');
+      queryClient.invalidateQueries(['getCommentsList']);
+    },
+  });
 
   const likeCommentFunction = (commentId: number) => {
     if (getCommentsListData?.commentList[0].likeYn === 'Y') {
@@ -111,7 +110,6 @@ const CommentsListBox = ({
     }
   };
 
-  // console.log(getCommentsListQuery.data?.data);
   return (
     <>
       {getCommentsListData?.commentList.length > 0 && (
