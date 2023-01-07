@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://user-images.githubusercontent.com/68457677/210954636-ef22fee7-bfe0-400d-bff2-a3bc42b6761a.png" alt="Logo" width="80" height="80" style="background:white;border-radius:10px" />
+  <img src="https://user-images.githubusercontent.com/68457677/211121822-80add55c-34d6-46fd-b9a9-311e31bdca59.png" alt="Logo" width="300"  />
   <h3 align="center">Clonestagram</h3>
   <p align="center">
     인스타그램을 클론코딩한 프로젝트입니다.
@@ -8,7 +8,7 @@
 </div>
 
 ## Quick Start
-```
+```javascript
 cd frontend
 yarn install
 yarn start
@@ -29,39 +29,27 @@ yarn start
 
 #### 유저검색
 <div align="center">
-<img src="https://user-images.githubusercontent.com/68457677/210982416-93807e7c-77a0-4843-a44d-55b1f72b682e.gif" alt="유저검색" width="80%" />
+<img src="https://user-images.githubusercontent.com/68457677/210982416-93807e7c-77a0-4843-a44d-55b1f72b682e.gif" alt="유저검색" height="300" />
 </div>
 
 #### 유저 팔로우
 <div align="center">
-<img src="https://user-images.githubusercontent.com/68457677/210985087-61f24624-acf3-4cf7-a1d3-7ca6627959bb.gif" alt="유저팔로우" width="80%"/>
+<img src="https://user-images.githubusercontent.com/68457677/210985087-61f24624-acf3-4cf7-a1d3-7ca6627959bb.gif" alt="유저팔로우" height="300"/>
 </div>
 
 #### 포스트 조회
 
 #### 포스트 올리기
 <div align="center">
-<img src="https://user-images.githubusercontent.com/68457677/210994778-16719a36-a3d5-4f7b-b032-565a0c7f3d31.gif" alt="포스트좋아요" width="80%"/>
+<img src="https://user-images.githubusercontent.com/68457677/210994778-16719a36-a3d5-4f7b-b032-565a0c7f3d31.gif" alt="포스트좋아요" height=300/>
 </div>
 
 
-<div align="center" style="display:flex; gap: 10px; justify-content:center;">
 
-<div>
+| 포스트 좋아요 |댓글 달기|
+|:---:|:---:|
+|<img src="https://user-images.githubusercontent.com/68457677/210975945-56126ec8-6b5a-42ec-a626-9cea8735c5b3.gif" alt="포스트좋아요" />|<img src="https://user-images.githubusercontent.com/68457677/210982953-8d4f412f-0b49-4dfb-8681-d964d43889f5.gif" alt="댓글달기"   />|
 
-#### 포스트 좋아요
-
-<img src="https://user-images.githubusercontent.com/68457677/210975945-56126ec8-6b5a-42ec-a626-9cea8735c5b3.gif" alt="포스트좋아요" width="200" />
-</div>
-
-
-<div>
-
-#### 댓글 달기
-<img src="https://user-images.githubusercontent.com/68457677/210982953-8d4f412f-0b49-4dfb-8681-d964d43889f5.gif" alt="댓글달기"  width=200/>
-</div>
-
-</div>
 
 
 <br><br>
@@ -79,6 +67,6 @@ yarn start
 ## 팀원 👨‍👩‍👦‍👦👩‍👦
 
 |Frontend|Backend|
-|:--------------------------------------------------------------------------------------: |:--------------------------------------------------------------------------------------: |
+|:---:|:---:|
 | <img src="https://avatars.githubusercontent.com/u/68457677?v=4" width=100px alt="상원"/> | <img src="https://avatars.githubusercontent.com/u/42764142?v=4" width=100px alt="수완"/>|
 |[이상원](https://github.com/dltkddnjs)|[김수완](https://github.com/blacksw1102)
