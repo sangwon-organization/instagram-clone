@@ -1,5 +1,7 @@
 <div align="center">
-  <img src="https://user-images.githubusercontent.com/68457677/210954636-ef22fee7-bfe0-400d-bff2-a3bc42b6761a.png" alt="Logo" width="80" height="80" style="background:white;border-radius:10px" />
+  <div style="background:white;border-radius:10px">
+    <img src="https://user-images.githubusercontent.com/68457677/210954636-ef22fee7-bfe0-400d-bff2-a3bc42b6761a.png" alt="Logo" width="80" height="80"  />
+  </div>
   <h3 align="center">Clonestagram</h3>
   <p align="center">
     인스타그램을 클론코딩한 프로젝트입니다.
