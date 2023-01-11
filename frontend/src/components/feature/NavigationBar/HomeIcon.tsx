@@ -1,15 +1,14 @@
 import React from 'react';
 import styled from 'styled-components';
-import { GrHomeRounded } from 'react-icons/gr';
 import { MdOutlineHome, MdHome } from 'react-icons/md';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 const HomeIconBox = styled.div`
-  width: 30px;
-  height: 30px;
   display: flex;
   justify-content: center;
   align-content: center;
+  width: 30px;
+  height: 30px;
   color: ${({ theme }) => theme.textColor};
   &:active {
     color: ${({ theme }) => theme.greyTextColor};
@@ -29,9 +28,9 @@ const HomeFilledIcon = styled(MdHome)`
 `;
 
 const HomeIcon = () => {
-  const pathName = useLocation().pathname;
   const navigate = useNavigate();
-  // const result = pathName === '/home';
+  const pathName = useLocation().pathname;
+
   return (
     <HomeIconBox onClick={() => navigate('/')}>
       {pathName === '/' ? <HomeFilledIcon /> : <HomeBorderIcon />}

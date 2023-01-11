@@ -6,63 +6,61 @@ import { FaUserCheck } from 'react-icons/fa';
 import { RiAccountPinBoxLine } from 'react-icons/ri';
 import { BiMoviePlay } from 'react-icons/bi';
 import { IoAppsSharp } from 'react-icons/io5';
-import NavigationBar from '../../components/layout/NavigationBar/NavigationBar';
+import NavigationBar from '../../components/feature/NavigationBar/NavigationBar';
 import Post from '../../components/feature/Profile/Post';
-import Footer from '../../components/layout/footer/Footer';
+import Footer from '../../components/feature/Footer/Footer';
 import Loader from 'react-loader';
 import NoPostsBox from '../../components/feature/Post/NoPostsBox';
 import SharesPhotosBox from '../../components/feature/Post/SharesPhotosBox';
 import { IoIosSettings } from 'react-icons/io';
+import NotFound from '../NotFound404';
+import LoadingPage from '../../components/share/LoadingPage';
 
 const MainContainer = styled.div`
-  width: 100%;
-  height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: ${({ theme }) => theme.bgColor};
+  width: 100%;
+  height: 100%;
   padding-top: 60px;
+  background: ${({ theme }) => theme.bgColor};
 `;
 
 const MainWrapper = styled.main`
-  width: 936px;
-  height: fit-content;
-  /* border: 1px solid red; */
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   align-items: flex-start;
+  width: 936px;
+  height: fit-content;
 `;
 
 const UserInfoHeader = styled.header`
-  width: 100%;
-  height: fit-content;
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 100%;
+  height: fit-content;
 `;
 
 const AvatarWrapper = styled.form`
-  width: 291px;
-  height: fit-content;
   display: flex;
   justify-content: center;
   align-items: center;
-  /* border: 1px solid red; */
+  width: 291px;
+  height: fit-content;
 `;
 
 const UserAvatar = styled.div<{ isloading: boolean; ismypage: boolean }>`
-  width: 168px;
-  height: 168px;
-  border-radius: 50%;
-  border: 2px solid transparent;
   display: flex;
   justify-content: center;
   align-items: center;
   position: relative;
-  cursor: ${({ isloading, ismypage }) =>
-    isloading || !ismypage ? 'default' : 'pointer'};
+  width: 168px;
+  height: 168px;
+  border: 2px solid transparent;
+  border-radius: 50%;
   background-image: linear-gradient(
       ${({ theme }) => theme.searchBarBgColor},
       ${({ theme }) => theme.searchBarBgColor}
@@ -70,34 +68,35 @@ const UserAvatar = styled.div<{ isloading: boolean; ismypage: boolean }>`
     linear-gradient(to right, red 0%, orange 100%);
   background-origin: border-box;
   background-clip: content-box, border-box;
+  cursor: ${({ isloading, ismypage }) =>
+    isloading || !ismypage ? 'default' : 'pointer'};
   img {
     width: 150px;
     height: 150px;
     border-radius: 50%;
-    z-index: 100;
     opacity: ${({ isloading }) => isloading && 0.4};
+    z-index: 100;
   }
   input {
     display: none;
   }
 `;
 const UserInfo = styled.section`
-  width: 613px;
-  height: fit-content;
   display: flex;
   flex-direction: column;
-  gap: 20px 0;
   align-items: start;
-  /* border: 1px solid blue; */
+  gap: 20px 0;
+  width: 613px;
+  height: fit-content;
   padding: 30px 0;
 `;
 
 const FirstBox = styled.div`
-  width: 100%;
   display: flex;
   justify-content: flex-start;
   align-items: center;
   gap: 0 30px;
+  width: 100%;
   h2 {
     font-size: 28px;
     font-weight: 400;
@@ -106,19 +105,19 @@ const FirstBox = styled.div`
 `;
 
 const ButtonBox = styled.div`
-  width: fit-content;
-  height: 100%;
   display: flex;
-  gap: 0 15px;
   justify-content: flex-start;
   align-items: center;
+  gap: 0 15px;
+  width: fit-content;
+  height: 100%;
 `;
 
 const SecondBox = styled.div`
-  width: fit-content;
-  height: 24px;
   display: flex;
   gap: 0 30px;
+  width: fit-content;
+  height: 24px;
   p {
     font-size: 16px;
     font-weight: 400;
@@ -132,16 +131,17 @@ const ThirdBox = styled.div`
   width: 100%;
   height: fit-content;
   p {
-    line-height: 24px;
+    font-size: 16px;
+    font-weight: 600;
     color: ${({ theme }) => theme.textColor};
   }
 `;
 const FourthBox = styled.div`
   width: fit-content;
   height: 16px;
-  color: ${({ theme }) => theme.greyTextColor};
   font-size: 12px;
   font-weight: 600;
+  color: ${({ theme }) => theme.greyTextColor};
   span {
     color: ${({ theme }) => theme.textColor};
   }
@@ -150,9 +150,8 @@ const FourthBox = styled.div`
 const KebabMenuIcon = styled(GoKebabHorizontal)`
   width: 27px;
   height: 27px;
-  cursor: pointer;
   color: ${({ theme }) => theme.textColor};
-  /* border: 1px solid red; */
+  cursor: pointer;
 `;
 
 const ArrowDownIcon = styled(SlArrowDown)`
@@ -170,15 +169,17 @@ const MessageButton = styled.button`
   width: fit-content;
   height: 30px;
   padding: 5px 9px;
-  font-size: 14px;
-  font-weight: 600;
   border: 1px solid ${({ theme }) => theme.borderColor};
   border-radius: 5px;
   background: transparent;
+  font-size: 14px;
+  font-weight: 600;
   color: ${({ theme }) => theme.textColor};
 `;
+
 const UnFollowButton = styled.button`
-  width: fit-content;
+  position: relative;
+  width: 38px;
   height: 30px;
   padding: 5px 9px;
   border: 1px solid ${({ theme }) => theme.borderColor};
@@ -188,15 +189,16 @@ const UnFollowButton = styled.button`
 `;
 
 const FollowButon = styled.button`
-  width: fit-content;
+  position: relative;
+  width: 62px;
   height: 30px;
   padding: 5px 9px;
-  border-radius: 5px;
   border: none;
-  background: #0095f6;
-  color: #fff;
+  border-radius: 5px;
+  background: ${({ theme }) => theme.buttonColor};
   font-size: 14px;
   font-weight: 600;
+  color: ${({ theme }) => theme.whiteColor};
   &:active {
     opacity: 0.7;
   }
@@ -215,37 +217,37 @@ const SuggestedButton = styled.button`
   color: ${({ theme }) => theme.textColor};
 `;
 const TabMenu = styled.div`
-  width: 100%;
-  height: 53px;
-  border-top: 1px solid ${({ theme }) => theme.borderColor};
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 100%;
+  height: 53px;
+  border-top: 1px solid ${({ theme }) => theme.borderColor};
 `;
 
 const MenuWrapper = styled.ul`
-  width: 280px;
-  height: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 280px;
+  height: 100%;
   li {
-    width: fit-content;
-    height: 100%;
-    font-size: 12px;
-    color: ${({ theme }) => theme.greyTextColor};
-    font-weight: 600;
-    letter-spacing: 1px;
     display: flex;
     justify-content: center;
     align-items: center;
+    width: fit-content;
+    height: 100%;
+    font-size: 12px;
+    font-weight: 600;
+    color: ${({ theme }) => theme.greyTextColor};
+    letter-spacing: 1px;
     cursor: pointer;
     &:active {
       opacity: 0.7;
     }
     &:first-child {
-      color: ${({ theme }) => theme.textColor};
       border-top: 1px solid ${({ theme }) => theme.textColor};
+      color: ${({ theme }) => theme.textColor};
     }
   }
 `;
@@ -253,6 +255,7 @@ const MenuWrapper = styled.ul`
 const SettingsIcon = styled(IoIosSettings)`
   font-size: 30px;
   color: ${({ theme }) => theme.textColor};
+  cursor: pointer;
 `;
 
 const TaggedIcon = styled(RiAccountPinBoxLine)`
@@ -274,40 +277,40 @@ const PostsIcon = styled(IoAppsSharp)`
 `;
 
 const PostsWrapper = styled.article`
-  width: 100%;
-  height: fit-content;
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 28px 28px;
+  width: 100%;
+  height: fit-content;
 `;
-
-interface ProfilePresenterType {
-  getUserInformationData: any;
-  onImageInputButtonClick: (event: React.MouseEvent<HTMLElement>) => void;
-  imageInputRef: any;
-  encodeFileToBase64: Function;
-  postImageRest: any;
-  imageRef: any;
-  onSubmit: any;
-  onError: any;
-  handleSubmit: any;
-  isLoading: any;
-  isMyPage: boolean;
-}
 
 const ProfilePresenter = ({
   getUserInformationData,
   onImageInputButtonClick,
   imageInputRef,
-  encodeFileToBase64,
   postImageRest,
   imageRef,
   onSubmit,
-  onError,
   handleSubmit,
   isLoading,
   isMyPage,
+  followingUserIsLoading,
+  userFollowingUnFollowing,
+  followerImFollowingList,
+  followerImFollowingRestCount,
+  getUserInformationError,
+  getUserInformationLoading,
 }: ProfilePresenterType) => {
+  if (
+    getUserInformationError?.response.data.message ===
+    `Cannot read property 'userId' of null`
+  ) {
+    return <NotFound />;
+  }
+
+  if (getUserInformationLoading) {
+    return <LoadingPage />;
+  }
   return (
     <>
       <NavigationBar />
@@ -317,7 +320,7 @@ const ProfilePresenter = ({
             <AvatarWrapper>
               <UserAvatar isloading={isLoading} ismypage={isMyPage}>
                 <img
-                  src={getUserInformationData?.data.profileImage}
+                  src={getUserInformationData?.profileImage}
                   alt="기본이미지"
                   onClick={onImageInputButtonClick}
                 />
@@ -330,7 +333,7 @@ const ProfilePresenter = ({
                     imageRef(e);
                     imageInputRef.current = e;
                   }}
-                  onChange={handleSubmit(onSubmit, onError)}
+                  onChange={handleSubmit(onSubmit)}
                 />
                 {isLoading && (
                   <Loader
@@ -345,7 +348,7 @@ const ProfilePresenter = ({
             </AvatarWrapper>
             <UserInfo>
               <FirstBox>
-                <h2>{getUserInformationData?.data.username}</h2>
+                <h2>{getUserInformationData?.username}</h2>
                 {isMyPage ? (
                   <ButtonBox>
                     <MessageButton>Edit profile</MessageButton>
@@ -353,15 +356,37 @@ const ProfilePresenter = ({
                   </ButtonBox>
                 ) : (
                   <ButtonBox>
-                    {getUserInformationData?.data.followYn === 'Y' ? (
+                    {getUserInformationData?.followYn === 'Y' ? (
                       <MessageButton>Message</MessageButton>
                     ) : null}
-                    {getUserInformationData?.data.followYn === 'Y' ? (
-                      <UnFollowButton>
-                        <UserCheckIcon />
+                    {getUserInformationData?.followYn === 'Y' ? (
+                      <UnFollowButton onClick={userFollowingUnFollowing}>
+                        {followingUserIsLoading ? (
+                          <Loader
+                            loaded={isLoading}
+                            color="#000"
+                            scale={0.3}
+                            top="50%"
+                            left="50%"
+                          />
+                        ) : (
+                          <UserCheckIcon />
+                        )}
                       </UnFollowButton>
                     ) : (
-                      <FollowButon>Follow</FollowButon>
+                      <FollowButon onClick={userFollowingUnFollowing}>
+                        {followingUserIsLoading ? (
+                          <Loader
+                            loaded={isLoading}
+                            color="#fafafa"
+                            scale={0.4}
+                            top="50%"
+                            left="50%"
+                          />
+                        ) : (
+                          'Follow'
+                        )}
+                      </FollowButon>
                     )}
                     <SuggestedButton>
                       <ArrowDownIcon />
@@ -372,25 +397,36 @@ const ProfilePresenter = ({
               </FirstBox>
               <SecondBox>
                 <p>
-                  <span>{getUserInformationData?.data.postCount}</span> posts
+                  <span>{getUserInformationData?.postCount}</span> posts
                 </p>
                 <p>
-                  <span>{getUserInformationData?.data.followerCount}</span>{' '}
-                  followers
+                  <span>{getUserInformationData?.followerCount}</span> followers
                 </p>
                 <p>
-                  <span>{getUserInformationData?.data.followingCount}</span>{' '}
+                  <span>{getUserInformationData?.followingCount}</span>{' '}
                   following
                 </p>
               </SecondBox>
               <ThirdBox>
-                <p>{getUserInformationData?.data.name}</p>
+                <p>{getUserInformationData?.name}</p>
               </ThirdBox>
               <FourthBox>
-                <p>
-                  Followed by <span>from_minju</span>, <span>_yooohyun_</span>,
-                  <span>_heon</span> + 27 more
-                </p>
+                {!isMyPage && followerImFollowingList?.length > 0 && (
+                  <p>
+                    Followed by{' '}
+                    {followerImFollowingList.map(
+                      (list: followerImFollowingListType, index: number) => {
+                        return (
+                          <span key={`list_${index}`}>
+                            {(index ? ', ' : '') + list.username}
+                          </span>
+                        );
+                      },
+                    )}{' '}
+                    {followerImFollowingRestCount > 0 &&
+                      `+ ${followerImFollowingRestCount} more`}
+                  </p>
+                )}
               </FourthBox>
             </UserInfo>
           </UserInfoHeader>
@@ -410,9 +446,9 @@ const ProfilePresenter = ({
               </li>
             </MenuWrapper>
           </TabMenu>
-          {getUserInformationData?.data.postList.length > 0 ? (
+          {getUserInformationData?.postList.length > 0 ? (
             <PostsWrapper>
-              {getUserInformationData?.data.postList.map((post: any) => (
+              {getUserInformationData?.postList.map((post: PostListType) => (
                 <Post
                   key={post.postId}
                   postImageList={post.postImageList}

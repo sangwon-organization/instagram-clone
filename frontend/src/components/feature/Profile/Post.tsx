@@ -2,24 +2,26 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { BsHeartFill } from 'react-icons/bs';
 import { IoChatbubble } from 'react-icons/io5';
-import userImage from '../../../assets/image/userImage.png';
 import { useNavigate } from 'react-router-dom';
 import { IoIosPhotos } from 'react-icons/io';
+import ModalPortal from '../Modal/ModalPortal';
+import ModalContainer from '../Modal/ModalContainer';
+import PostWrapper from '../Post/PostWrapper';
 
 const PostContainer = styled.div`
-  width: 293px;
-  height: 293px;
   display: flex;
   justify-content: center;
   align-items: center;
   position: relative;
+  width: 293px;
+  height: 293px;
   cursor: pointer;
-  position: relative;
+  aspect-ratio: 1/1;
   img {
-    width: 293px;
-    height: 293px;
-    object-fit: contain;
-    background: black;
+    width: 100%;
+    height: 100%;
+    background: ${({ theme }) => theme.blackColor};
+    object-fit: cover;
     &:hover {
       filter: brightness(0.7);
     }
@@ -30,64 +32,74 @@ const PostContainer = styled.div`
 `;
 
 const LikeAndCommentWrapper = styled.div<{ postHover: boolean }>`
-  width: 230px;
-  height: fit-content;
   display: ${({ postHover }) => (postHover ? 'flex' : 'none')};
   justify-content: center;
   align-items: center;
   position: absolute;
+  width: 230px;
+  height: fit-content;
 `;
+
+const ItemBox = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100px;
+  height: fit-content;
+  p {
+    color: ${({ theme }) => theme.whiteColor};
+    font-size: 16px;
+    font-weight: 600;
+  }
+`;
+
 const HeartIcon = styled(BsHeartFill)`
   width: 18px;
   height: 18px;
   margin-right: 10px;
-  color: #fff;
+  color: ${({ theme }) => theme.whiteColor};
 `;
 
 const CommentIcon = styled(IoChatbubble)`
   width: 18px;
   height: 18px;
   margin-right: 10px;
-  color: #fff;
-`;
-
-const ItemBox = styled.div`
-  width: 100px;
-  height: fit-content;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  p {
-    color: #fff;
-    font-size: 16px;
-    font-weight: 600;
-  }
+  color: ${({ theme }) => theme.whiteColor};
 `;
 
 const ImagesIcon = styled(IoIosPhotos)`
-  color: #fff;
+  color: ${({ theme }) => theme.whiteColor};
   position: absolute;
   top: 10px;
   right: 10px;
   z-index: 100;
 `;
 
-interface PostType {
-  postImageList: string[];
-  postId: number;
-  likeCount: number;
-  commentCount: number;
-}
-
 const Post = ({ postImageList, postId, likeCount, commentCount }: PostType) => {
   const [postHover, setPostHover] = useState(false);
+  const [showPostModal, setShowPostModal] = useState(false);
 
   const navigate = useNavigate();
+
+  const openPost = () => {
+    setShowPostModal(true);
+    document.body.style.overflow = 'hidden';
+  };
+
+  const closePost = () => {
+    setShowPostModal(false);
+    document.body.style.overflow = 'unset';
+    navigate(-1);
+  };
+
   return (
     <PostContainer
       onMouseOver={() => setPostHover(true)}
       onMouseOut={() => setPostHover(false)}
-      onClick={() => navigate(`/post/${postId}`)}>
+      onClick={() => {
+        window.history.pushState('', '', `/post/${postId}`);
+        openPost();
+      }}>
       {postImageList.length > 1 ? <ImagesIcon /> : null}
       <img src={postImageList[0]} alt="포스트" />
       <LikeAndCommentWrapper postHover={postHover}>
@@ -100,6 +112,13 @@ const Post = ({ postImageList, postId, likeCount, commentCount }: PostType) => {
           <p>{commentCount}</p>
         </ItemBox>
       </LikeAndCommentWrapper>
+      {showPostModal && (
+        <ModalPortal>
+          <ModalContainer closeIcon closeModal={closePost}>
+            <PostWrapper postId={postId} setShowPostModal={setShowPostModal} />
+          </ModalContainer>
+        </ModalPortal>
+      )}
     </PostContainer>
   );
 };

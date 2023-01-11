@@ -1,52 +1,41 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { HiOutlineEmojiHappy } from 'react-icons/hi';
 import {
-  MutateFunction,
-  MutationObserverIdleResult,
-  UseMutateFunction,
   useMutation,
   useQuery,
+  useQueryClient,
+  useInfiniteQuery,
 } from '@tanstack/react-query';
-import userAvatar from '../../assets/image/userAvatar.png';
-import { commentPost, getPost, likePost } from '../../../api/api';
+import { bookmarkPost, commentPost, getPost, likePost } from '../../../api/api';
 import { GoKebabHorizontal } from 'react-icons/go';
-import userImage from '../../assets/image/userImage.png';
-import userImage2 from '../../assets/image/userImage2.png';
-import userImage3 from '../../assets/image/userImage3.png';
 import Loader from 'react-loader';
 import { RiChat3Line } from 'react-icons/ri';
 import { TbLocation } from 'react-icons/tb';
 import { BsHeart, BsHeartFill } from 'react-icons/bs';
-import {
-  Navigate,
-  NavigateFunction,
-  useLocation,
-  useNavigate,
-  useParams,
-} from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { FaBookmark, FaCircle, FaRegBookmark } from 'react-icons/fa';
 import {
   IoIosArrowDropleftCircle,
   IoIosArrowDroprightCircle,
 } from 'react-icons/io';
-import theme from '../../../styles/theme';
 import { timeForToday } from '../../../utils/commons';
 import { useForm } from 'react-hook-form';
 import ModalPortal from '../Modal/ModalPortal';
 import ModalContainer from '../Modal/ModalContainer';
 import PostDropDownModal from '../Modal/PostDropDownModal';
-
-type FormValues = {
-  commentInput: string;
-};
+import CommentItem from './CommentItem';
+import { AxiosError } from 'axios';
+import { BiPlusCircle } from 'react-icons/bi';
+import { getCommentsList } from '../../../api/api';
 
 const Wrapper = styled.div`
   width: 930px;
-  height: 600px;
-  border: 1px solid ${({ theme }) => theme.borderColor};
+  height: 598px;
   display: flex;
-  background: ${({ theme }) => theme.dropDownBgColor};
+  border: 1px solid ${({ theme }) => theme.borderColor};
+  border-radius: 5px;
+  background: ${({ theme }) => theme.bgColor};
 `;
 
 const ImageBoxWrapper = styled.div`
@@ -54,23 +43,18 @@ const ImageBoxWrapper = styled.div`
   height: 598px;
   display: flex;
   overflow: hidden;
-  /* background-image: url('../../../assets/image/userImage.png');
-  background-position: center;
-  background-size: contain;
-  background-repeat: no-repeat; */
   position: relative;
+  background: black;
 `;
 
 const ImageWrapper = styled.div`
-  width: 100%;
-  height: 100%;
   display: flex;
   align-items: center;
+  width: 100%;
   img {
     width: 100%;
-    height: fit-content;
+    aspect-ratio: 4/5;
     object-fit: cover;
-    background: black;
     flex: none;
     -webkit-user-drag: none;
     -khtml-user-drag: none;
@@ -130,7 +114,7 @@ const PostInfo = styled.div`
 const PostHeader = styled.div`
   width: 335px;
   height: 70px;
-  border-bottom: 1px solid ${({ theme }) => theme.ultraLightGreyColor};
+  border-bottom: 1px solid ${({ theme }) => theme.borderColor};
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -138,26 +122,24 @@ const PostHeader = styled.div`
 `;
 
 const CommentsListBox = styled.div`
-  border-bottom: 1px solid ${({ theme }) => theme.ultraLightGreyColor};
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   width: 100%;
   height: 485px;
   padding: 10px;
+  border-bottom: 1px solid ${({ theme }) => theme.borderColor};
   overflow-y: scroll;
   &::-webkit-scrollbar {
     display: none;
   }
 `;
 
-const SmallHeartIcon = styled(BsHeart)`
-  /* width: 15px; */
-  /* height: 15px; */
-  font-size: 12px;
-  cursor: pointer;
+const MoreCommentIcon = styled(BiPlusCircle)`
+  font-size: 25px;
   color: ${({ theme }) => theme.textColor};
-  &:hover {
-    color: ${({ theme }) => theme.greyTextColor};
-  }
-  margin-top: 15px;
+  /* margin: 10px; */
+  cursor: pointer;
 `;
 
 const PostBottom = styled.div`
@@ -177,12 +159,15 @@ const AddCommentBox = styled.form`
   textarea {
     width: 70%;
     height: 20px;
-    border: none;
-    resize: none;
-    outline: none;
+    max-height: 80px;
     margin-left: 10px;
+    border: none;
     background: transparent;
     font-family: 'RobotoFont';
+    color: ${({ theme }) => theme.textColor};
+    resize: none;
+    outline: none;
+    overflow-y: auto;
   }
   button {
     font-size: 14px;
@@ -197,7 +182,7 @@ const AddCommentBox = styled.form`
   }
 `;
 
-const BigLikedIcon = styled(BsHeartFill)<{ likebuttonclicked: boolean }>`
+const BigLikedIcon = styled(BsHeartFill)<{ likebuttonclicked: string }>`
   width: 80px;
   height: 80px;
   color: #fff;
@@ -209,8 +194,8 @@ const BigLikedIcon = styled(BsHeartFill)<{ likebuttonclicked: boolean }>`
   filter: drop-shadow(5px 5px 30px rgba(0, 0, 0, 0.7));
   opacity: 0;
   animation: ${({ likebuttonclicked }) =>
-    likebuttonclicked && 'like-heart-animation 2s ease-in-out'};
-  @keyframes like-heart-animation {
+    likebuttonclicked === 'true' && 'bigPostLike 2s ease-in-out'};
+  @keyframes bigPostLike {
     0%,
     to {
       opacity: 0;
@@ -234,15 +219,17 @@ const BigLikedIcon = styled(BsHeartFill)<{ likebuttonclicked: boolean }>`
 const LeftArrowIcon = styled(IoIosArrowDropleftCircle)<{
   currentslide: number;
 }>`
-  width: 30px;
-  height: 30px;
-  color: #fff;
   position: absolute;
-  z-index: 200;
   top: 50%;
   left: 15px;
-  opacity: 0.6;
+  width: 30px;
+  height: 30px;
+  color: ${({ theme }) => theme.whiteColor};
+  opacity: 0.7;
+  filter: drop-shadow(0px 0px 3px rgba(0, 0, 0, 0.3));
+  transform: translate3d(0, -50%, 0);
   cursor: pointer;
+  z-index: 200;
   ${({ currentslide }) => currentslide === 0 && 'display: none'};
 `;
 
@@ -250,15 +237,17 @@ const RightArrowIcon = styled(IoIosArrowDroprightCircle)<{
   currentslide: number;
   totalslides: number;
 }>`
-  width: 30px;
-  height: 30px;
-  color: #fff;
   position: absolute;
-  z-index: 200;
   top: 50%;
   right: 15px;
-  opacity: 0.6;
+  width: 30px;
+  height: 30px;
+  color: ${({ theme }) => theme.whiteColor};
+  opacity: 0.7;
+  filter: drop-shadow(0px 0px 3px rgba(0, 0, 0, 0.3));
   cursor: pointer;
+  transform: translate3d(0, -50%, 0);
+  z-index: 200;
   ${({ currentslide, totalslides }) =>
     currentslide === totalslides - 1 && 'display: none'};
 `;
@@ -280,16 +269,24 @@ const SmileIcon = styled(HiOutlineEmojiHappy)`
 const ColoredHeartIcon = styled(BsHeartFill)<{ likebuttonclicked: string }>`
   width: 23px;
   height: 23px;
+  font-size: 12px;
   color: #ed4956;
   cursor: pointer;
   animation: ${({ likebuttonclicked }) =>
-    likebuttonclicked === 'Y' ? 'pop 0.2s linear' : ''};
-  @keyframes pop {
+    likebuttonclicked === 'Y' ? 'postLike 1s ease-in-out' : ''};
+  @keyframes postLike {
     0% {
       transform: scale(1);
     }
-    100% {
+    15% {
       transform: scale(1.2);
+    }
+    30% {
+      transform: scale(0.95);
+    }
+    45%,
+    80% {
+      transform: scale(1);
     }
   }
 `;
@@ -315,11 +312,11 @@ const LocationIcon = styled(TbLocation)`
 `;
 
 const LeftIconBox = styled.div`
-  width: 100px;
-  height: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100px;
+  height: 100%;
 `;
 
 const HeartIcon = styled(BsHeart)`
@@ -333,37 +330,42 @@ const HeartIcon = styled(BsHeart)`
 `;
 
 const ButtonBox = styled.div`
-  width: 100%;
-  height: 112px;
   display: flex;
   flex-direction: column;
+  width: 100%;
+  height: 112px;
   /* border: 1px solid red; */
 `;
 
 const IconBox = styled.div`
-  width: 100%;
-  height: 50px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100%;
+  height: 50px;
   padding: 0 10px;
 `;
 
 const MeatballIconBox = styled.div`
-  width: fit-content;
-  height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 0 3px;
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  width: fit-content;
+  height: fit-content;
   padding: 0 10px;
   margin-right: 80px;
+  transform: translate3d(-50%, 0, 0);
 `;
 
-const MeatballIcon = styled(FaCircle)`
+const MeatballIcon = styled(FaCircle)<{ index: number; currentslide: number }>`
   width: 6px;
   height: 6px;
-  color: ${({ theme }) => theme.greyTextColor};
+  color: ${({ theme, index, currentslide }) =>
+    index === currentslide ? theme.whiteColor : theme.greyTextColor};
 `;
 
 const BookmarkIcon = styled(FaRegBookmark)`
@@ -429,14 +431,18 @@ const Comment = styled.div`
   height: fit-content;
   margin-top: 5px;
   line-height: 18px;
-  /* border: 1px solid red; */
+  white-space: pre-wrap;
+  word-break: break-all;
   span {
-    color: ${({ theme }) => theme.textColor};
-    font-size: 14px;
-    font-weight: 600;
     float: left;
     margin-right: 5px;
+    font-size: 14px;
+    font-weight: 600;
+    color: ${({ theme }) => theme.textColor};
     cursor: pointer;
+    &:hover {
+      color: ${({ theme }) => theme.greyTextColor};
+    }
   }
   p {
     color: ${({ theme }) => theme.textColor};
@@ -448,8 +454,8 @@ const Comment = styled.div`
 const OptionBox = styled.div`
   width: 100%;
   height: 30px;
-  /* border: 1px solid red; */
   display: flex;
+  justify-content: flex-start;
   align-items: center;
   gap: 0 10px;
   button {
@@ -462,61 +468,125 @@ const OptionBox = styled.div`
   }
 `;
 
-const ReplyBox = styled.div`
-  width: 100%;
-  height: fit-content;
-  border: 1px solid blue;
-  padding: 25px 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
-  p {
-    font-size: 12px;
-    font-weight: 600;
-    color: ${({ theme }) => theme.greyTextColor};
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    gap: 0 17px;
-    cursor: pointer;
-    &::before {
-      content: '';
-      display: inline-block;
-      width: 30px;
-      height: 1px;
-      background: ${({ theme }) => theme.greyTextColor};
-      margin-left: 3px;
-    }
-  }
+const NextPageIconBox = styled.div<{ hasnextpage: boolean }>`
+  margin: 10px;
+  display: ${({ hasnextpage }) => (hasnextpage ? 'block' : 'none')};
 `;
 
-interface PostWrapperType {
-  postId: number;
-}
-
-const PostWrapper = ({ postId }: PostWrapperType) => {
-  const [likeButtonClicked, setLikeButtonClicked] = useState(false);
+const PostWrapper = ({ postId, setShowPostModal }: PostWrapperType) => {
+  const [likeButtonClicked, setLikeButtonClicked] = useState('false');
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [showPostDropdown, setShowPostDropdown] = useState(false);
 
   const textareaRef = useRef(null);
-  const postButtonRef = useRef(null);
   const slideRef = useRef(null);
 
   const navigate = useNavigate();
-  const [currentSlide, setCurrentSlide] = useState(0);
 
-  let params: any = useParams();
+  const queryClient = useQueryClient();
 
-  const getUserPost = useQuery(['getPost', params], () => getPost(postId));
+  const location = useLocation().pathname;
 
-  const totalSlide = getUserPost.data?.data.postImageList.length;
+  const myUserId = parseInt(localStorage.getItem('userId'));
 
-  console.log(getUserPost.data?.data);
+  useEffect(() => {
+    slideRef.current.style.transition = 'all 0.5s ease-in-out';
+    slideRef.current.style.transform = `translateX(-${currentSlide}00%)`;
+  }, [location, currentSlide]);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { isValid },
+  } = useForm<CommentPostFormValues>({ mode: 'onChange' });
+
+  const { ref: commentRef, ...rest } = register('commentInput', {
+    required: true,
+  });
+
+  const { data: getUserPostData } = useQuery<GetPostQueryType, AxiosError>(
+    ['getPost', postId],
+    () => getPost(postId),
+  );
+
+  const {
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    data: getCommentsListData,
+  } = useInfiniteQuery<GetCommentsListQueryType, AxiosError>(
+    ['getCommentsList'],
+    ({ pageParam = 1 }) =>
+      getCommentsList({
+        page: pageParam,
+        postId: postId,
+      }),
+    {
+      getNextPageParam: (lastPage, allPages) => {
+        if (lastPage.commentList.length === 20) {
+          return allPages.length + 1;
+        } else {
+          return false;
+        }
+      },
+    },
+  );
+
+  const { mutate: commentPostMutate, isLoading: commentPostIsLoading } =
+    useMutation<ResponseData, AxiosError, CommentPostType>(commentPost, {
+      onError: (err) => {
+        console.log('댓글 등록 실패!', err.response.data);
+      },
+      onSuccess: () => {
+        console.log('댓글 등록 성공!');
+        Promise.all([
+          queryClient.invalidateQueries(['getCommentsList']),
+          queryClient.invalidateQueries(['getUserInformation']),
+        ]);
+        textareaRef.current.value = '';
+        textareaRef.current.focus();
+      },
+    });
+
+  const mutateLikePost = useMutation<ResponseData, AxiosError, LikePostType>(
+    likePost,
+    {
+      onError: (err) => {
+        console.log('포스트 좋아요 실패!', err.response.data);
+      },
+      onSuccess: () => {
+        console.log('포스트 좋아요 성공!');
+        Promise.all([
+          queryClient.invalidateQueries(['getPost']),
+          queryClient.invalidateQueries(['getUserInformation']),
+        ]);
+      },
+    },
+  );
+
+  const mutateBookmarkPost = useMutation<
+    ResponseData,
+    AxiosError,
+    BookmarkPostType
+  >(bookmarkPost, {
+    onError: (err) => {
+      console.log('북마크 실패!', err.response.data);
+    },
+    onSuccess: () => {
+      console.log('북마크 성공!');
+      Promise.all([
+        queryClient.invalidateQueries(['getPost']),
+        queryClient.invalidateQueries(['getPosts']),
+      ]);
+    },
+  });
+
+  const totalSlide = getUserPostData?.postImageList.length;
 
   const doubleClickImage = () => {
-    setLikeButtonClicked(true);
+    setLikeButtonClicked('true');
     setTimeout(() => {
-      setLikeButtonClicked(false);
+      setLikeButtonClicked('false');
     }, 1200);
   };
 
@@ -536,36 +606,7 @@ const PostWrapper = ({ postId }: PostWrapperType) => {
     }
   };
 
-  const {
-    register,
-    handleSubmit,
-    formState: { isValid, errors, isDirty },
-  } = useForm<FormValues>({ mode: 'onChange' });
-
-  const { ref: commentRef, ...rest } = register('commentInput', {
-    required: true,
-  });
-
-  const {
-    mutate: commentPostMutate,
-    data,
-    error,
-    reset,
-    isLoading: commentPostIsLoading,
-  } = useMutation(commentPost, {
-    onError: (err: any) => {
-      console.log(err.response.data);
-    },
-    onSuccess: (e: any) => {
-      console.log('댓글 등록 성공!');
-      getUserPost.refetch();
-      textareaRef.current.value = '';
-      textareaRef.current.focus();
-    },
-  });
-
-  const onSubmit = (dataInput: any) => {
-    console.log(dataInput);
+  const onSubmit = (dataInput: CommentPostFormValues) => {
     commentPostMutate({
       postId: postId,
       parentCommentId: '',
@@ -573,56 +614,45 @@ const PostWrapper = ({ postId }: PostWrapperType) => {
     });
   };
 
-  const onError = (err: any) => {
-    console.log(err);
-  };
-
-  const likePostFunction = (e: any) => {
-    e.preventDefault();
-    if (getUserPost.data?.data.likeYn === 'Y') {
+  const likePostFunction = () => {
+    if (getUserPostData?.likeYn === 'Y') {
       mutateLikePost.mutate({
-        postId: getUserPost.data?.data.postId,
+        postId: getUserPostData?.postId,
         likeYn: 'N',
       });
     } else {
       mutateLikePost.mutate({
-        postId: getUserPost.data?.data.postId,
+        postId: getUserPostData?.postId,
         likeYn: 'Y',
       });
     }
   };
 
-  const mutateLikePost = useMutation(likePost, {
-    onError: (err: any) => {
-      console.log(err.response.data);
-    },
-    onSuccess: (e: any) => {
-      console.log('포스트 좋아요 성공!');
-      getUserPost.refetch();
-    },
-  });
+  const bookmarkPostFunction = () => {
+    if (getUserPostData?.bookmarkYn === 'Y') {
+      mutateBookmarkPost.mutate({ postId: postId, bookmarkYn: 'N' });
+    } else {
+      mutateBookmarkPost.mutate({ postId: postId, bookmarkYn: 'Y' });
+    }
+  };
 
-  useEffect(() => {
-    slideRef.current.style.transition = 'all 0.5s ease-in-out';
-    slideRef.current.style.transform = `translateX(-${currentSlide}00%)`;
-  }, [currentSlide]);
-
-  const [showPostDropdown, setShowPostDropdown] = useState(false);
   const openModal = () => {
     setShowPostDropdown(true);
-    document.body.style.overflow = 'hidden';
   };
 
   const closeModal = () => {
     setShowPostDropdown(false);
-    document.body.style.overflow = 'unset';
   };
 
-  const myUserId = parseInt(localStorage.getItem('userId'));
+  const handleResizeHeight = useCallback(() => {
+    textareaRef.current.style.height = '20px';
+    textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
+  }, []);
 
-  const isMyPost = myUserId === getUserPost.data?.data.userId;
+  const isMyPost = myUserId === getUserPostData?.userId;
+
   return (
-    <Wrapper>
+    <Wrapper onClick={(e) => e.stopPropagation()}>
       <ImageBoxWrapper>
         <LeftArrowIcon currentslide={currentSlide} onClick={prevSlide} />
         <ImageWrapper
@@ -630,14 +660,20 @@ const PostWrapper = ({ postId }: PostWrapperType) => {
           onDoubleClick={() => {
             doubleClickImage();
             mutateLikePost.mutate({
-              postId: getUserPost.data?.data.postId,
+              postId: getUserPostData?.postId,
               likeYn: 'Y',
             });
           }}>
-          {getUserPost.data?.data.postImageList.map((image: any) => (
+          {getUserPostData?.postImageList.map((image: string) => (
             <img src={image} key={image} alt="유저이미지" />
           ))}
         </ImageWrapper>
+        <MeatballIconBox>
+          {getUserPostData?.postImageList.length > 1 &&
+            getUserPostData?.postImageList.map((list: string, i: number) => (
+              <MeatballIcon key={list} currentslide={currentSlide} index={i} />
+            ))}
+        </MeatballIconBox>
         <RightArrowIcon
           totalslides={totalSlide}
           currentslide={currentSlide}
@@ -649,13 +685,25 @@ const PostWrapper = ({ postId }: PostWrapperType) => {
         <PostHeader>
           <UserInfo>
             <UserAvatar>
-              <img src={getUserPost.data?.data.profileImage} alt="유저아바타" />
+              <img
+                src={getUserPostData?.profileImage}
+                alt="유저아바타"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/user/${getUserPostData?.userId}`);
+                  setShowPostModal(false);
+                  document.body.style.overflow = 'unset';
+                }}
+              />
             </UserAvatar>
             <p
-              onClick={() =>
-                navigate(`/user/${getUserPost.data?.data.userId}`)
-              }>
-              {getUserPost.data?.data.username}
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/user/${getUserPostData?.userId}`);
+                setShowPostModal(false);
+                document.body.style.overflow = 'unset';
+              }}>
+              {getUserPostData?.username}
             </p>
           </UserInfo>
           <KebabMenuIcon onClick={openModal} />
@@ -665,57 +713,78 @@ const PostWrapper = ({ postId }: PostWrapperType) => {
             <AvatarBox>
               <UserAvatar>
                 <img
-                  src={getUserPost.data?.data.profileImage}
+                  src={getUserPostData?.profileImage}
                   alt="유저아바타"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/user/${getUserPostData?.userId}`);
+                    setShowPostModal(false);
+                    document.body.style.overflow = 'unset';
+                  }}
                 />
               </UserAvatar>
             </AvatarBox>
             <Comment>
               <span
-                onClick={() =>
-                  navigate(`/user/${getUserPost.data?.data.userId}`)
-                }>
-                {getUserPost.data?.data.username}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/user/${getUserPostData?.userId}`);
+                  setShowPostModal(false);
+                  document.body.style.overflow = 'unset';
+                }}>
+                {getUserPostData?.username}
               </span>
-              <p>{getUserPost.data?.data.content}</p>
+              <p>{getUserPostData?.content}</p>
               <OptionBox>
-                <button>
-                  {timeForToday(getUserPost.data?.data.createdAt)}
-                </button>
+                <button>{timeForToday(getUserPostData?.createdAt)}</button>
               </OptionBox>
             </Comment>
-            <SmallHeartIcon />
           </CommentBox>
-          {getUserPost.data?.data.commentList.map((comment: any) => (
-            <CommentBox key={comment.commentId}>
-              <AvatarBox>
-                <UserAvatar>
-                  <img src={comment.profileImage} alt="유저아바타" />
-                </UserAvatar>
-              </AvatarBox>
-              <Comment>
-                <span onClick={() => navigate(`/user/${comment.userId}`)}>
-                  {comment.username}
-                </span>
-                <p>{comment.content}</p>
-                <OptionBox>
-                  <button>{timeForToday(comment.createdAt)}</button>
-                  <button>
-                    {comment.likeCount > 0 ? comment.likeCount + ' like' : ''}
-                  </button>
-                </OptionBox>
-              </Comment>
-              <SmallHeartIcon />
-            </CommentBox>
-          ))}
+          {getCommentsListData?.pages.map((page: GetCommentsListQueryType) =>
+            page.commentList
+              .sort(
+                (a: CommentType, b: CommentType) =>
+                  +new Date(b.createdAt) - +new Date(a.createdAt),
+              )
+              .map((comment: CommentType) => (
+                <CommentItem
+                  key={comment.commentId}
+                  commentId={comment.commentId}
+                  content={comment.content}
+                  createdAt={comment.createdAt}
+                  likeYn={comment.likeYn}
+                  likeCount={comment.likeCount}
+                  profileImage={comment.profileImage}
+                  userId={comment.userId}
+                  username={comment.username}
+                  setShowPostModal={setShowPostModal}
+                />
+              )),
+          )}
+
+          <NextPageIconBox hasnextpage={hasNextPage}>
+            {isFetchingNextPage && (
+              <Loader
+                loaded={!isFetchingNextPage}
+                color="#8e8e8e"
+                scale={0.5}
+                top="50%"
+                left="50%"
+                position="relative"
+              />
+            )}
+            {hasNextPage && !isFetchingNextPage && (
+              <MoreCommentIcon onClick={() => fetchNextPage()} />
+            )}
+          </NextPageIconBox>
         </CommentsListBox>
         <PostBottom>
           <ButtonBox>
             <IconBox>
               <LeftIconBox>
-                {getUserPost.data?.data.likeYn === 'Y' ? (
+                {getUserPostData?.likeYn === 'Y' ? (
                   <ColoredHeartIcon
-                    likebuttonclicked={'true'}
+                    likebuttonclicked={getUserPostData?.likeYn}
                     onClick={likePostFunction}
                   />
                 ) : (
@@ -724,29 +793,30 @@ const PostWrapper = ({ postId }: PostWrapperType) => {
                 <ChatIcon onClick={() => textareaRef.current.focus()} />
                 <LocationIcon />
               </LeftIconBox>
-              {getUserPost.data?.data.bookmarkYn === 'Y' ? (
-                <BookmarkFilledIcon />
+              {getUserPostData?.bookmarkYn === 'Y' ? (
+                <BookmarkFilledIcon onClick={bookmarkPostFunction} />
               ) : (
-                <BookmarkIcon />
+                <BookmarkIcon onClick={bookmarkPostFunction} />
               )}
             </IconBox>
             <LikeAndDateBox>
-              <p>{getUserPost.data?.data.likeCount} likes</p>
-              <p>{timeForToday(getUserPost.data?.data.createdAt)}</p>
+              <p>{getUserPostData?.likeCount} likes</p>
+              <p>{timeForToday(getUserPostData?.createdAt)}</p>
             </LikeAndDateBox>
           </ButtonBox>
-          <AddCommentBox onSubmit={handleSubmit(onSubmit, onError)}>
+          <AddCommentBox onSubmit={handleSubmit(onSubmit)}>
             <SmileIcon />
             <textarea
               name="commentInput"
               id="commentInput"
               {...rest}
-              // required
               ref={(e) => {
                 commentRef(e);
                 textareaRef.current = e;
               }}
-              placeholder="Add a comment..."></textarea>
+              placeholder="Add a comment..."
+              onInput={handleResizeHeight}
+            />
             {commentPostIsLoading && (
               <Loader
                 loaded={false}
@@ -767,8 +837,9 @@ const PostWrapper = ({ postId }: PostWrapperType) => {
           <ModalContainer closeModal={closeModal}>
             <PostDropDownModal
               isMyPost={isMyPost}
-              postId={params.postId}
-              userId={getUserPost.data?.data.userId}
+              postId={getUserPostData?.postId}
+              userId={getUserPostData?.userId}
+              closeModal={closeModal}
             />
           </ModalContainer>
         </ModalPortal>

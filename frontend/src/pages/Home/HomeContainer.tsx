@@ -1,51 +1,40 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import MetaTag from '../../meta/MetaTag';
 import HomePresenter from './HomePresenter';
 import thumbnail from '../../assets/image/thumbnail.png';
 import { useInView } from 'react-intersection-observer';
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
-import { getPostsList, getUserInformation } from '../../api/api';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import { AxiosError } from 'axios';
+import { getPostsList } from '../../api/api';
 
 const HomeContainer = () => {
   const [ref, inView] = useInView();
 
-  const [refetchPageIndex, setRefetchPageIndex] = useState<number | null>(null);
   const {
     fetchNextPage,
-    fetchPreviousPage,
     hasNextPage,
-    hasPreviousPage,
     isFetchingNextPage,
-    isFetchingPreviousPage,
-    data,
-    refetch,
-  } = useInfiniteQuery({
-    queryKey: ['getPosts'],
-    queryFn: ({ pageParam = 1 }) => getPostsList({ page: pageParam }),
-    getNextPageParam: (lastPage: any, allPages: any) =>
-      Number(lastPage.data.page) + 1,
-
-    getPreviousPageParam: (firstPage: any, allPages: any) => undefined,
-  });
-
-  useEffect(() => {
-    if (refetchPageIndex !== null) {
-      refetch({ refetchPage: (page, index) => index === refetchPageIndex });
-      setRefetchPageIndex(null);
-    }
-  }, [refetchPageIndex, refetch]);
-
-  const refetchPage = (pageIndex: number) => setRefetchPageIndex(pageIndex);
-
-  console.log(data);
+    data: getPostsData,
+  } = useInfiniteQuery<PageType, AxiosError>(
+    ['getPosts'],
+    ({ pageParam = 1 }) => getPostsList({ page: pageParam }),
+    {
+      getNextPageParam: (lastPage, allPages) => {
+        if (lastPage.postList.length === 10) {
+          return allPages.length + 1;
+        } else {
+          return false;
+        }
+      },
+    },
+  );
 
   useEffect(() => {
-    if (inView) {
-      console.log(inView);
+    if (inView && hasNextPage) {
       fetchNextPage();
-      console.log(data);
     }
-  }, [inView, fetchNextPage, data]);
+  }, [inView, fetchNextPage, hasNextPage]);
+
   return (
     <>
       <MetaTag
@@ -56,10 +45,10 @@ const HomeContainer = () => {
         imgsrc={thumbnail}
       />
       <HomePresenter
-        data={data}
-        refetchPage={refetchPage}
+        getPostsData={getPostsData}
         scrollRef={ref}
-        refetch={refetch}
+        hasNextPage={hasNextPage}
+        isFetchingNextPage={isFetchingNextPage}
       />
     </>
   );

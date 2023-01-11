@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { Dispatch, SetStateAction, useState } from 'react';
 import styled from 'styled-components';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import LoginSignUpBottomBox from '../../share/LoginSignUpBottomBox';
-import LoginSignUpMiddleBox from '../../share/LoginSignUpMiddleBox';
+import LoginSignUpBottomBox from './LoginSignUpBottomBox';
+import LoginSignUpMiddleBox from './LoginSignUpMiddleBox';
 import clonestagramLogoBlack from '../../../assets/image/clonestagramLogoBlack.png';
 import { AiFillFacebook } from 'react-icons/ai';
 import Loader from 'react-loader';
@@ -19,25 +19,26 @@ import {
   IoIosCloseCircleOutline,
   IoIosCheckmarkCircleOutline,
 } from 'react-icons/io';
+import { AxiosError } from 'axios';
 
-const SignUpContainer = styled.div<{ error: any }>`
-  width: 347px;
-  height: ${({ error }) => (error ? ' 855px' : '768px')};
+const SignUpContainer = styled.div<{ error: AxiosError<Error, any> }>`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  width: 347px;
+  height: ${({ error }) => (error ? ' 855px' : '768px')};
 `;
 
-const TopBox = styled.div<{ error: any }>`
-  width: 100%;
-  height: ${({ error }) => (error ? ' 660px' : '575px')};
-  border-radius: 1px;
-  border: solid 1px #dbdbdb;
-  background-color: #fff;
+const TopBox = styled.div<{ error: AxiosError<Error, any> }>`
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;
   align-items: center;
+  width: 100%;
+  height: ${({ error }) => (error ? ' 660px' : '575px')};
+  border: solid 1px ${({ theme }) => theme.borderColor};
+  border-radius: 1px;
+  background-color: ${({ theme }) => theme.whiteColor};
 
   img {
     width: 171.1px;
@@ -46,10 +47,10 @@ const TopBox = styled.div<{ error: any }>`
   }
 
   p {
-    color: #8e8e8e;
+    width: 262px;
     font-size: 17px;
     font-weight: 700;
-    width: 262px;
+    color: ${({ theme }) => theme.greyTextColor};
   }
 `;
 
@@ -57,90 +58,94 @@ const FacebookLoginButton = styled.button`
   width: 262px;
   height: 33px;
   border: none;
-  background: #0095f6;
   border-radius: 5px;
+  background: ${({ theme }) => theme.buttonColor};
   font-size: 14px;
   font-weight: 600;
-  color: #fff;
+  color: ${({ theme }) => theme.whiteColor};
 `;
 
 const FacebookLogo = styled(AiFillFacebook)`
-  color: #fff;
   width: 20px;
   height: 20px;
   margin-right: 5px;
+  color: ${({ theme }) => theme.whiteColor};
 `;
 
 const OrBox = styled.div`
   width: 262px;
   height: 14.7px;
   p {
-    font-size: 12.7px;
-    font-weight: 600;
-    font-stretch: normal;
-    font-style: normal;
-    line-height: 1.15;
-    letter-spacing: normal;
-    color: #8e8e8e;
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 0 17px;
+    font-size: 12.7px;
+    font-weight: 600;
+    line-height: 1.15;
+    color: ${({ theme }) => theme.greyTextColor};
     &::before,
     &::after {
-      content: '';
       display: inline-block;
       width: 103.9px;
       height: 1px;
-      background: #dbdbdb;
+      background: ${({ theme }) => theme.borderColor};
+      content: '';
     }
   }
 `;
 const Form = styled.form`
-  width: 340.2px;
-  height: fit-content;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   gap: 5.9px 0;
+  width: 340.2px;
+  height: fit-content;
 `;
 
 const InputBox = styled.div<{ keyPress: boolean; clicked: boolean }>`
   position: relative;
   width: 262px;
   height: 37.1px;
+  border: solid 1px
+    ${({ clicked, theme }) => (clicked ? '#a2a1a1' : theme.borderColor)};
   border-radius: 2.9px;
-  border: solid 1px ${({ clicked }) => (clicked ? '#a2a1a1' : '#dbdbdb')};
-  background-color: #fafafa;
+  background-color: ${({ theme }) => theme.bgColor};
   input {
     position: absolute;
+    top: ${({ keyPress }) => (keyPress ? '0px' : '-3px')};
+    padding-top: 10px;
     width: 100%;
     height: 100%;
-    top: ${({ keyPress }) => (keyPress ? '0px' : '-3px')};
-    /* height: ${({ keyPress }) => (keyPress ? '30px' : '37.1px')}; */
     border: none;
     background: transparent;
     font-size: ${({ keyPress }) => (keyPress ? '8px' : '12px')};
-    /* &:focus {
-    border-color: #a2a1a1;
-  } */
-    z-index: 100;
-    padding-top: 10px;
     transition: all linear 0.1s;
+    z-index: 100;
+    &:autofill {
+      box-shadow: 0 0 0px 1000px transparent inset;
+    }
+    &:-webkit-autofill,
+    &:-webkit-autofill:hover,
+    &:-webkit-autofill:focus,
+    &:-webkit-autofill:active {
+      transition: background-color 5000s ease-in-out 0s;
+      -webkit-transition: background-color 9999s ease-out;
+      -webkit-box-shadow: 0 0 0px 1000px transparent inset;
+      box-shadow: 0 0 0px 1000px transparent inset;
+      -webkit-text-fill-color: ${({ theme }) => theme.textColor};
+    }
   }
+
   span {
     position: absolute;
     top: ${({ keyPress }) => (keyPress ? '-5px' : '0')};
-    font-size: ${({ keyPress }) => (keyPress ? '8px' : '12px')};
-    font-weight: normal;
-    font-stretch: normal;
-    font-style: normal;
-    line-height: 3;
-    letter-spacing: normal;
-    text-align: left;
     padding-left: 10px;
-    color: #8e8e8e;
+    font-size: ${({ keyPress }) => (keyPress ? '8px' : '12px')};
+    color: ${({ theme }) => theme.greyTextColor};
+    line-height: 3;
+    text-align: left;
     transition: all linear 0.1s;
   }
 `;
@@ -149,35 +154,32 @@ const ShowHideText = styled.button`
   position: absolute;
   top: 8px;
   right: 5px;
-  font-size: 14px;
-  font-weight: 600;
-  border: none;
-  background: transparent;
-  z-index: 200;
-  &:active {
-    color: grey;
-  }
   width: fit-content;
   height: fit-content;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 600;
+  z-index: 200;
+  &:active {
+    color: ${({ theme }) => theme.greyTextColor};
+  }
 `;
 
 const SignupButton = styled.button<{ disabled: boolean }>`
+  position: relative;
   width: 262px;
   height: 29.3px;
-  border-radius: 3.9px;
-  background: ${({ disabled }) =>
-    disabled ? 'rgba(0, 149, 246, 0.3)' : '#0095F6'};
+  margin-top: 7.8px;
   border: none;
+  border-radius: 3.9px;
+  background: ${({ disabled, theme }) =>
+    disabled ? '#0095f64c' : theme.buttonColor};
   font-size: 13.7px;
   font-weight: 600;
-  font-stretch: normal;
-  font-style: normal;
+  color: ${({ theme }) => theme.whiteColor};
   line-height: 1.29;
-  letter-spacing: normal;
   text-align: center;
-  color: #fff;
-  margin-top: 7.8px;
-  position: relative;
 `;
 
 const NoticeBox = styled.div`
@@ -185,7 +187,7 @@ const NoticeBox = styled.div`
   height: fit-content;
   font-size: 12px;
   font-weight: 400;
-  color: #8e8e8e;
+  color: ${({ theme }) => theme.greyTextColor};
   line-height: 16px;
   text-align: center;
   letter-spacing: 0.4px;
@@ -195,53 +197,46 @@ const NoticeBox = styled.div`
 `;
 
 const ValidationTrueIcon = styled(IoIosCheckmarkCircleOutline)`
-  font-size: 25px;
-  color: ${({ theme }) => theme.greyTextColor};
   position: absolute;
   top: 5px;
   right: 5px;
+  font-size: 25px;
+  color: ${({ theme }) => theme.greyTextColor};
 `;
 
 const ValidationFalseIcon = styled(IoIosCloseCircleOutline)`
-  font-size: 25px;
-  color: #ed4956;
   position: absolute;
   top: 5px;
   right: 5px;
+  font-size: 25px;
+  color: ${({ theme }) => theme.errorColor};
 `;
 
 const ErrorMessageBox = styled.div`
-  width: 262px;
-  height: 80px;
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 262px;
+  height: 80px;
 
   p {
-    color: #ed4956;
+    color: ${({ theme }) => theme.errorColor};
     font-size: 14px;
     font-weight: 400;
-    font-stretch: normal;
-    font-style: normal;
     line-height: 1.29;
-    letter-spacing: normal;
     text-align: center;
     white-space: pre-line;
   }
 `;
 
-type FormValues = {
-  email: string;
-  name: string;
-  username: string;
-  password: string;
-};
-
 const schema = yup.object().shape({
   email: yup.string().required(),
-  name: yup.string().required(),
-  username: yup.string().required(),
-  password: yup.string().min(6).required(),
+  name: yup.string().required().max(15),
+  username: yup
+    .string()
+    .required()
+    .matches(/^[a-zA-Z0-9_.]*$/),
+  password: yup.string().min(8).max(15).required(),
 });
 
 const SignUp = () => {
@@ -262,18 +257,63 @@ const SignUp = () => {
     register,
     handleSubmit,
     formState: { isValid, errors },
-  } = useForm<FormValues>({ mode: 'onChange', resolver: yupResolver(schema) });
+  } = useForm<SignUpFormValues>({
+    mode: 'onChange',
+    resolver: yupResolver(schema),
+  });
 
-  const InputKeyPress = (e: any, setKeyPress: Function) => {
-    if (e.target.value === '') {
+  const { mutate, error, isLoading } = useMutation<
+    ResponseData,
+    AxiosError<Error>,
+    SignUpType
+  >(signUpUser, {
+    onError: (err) => {
+      console.log('회원가입 실패!', err.response.data);
+    },
+    onSuccess: () => {
+      console.log('회원가입 성공!');
+    },
+  });
+
+  const emailDuplicationChecking = useMutation<
+    ResponseData,
+    AxiosError,
+    EmailDuplicationCheckType
+  >(emailDuplicationCheck, {
+    onError: (err) => {
+      console.log('이메일 중복 체크 실패!', err.response.data);
+    },
+    onSuccess: () => {
+      console.log('이메일 중복 체크 성공!');
+    },
+  });
+
+  const usernameDuplicationChecking = useMutation<
+    ResponseData,
+    AxiosError,
+    UsernameDuplicationCheckType
+  >(usernameDuplicationCheck, {
+    onError: (err) => {
+      console.log('유저네임 중복 체크 실패!', err.response.data);
+    },
+    onSuccess: () => {
+      console.log('유저네임 중복 체크 성공!');
+    },
+  });
+
+  const InputKeyPress = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    setKeyPress: Dispatch<SetStateAction<boolean>>,
+  ) => {
+    if (e.currentTarget.value === '') {
       setKeyPress(false);
     } else {
       setKeyPress(true);
     }
   };
 
-  const passwordInputKeyPress = (e: any) => {
-    if (e.target.value === '') {
+  const passwordInputKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.currentTarget.value === '') {
       setPasswordKeyPress(false);
       setShowPassword(false);
     } else {
@@ -286,44 +326,10 @@ const SignUp = () => {
     setPasswordShowAndHide((prev: boolean) => !prev);
   };
 
-  const onSubmit = (dataInput: any) => {
-    console.log(dataInput);
-
+  const onSubmit = (dataInput: SignUpFormValues) => {
     mutate(dataInput);
   };
 
-  const onError = (err: any) => {
-    console.log(err);
-  };
-
-  const { mutate, data, error, reset, isLoading } = useMutation(signUpUser, {
-    onError: (err: any) => {
-      console.log(err.response.data);
-    },
-    onSuccess: (userInfo: any) => {
-      console.log('회원가입 성공!');
-      // console.log(userInfo);
-      // console.log(data);
-    },
-  });
-
-  const emailDuplicationChecking = useMutation(emailDuplicationCheck, {
-    onError: (err: any) => {
-      console.log(err.response.data);
-    },
-    onSuccess: (userInfo: any) => {
-      console.log('이메일 사용 가능!');
-    },
-  });
-
-  const usernameDuplicationChecking = useMutation(usernameDuplicationCheck, {
-    onError: (err: any) => {
-      console.log(err.response.data);
-    },
-    onSuccess: (userInfo: any) => {
-      console.log('유저네임 사용 가능!');
-    },
-  });
   return (
     <SignUpContainer error={error}>
       <TopBox error={error}>
@@ -336,14 +342,18 @@ const SignUp = () => {
         <OrBox>
           <p>OR</p>
         </OrBox>
-        <Form onSubmit={handleSubmit(onSubmit, onError)}>
+        <Form onSubmit={handleSubmit(onSubmit)}>
           <InputBox keyPress={emailKeyPress} clicked={emailInputBoxClicked}>
             <input
               type="text"
               onFocusCapture={() => setEmailInputBoxClicked(true)}
-              onBlurCapture={(e: any) => {
+              onBlurCapture={(
+                e: React.FocusEvent<HTMLInputElement, Element>,
+              ) => {
                 setEmailInputBoxClicked(false);
-                emailDuplicationChecking.mutate({ email: e.target.value });
+                emailDuplicationChecking.mutate({
+                  email: e.currentTarget.value,
+                });
               }}
               onKeyUp={(e) => InputKeyPress(e, setEmailKeyPress)}
               {...register('email', { required: true })}
@@ -370,18 +380,25 @@ const SignUp = () => {
             <input
               type="text"
               onFocusCapture={() => setUsernameInputBoxClicked(true)}
-              onBlurCapture={(e: any) => {
+              onBlurCapture={(
+                e: React.FocusEvent<HTMLInputElement, Element>,
+              ) => {
                 setUsernameInputBoxClicked(false);
                 usernameDuplicationChecking.mutate({
-                  username: e.target.value,
+                  username: e.currentTarget.value,
                 });
               }}
               onKeyUp={(e) => InputKeyPress(e, setUsernameKeyPress)}
               {...register('username', { required: true })}
+              maxLength={20}
             />
             <span>Username</span>
-            {usernameDuplicationChecking.isSuccess && <ValidationTrueIcon />}
-            {usernameDuplicationChecking.error && <ValidationFalseIcon />}
+            {!errors?.username && usernameDuplicationChecking.isSuccess && (
+              <ValidationTrueIcon />
+            )}
+            {(usernameDuplicationChecking.error || errors?.username) && (
+              <ValidationFalseIcon />
+            )}
           </InputBox>
           <InputBox
             keyPress={passwordKeyPress}
@@ -427,10 +444,14 @@ const SignUp = () => {
                   `This password isn't available. Minimum length of 8 to 15 characters, uppercase, lowercase, number, special characters (@,$,!,%,*,?,&) required.`}
                 {error.response.data.message ===
                   '이미 등록된 이메일입니다. 다시 입력해 주세요.' &&
-                  `This username isn't available. Please try another.`}
+                  `Another account is using the same email.`}
                 {error.response.data.message ===
                   '이미 등록된 닉네임입니다. 다시 입력해 주세요.' &&
-                  `This username isn't available. Please try another.`}
+                  `A user with that username already exists.`}
+                {error.response.data.message ===
+                  '이메일 형식이 맞지 않습니다. 다시 입력해 주세요.' &&
+                  `Enter a valid email address.`}
+                {errors?.username?.message}
               </p>
             </ErrorMessageBox>
           )}

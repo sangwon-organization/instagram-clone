@@ -1,9 +1,5 @@
-import { useMutation } from '@tanstack/react-query';
-import { AxiosError } from 'axios';
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { deletePost } from '../../../api/api';
 
 const Container = styled.div`
   width: 400px;
@@ -46,45 +42,39 @@ const Button = styled.button<{ last?: boolean }>`
     backdrop-filter: brightness(0.9);
   }
   &:nth-child(2) {
-    color: #ed4956;
     font-weight: 700;
+    color: #ed4956;
   }
 `;
 
-const DeleteConfirmModal = ({
-  postId,
-  userId,
-  closeModal,
-}: DeleteConfirmModalType) => {
-  const navigate = useNavigate();
-
-  const { mutate: deletePostMutate } = useMutation<
-    ResponseData,
-    AxiosError,
-    number
-  >(deletePost, {
-    onError: (err) => {
-      console.log('포스트 삭제 실패!', err.response.data);
-    },
-    onSuccess: () => {
-      console.log('포스트 삭제 성공!');
-      navigate(-1);
-      window.location.reload();
-    },
-  });
+const DiscardPostModal = ({
+  title,
+  question,
+  onClickDiscard,
+  closeDiscard,
+  handleDeleteImage,
+  imageIndex,
+}: DiscardPostModalType) => {
+  const discardImageOrPost = () => {
+    if (title === 'Discard photo?') {
+      handleDeleteImage(imageIndex);
+    } else {
+      onClickDiscard();
+    }
+  };
 
   return (
     <Container>
       <Title>
-        <h3>Delete post?</h3>
-        <p>Are you sure you want to delete this post?</p>
+        <h3>{title}</h3>
+        <p>{question}</p>
       </Title>
-      <Button onClick={() => deletePostMutate(postId)}>Delete</Button>
-      <Button last onClick={closeModal}>
+      <Button onClick={() => discardImageOrPost()}>Discard</Button>
+      <Button last onClick={() => closeDiscard(false)}>
         Cancel
       </Button>
     </Container>
   );
 };
 
-export default DeleteConfirmModal;
+export default DiscardPostModal;

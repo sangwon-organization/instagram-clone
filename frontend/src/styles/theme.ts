@@ -1,12 +1,5 @@
-import { css, DefaultTheme } from 'styled-components';
-
-const deviceSizes = {
-  mobile: '375px',
-  tablet: '768px',
-  laptop: '1024px',
-};
-
 const colors = {
+  //Common
   whiteColor: '#FFFFFF',
   blackColor: '#000000',
 
@@ -39,13 +32,11 @@ const colors = {
   darkModeSearchBarInputColor: '#262626',
 };
 
-const flexCenter = css`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-`;
-
 const lightTheme = {
+  whiteColor: colors.whiteColor,
+  blackColor: colors.blackColor,
+  buttonColor: colors.buttonColor,
+  errorColor: colors.errorColor,
   bgColor: colors.lightModeBgColor,
   borderColor: colors.lightModeBorderColor,
   textColor: colors.lightModeTextColor,
@@ -56,12 +47,13 @@ const lightTheme = {
   searchBarBgColor: colors.lightModeSearchBarBgColor,
   dropDownBgColor: colors.lightModeDropDownBgColor,
   searchBarInputColor: colors.lightModeSearchBarInputColor,
-  mobile: `screen and (max-width: ${deviceSizes.mobile})`,
-  tablet: `screen and (max-width: ${deviceSizes.tablet})`,
-  laptop: `screen and (max-width: ${deviceSizes.laptop})`,
 };
 
 const darkTheme = {
+  whiteColor: colors.whiteColor,
+  blackColor: colors.blackColor,
+  buttonColor: colors.buttonColor,
+  errorColor: colors.errorColor,
   bgColor: colors.darkModeBgColor,
   borderColor: colors.darkModeBorderColor,
   textColor: colors.darkModeTextColor,
@@ -73,19 +65,14 @@ const darkTheme = {
   searchBarBgColor: colors.darkModeSearchBarBgColor,
   dropDownBgColor: colors.darkModeDropDownBgColor,
   searchBarInputColor: colors.darkModeSearchBarInputColor,
-  mobile: `screen and (max-width: ${deviceSizes.mobile})`,
-  tablet: `screen and (max-width: ${deviceSizes.tablet})`,
-  laptop: `screen and (max-width: ${deviceSizes.laptop})`,
 };
 
 export type ColorsTypes = typeof colors;
-export type flexCenterTypes = typeof flexCenter;
 export type LightThemeTypes = typeof lightTheme;
 export type DarkThemeTypes = typeof darkTheme;
 
 export const theme = {
   colors,
-  flexCenter,
   lightTheme,
   darkTheme,
 };

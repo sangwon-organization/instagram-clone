@@ -1,32 +1,28 @@
 import React from 'react';
 import styled from 'styled-components';
-import AppStoreImage from '../../assets/image/AppStoreImage.png';
-import GooglePlayImage from '../../assets/image/GooglePlayImage.png';
+import AppStoreImage from '../../../assets/image/AppStoreImage.png';
+import GooglePlayImage from '../../../assets/image/GooglePlayImage.png';
 
 const Container = styled.div`
-  width: 100%;
-  height: 99.7px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   gap: 20.5px 0;
+  width: 100%;
+  height: 99.7px;
   p {
     font-size: 13.7px;
-    font-weight: normal;
-    font-stretch: normal;
-    font-style: normal;
     line-height: 1.29;
-    letter-spacing: normal;
-    color: #262626;
+    color: ${({ theme }) => theme.textColor};
   }
 `;
 
 const ButtonWrapper = styled.div`
-  width: fit-content;
-  height: 43px;
   display: flex;
   gap: 0 7.8px;
+  width: fit-content;
+  height: 43px;
   img {
     width: 131.3px;
     height: 39.1px;

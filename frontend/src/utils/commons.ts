@@ -1,5 +1,5 @@
 // 날짜 계산
-export const timeForToday = (dateInput: any) => {
+export const timeForToday = (dateInput: Date) => {
   const today = new Date();
   const computeDate = new Date(dateInput);
 

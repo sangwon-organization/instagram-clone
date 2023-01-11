@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import styled from 'styled-components';
 import { CgProfile } from 'react-icons/cg';
 import { BiBookmark } from 'react-icons/bi';
@@ -9,30 +9,28 @@ import { CgSync } from 'react-icons/cg';
 import useOutsideClick from '../../../hooks/useOutsideClick';
 import { useDispatch } from 'react-redux';
 import { changeThemeMode } from '../../../redux/slices/themeModeSlice';
-import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
-const AvatarDropdownContainer = styled.div<{ showDropdown: boolean; ref: any }>`
+const AvatarDropdownContainer = styled.div<{ showDropdown: boolean }>`
   display: ${({ showDropdown }) => (showDropdown ? 'block' : 'none')};
-  width: 230px;
-  height: fit-content;
-  /* border: 1px solid #8e8e8e; */
-  border-radius: 5px;
   position: absolute;
   right: -30px;
   top: 57px;
-  filter: drop-shadow(0px 0px 10px rgba(0, 0, 0, 0.1));
+  width: 230px;
+  height: fit-content;
+  border-radius: 5px;
   background: ${({ theme }) => theme.dropDownBgColor};
+  filter: drop-shadow(0px 0px 10px rgba(0, 0, 0, 0.1));
   &:after {
-    border-color: ${({ theme }) => theme.dropDownBgColor} transparent;
-    border-style: solid;
-    border-width: 0 6px 8px 6.5px;
-    content: '';
     display: block;
     position: absolute;
     top: -8px;
     right: 38px;
     width: 1px;
+    border-width: 0 6px 8px 6.5px;
+    border-style: solid;
+    border-color: ${({ theme }) => theme.dropDownBgColor} transparent;
+    content: '';
     z-index: 1;
   }
 `;
@@ -75,10 +73,12 @@ const DropdownItem = styled.div<{ first?: boolean; last?: boolean }>`
   gap: 0 10px;
   width: 230px;
   height: 37px;
+  padding: 8px 16px;
+  border-top: ${({ last, theme }) => last && `1px solid ${theme.borderColor}`};
   font-size: 14px;
   font-weight: 400;
-  cursor: pointer;
   color: ${({ theme }) => theme.textColor};
+  cursor: pointer;
   &:hover {
     background: ${({ theme }) => theme.bgColor};
     border-top-left-radius: ${({ first }) => first && '5px'};
@@ -86,22 +86,19 @@ const DropdownItem = styled.div<{ first?: boolean; last?: boolean }>`
     border-bottom-left-radius: ${({ last }) => last && '5px'};
     border-bottom-right-radius: ${({ last }) => last && '5px'};
   }
-  border-top: ${({ last, theme }) => last && `1px solid ${theme.borderColor}`};
-  padding: 8px 16px;
 `;
-
-interface AvatarDropdownProps {
-  showDropdown: boolean;
-  setShowDropdown: Function;
-}
 
 const AvatarDropdown = ({
   showDropdown,
   setShowDropdown,
-}: AvatarDropdownProps) => {
+}: AvatarDropdownType) => {
   const outsideRef = useRef();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const userId = localStorage.getItem('userId');
+
+  const location = useLocation().pathname;
 
   useOutsideClick(outsideRef, () => setShowDropdown(false));
 
@@ -110,12 +107,8 @@ const AvatarDropdown = ({
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('userId');
     navigate('/');
-    setTimeout(() => {
-      window.location.reload();
-    }, 600);
+    window.location.reload();
   };
-
-  const userId = localStorage.getItem('userId');
 
   return (
     <AvatarDropdownContainer showDropdown={showDropdown} ref={outsideRef}>
@@ -124,7 +117,7 @@ const AvatarDropdown = ({
           first
           onClick={() => {
             navigate(`/user/${userId}`);
-            window.location.reload();
+            if (location === `/user/${userId}`) window.location.reload();
           }}>
           <ProfileIcon />
           <p>Profile</p>

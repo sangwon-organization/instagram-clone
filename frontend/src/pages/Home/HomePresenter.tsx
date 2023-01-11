@@ -1,128 +1,103 @@
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import styled from 'styled-components';
-import { getPostsList } from '../../api/api';
 import FeedCard from '../../components/feature/Home/FeedCard';
 import HomeAside from '../../components/feature/Home/HomeAside';
 import StoryBox from '../../components/feature/Home/StoryBox';
-import BottomNavigationBar from '../../components/layout/NavigationBar/BottomNavigationBar';
-import NavigationBar from '../../components/layout/NavigationBar/NavigationBar';
-import { useLocation } from 'react-router-dom';
-import { useInView } from 'react-intersection-observer';
+import NavigationBar from '../../components/feature/NavigationBar/NavigationBar';
+import Loader from 'react-loader';
+import AllSugesstionsList from '../../components/feature/Home/AllSugesstionsList';
 
 const MainContainer = styled.div`
-  width: 100vw;
-  height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: ${({ theme }) => theme.bgColor};
+  width: 100%;
+  height: 100%;
   padding-top: 60px;
-  @media ${({ theme }) => theme.tablet} {
-    width: 100vw;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-  }
-  @media ${({ theme }) => theme.mobile} {
-    width: 100vw;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-  }
+  background: ${({ theme }) => theme.bgColor};
 `;
 
 const MainWrapper = styled.main`
-  width: 848px;
-  height: fit-content;
-  /* border: 1px solid red; */
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  @media ${({ theme }) => theme.tablet} {
-    width: 80vw;
-    align-items: center;
-    justify-content: center;
-  }
-  @media ${({ theme }) => theme.mobile} {
-    width: 100vw;
-    align-items: center;
-    justify-content: center;
-  }
+  width: 848px;
+  height: fit-content;
 `;
 
 const StoryAndFeedSection = styled.section`
-  width: 470px;
-  height: fit-content;
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 14px 0;
-  @media ${({ theme }) => theme.tablet} {
-    width: 100vw;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  @media ${({ theme }) => theme.mobile} {
-    width: 100vw;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
+  width: 470px;
+  height: fit-content;
+  margin: 28px 0;
 `;
 
-interface HomePresenterType {
-  data: any;
-  refetchPage: any;
-  scrollRef: any;
-  refetch: any;
-}
+const ScrollSensor = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100px;
+  height: 100px;
+`;
 
 const HomePresenter = ({
-  data,
-  refetchPage,
+  getPostsData,
   scrollRef,
-  refetch,
+  hasNextPage,
+  isFetchingNextPage,
 }: HomePresenterType) => {
   return (
     <>
       <NavigationBar />
       <MainContainer>
         <MainWrapper>
-          <StoryAndFeedSection>
-            <StoryBox />
-            {data?.pages.flatMap((page: any, pageIndex: any) =>
-              page.data.postList.map((post: any) => (
-                <FeedCard
-                  key={post.postId}
-                  postId={post.postId}
-                  username={post.username}
-                  profileImage={post.profileImage}
-                  likeYn={post.likeYn}
-                  likeCount={post.likeCount}
-                  createdAt={post.createdAt}
-                  commentCount={post.commentCount}
-                  bookmarkYn={post.bookmarkYn}
-                  content={post.content}
-                  postImageList={post.postImageList}
-                  userId={post.userId}
-                  refetchPage={refetchPage}
-                  pageIndex={pageIndex}
-                  refetch={refetch}
-                />
-              )),
-            )}
-          </StoryAndFeedSection>
-          <HomeAside />
+          {getPostsData?.pages[0].postList.length > 0 ? (
+            <>
+              <StoryAndFeedSection>
+                <StoryBox />
+                {getPostsData?.pages.map((page: PageType) =>
+                  page.postList.map((post: PostListType) => (
+                    <FeedCard
+                      key={post.postId}
+                      postId={post.postId}
+                      username={post.username}
+                      profileImage={post.profileImage}
+                      likeYn={post.likeYn}
+                      likeCount={post.likeCount}
+                      createdAt={post.createdAt}
+                      commentCount={post.commentCount}
+                      bookmarkYn={post.bookmarkYn}
+                      content={post.content}
+                      postImageList={post.postImageList}
+                      userId={post.userId}
+                    />
+                  )),
+                )}
+
+                {hasNextPage && (
+                  <ScrollSensor ref={scrollRef}>
+                    <Loader
+                      loaded={!isFetchingNextPage}
+                      color="#8e8e8e"
+                      scale={0.8}
+                      top="50%"
+                      left="50%"
+                      position="relative"
+                    />
+                  </ScrollSensor>
+                )}
+              </StoryAndFeedSection>
+              <HomeAside />
+            </>
+          ) : (
+            <AllSugesstionsList />
+          )}
         </MainWrapper>
       </MainContainer>
-      <div
-        style={{ background: 'black', width: '30px', height: '30px' }}
-        ref={scrollRef}
-      />
     </>
   );
 };

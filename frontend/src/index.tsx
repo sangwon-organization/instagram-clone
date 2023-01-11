@@ -12,19 +12,35 @@ const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement,
 );
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      onError: (error: any) => {
+        if (error.response?.data.code === 401) {
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+          localStorage.removeItem('userId');
+          window.location.reload();
+          if (window.location.pathname !== '/') {
+            window.location.replace('/');
+          }
+        }
+      },
+    },
+  },
+});
 
 root.render(
   <Provider store={store}>
-    <React.StrictMode>
-      <QueryClientProvider client={queryClient}>
-        <ReactQueryDevtools initialIsOpen />
-        <BrowserRouter>
-          <HelmetProvider>
-            <App />
-          </HelmetProvider>
-        </BrowserRouter>
-      </QueryClientProvider>
-    </React.StrictMode>
+    {/* <React.StrictMode> */}
+    <QueryClientProvider client={queryClient}>
+      <ReactQueryDevtools initialIsOpen />
+      <BrowserRouter>
+        <HelmetProvider>
+          <App />
+        </HelmetProvider>
+      </BrowserRouter>
+    </QueryClientProvider>
+    {/* </React.StrictMode> */}
   </Provider>,
 );

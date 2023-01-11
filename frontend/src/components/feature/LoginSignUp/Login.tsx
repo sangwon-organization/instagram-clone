@@ -1,35 +1,35 @@
-import React, { useCallback, useState } from 'react';
-import styled, { css } from 'styled-components';
+import React, { useState } from 'react';
+import styled from 'styled-components';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { useMutation } from '@tanstack/react-query';
 import { loginUser } from '../../../api/api';
 import clonestagramLogoBlack from '../../../assets/image/clonestagramLogoBlack.png';
-import LoginSignUpBottomBox from '../../share/LoginSignUpBottomBox';
-import LoginSignUpMiddleBox from '../../share/LoginSignUpMiddleBox';
-import { useDispatch } from 'react-redux';
+import LoginSignUpBottomBox from './LoginSignUpBottomBox';
+import LoginSignUpMiddleBox from './LoginSignUpMiddleBox';
 import Loader from 'react-loader';
+import { AxiosError } from 'axios';
 
 const LoginContainer = styled.div`
-  width: 342.2px;
-  height: 568px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  width: 342.2px;
+  height: 568px;
   margin: 100px 0;
 `;
 
 const TopBox = styled.div`
-  width: 100%;
-  height: 387.1px;
-  border-radius: 1px;
-  border: solid 1px ${({ theme }) => theme.borderColor};
-  background-color: #fff;
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;
   align-items: center;
+  width: 100%;
+  height: 387.1px;
+  border: solid 1px ${({ theme }) => theme.borderColor};
+  border-radius: 1px;
+  background-color: #fff;
 
   img {
     width: 171.1px;
@@ -39,70 +39,73 @@ const TopBox = styled.div`
 `;
 
 const LoginForm = styled.form`
-  width: 340.2px;
-  height: 126px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   gap: 5.9px 0;
+  width: 340.2px;
+  height: 126px;
 `;
 
 const LoginButton = styled.button<{ disabled: boolean }>`
+  position: relative;
   width: 262px;
   height: 29.3px;
-  border-radius: 3.9px;
-  background: ${({ disabled }) =>
-    disabled ? 'rgba(0, 149, 246, 0.3)' : '#0095F6'};
+  margin-top: 7.8px;
   border: none;
+  border-radius: 3.9px;
+  background: ${({ disabled, theme }) =>
+    disabled ? '#0095f64c' : theme.buttonColor};
+  color: ${({ theme }) => theme.whiteColor};
   font-size: 13.7px;
   font-weight: 600;
-  font-stretch: normal;
-  font-style: normal;
   line-height: 1.29;
-  letter-spacing: normal;
   text-align: center;
-  color: #fff;
-  margin-top: 7.8px;
-  position: relative;
 `;
 
 const InputBox = styled.div<{ keyPress: boolean; clicked: boolean }>`
   position: relative;
   width: 262px;
   height: 37.1px;
-  border-radius: 2.9px;
   border: solid 1px
     ${({ theme, clicked }) => (clicked ? '#a2a1a1' : theme.borderColor)};
+  border-radius: 2.9px;
   background-color: ${({ theme }) => theme.bgColor};
   input {
     position: absolute;
+    top: ${({ keyPress }) => (keyPress ? '0px' : '-3px')};
     width: 100%;
     height: 100%;
-    top: ${({ keyPress }) => (keyPress ? '0px' : '-3px')};
-    /* height: ${({ keyPress }) => (keyPress ? '30px' : '37.1px')}; */
+    padding-top: 10px;
     border: none;
     background: transparent;
     font-size: ${({ keyPress }) => (keyPress ? '8px' : '12px')};
-    /* &:focus {
-    border-color: #a2a1a1;
-  } */
-    z-index: 100;
-    padding-top: 10px;
+    font-weight: 400;
     transition: all linear 0.1s;
+    z-index: 100;
+    &:autofill {
+      box-shadow: 0 0 0px 1000px transparent inset;
+    }
+    &:-webkit-autofill,
+    &:-webkit-autofill:hover,
+    &:-webkit-autofill:focus,
+    &:-webkit-autofill:active {
+      transition: background-color 5000s ease-in-out 0s;
+      -webkit-transition: background-color 9999s ease-out;
+      -webkit-box-shadow: 0 0 0px 1000px transparent inset;
+      box-shadow: 0 0 0px 1000px transparent inset;
+      -webkit-text-fill-color: ${({ theme }) => theme.textColor};
+    }
   }
   span {
     position: absolute;
     top: ${({ keyPress }) => (keyPress ? '-5px' : '0')};
-    font-size: ${({ keyPress }) => (keyPress ? '8px' : '12px')};
-    font-weight: normal;
-    font-stretch: normal;
-    font-style: normal;
-    line-height: 3;
-    letter-spacing: normal;
-    text-align: left;
     padding-left: 10px;
-    color: #8e8e8e;
+    font-size: ${({ keyPress }) => (keyPress ? '8px' : '12px')};
+    color: ${({ theme }) => theme.greyTextColor};
+    line-height: 3;
+    text-align: left;
     transition: all linear 0.1s;
   }
 `;
@@ -111,10 +114,10 @@ const ShowHideText = styled.button`
   position: absolute;
   top: 8px;
   right: 5px;
-  font-size: 14px;
-  font-weight: 600;
   border: none;
   background: transparent;
+  font-size: 14px;
+  font-weight: 600;
   z-index: 200;
   &:active {
     color: ${({ theme }) => theme.greyTextColor};
@@ -125,17 +128,14 @@ const OrBox = styled.div`
   width: 262px;
   height: 14.7px;
   p {
-    font-size: 12.7px;
-    font-weight: 600;
-    font-stretch: normal;
-    font-style: normal;
-    line-height: 1.15;
-    letter-spacing: normal;
-    color: ${({ theme }) => theme.greyTextColor};
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 0 17px;
+    font-size: 12.7px;
+    font-weight: 600;
+    line-height: 1.15;
+    color: ${({ theme }) => theme.greyTextColor};
     &::before,
     &::after {
       content: '';
@@ -151,13 +151,10 @@ const ErrorMessageBox = styled.div`
   width: 262px;
   height: 19.6px;
   font-size: 13.7px;
-  font-weight: 600;
-  font-stretch: normal;
-  font-style: normal;
-  line-height: 1.29;
-  letter-spacing: normal;
-  text-align: center;
+  font-weight: 400;
   color: #ed4956;
+  line-height: 1.29;
+  text-align: center;
   white-space: pre-line;
 `;
 
@@ -165,22 +162,13 @@ const ForgotPasswordBox = styled.div`
   width: 94.1px;
   height: 13.7px;
   font-size: 11.7px;
-  font-weight: normal;
-  font-stretch: normal;
-  font-style: normal;
   line-height: 1.33;
-  letter-spacing: normal;
   color: ${({ theme }) => theme.hashTagColor};
 `;
 
-type FormValues = {
-  email: string;
-  password: string;
-};
-
 const schema = yup.object().shape({
   email: yup.string().required(),
-  password: yup.string().min(6).required(),
+  password: yup.string().min(8).max(15).required(),
 });
 
 const Login = () => {
@@ -191,18 +179,20 @@ const Login = () => {
   const [emailInputBoxClicked, setEmailInputBoxClicked] = useState(false);
   const [passwordInputBoxClicked, setPasswordInputBoxClicked] = useState(false);
 
-  const dispatch = useDispatch();
-
-  const userNameInputKeyPress = (e: any) => {
-    if (e.target.value === '') {
+  const userNameInputKeyPress = (
+    event: React.KeyboardEvent<HTMLInputElement>,
+  ) => {
+    if (event.currentTarget.value === '') {
       setUsernameKeyPress(false);
     } else {
       setUsernameKeyPress(true);
     }
   };
 
-  const passwordInputKeyPress = (e: any) => {
-    if (e.target.value === '') {
+  const passwordInputKeyPress = (
+    event: React.KeyboardEvent<HTMLInputElement>,
+  ) => {
+    if (event.currentTarget.value === '') {
       setPasswordKeyPress(false);
       setShowPassword(false);
     } else {
@@ -215,27 +205,29 @@ const Login = () => {
     setPasswordShowAndHide((prev: boolean) => !prev);
   };
 
-  const onError = (err: any) => {
-    console.log(err);
-  };
-
   const {
     register,
     handleSubmit,
-    formState: { isValid, errors },
-  } = useForm<FormValues>({ mode: 'onChange', resolver: yupResolver(schema) });
+    formState: { isValid },
+  } = useForm<LoginFormValues>({
+    mode: 'onChange',
+    resolver: yupResolver(schema),
+  });
 
-  const { mutate, data, error, reset, isLoading } = useMutation(loginUser, {
-    onError: (err: any) => {
-      console.log(err.response.data);
+  const { mutate, error, isLoading } = useMutation<
+    LoginResponseData,
+    AxiosError,
+    LoginType
+  >(loginUser, {
+    onError: (err: AxiosError) => {
+      console.log('로그인 실패 ', err.response.data);
     },
-    onSuccess: (userInfo: any) => {
+    onSuccess: () => {
       console.log('로그인 성공!');
-      console.log(data);
     },
   });
-  console.log(error);
-  const onSubmit = (dataInput: any) => {
+
+  const onSubmit = (dataInput: LoginFormValues) => {
     mutate(dataInput);
   };
 
@@ -243,7 +235,7 @@ const Login = () => {
     <LoginContainer>
       <TopBox>
         <img src={clonestagramLogoBlack} alt="인스타그램로고" />
-        <LoginForm onSubmit={handleSubmit(onSubmit, onError)}>
+        <LoginForm onSubmit={handleSubmit(onSubmit)}>
           <InputBox keyPress={usernameKeyPress} clicked={emailInputBoxClicked}>
             <input
               type="text"
@@ -294,7 +286,7 @@ const Login = () => {
           <ErrorMessageBox>
             <p>
               {error.response.status === 401 &&
-                `이메일 또는 패스워드가 정확하지 않습니다.\n다시 입력해 주세요.`}
+                `Sorry, Your email or password is incorrect.\nPlease re-enter.`}
             </p>
           </ErrorMessageBox>
         )}

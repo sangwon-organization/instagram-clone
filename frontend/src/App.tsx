@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useState } from 'react';
+import React, { useLayoutEffect, useState } from 'react';
 import { ThemeProvider } from 'styled-components';
 import { theme } from './styles/theme';
 import GlobalStyle from './styles/GlobalStyles';
@@ -6,9 +6,10 @@ import AppRouter from './AppRouter';
 import GlobalFont from './styles/GlobalFont';
 import { useSelector, useDispatch } from 'react-redux';
 import { persistThemeMode } from '../src/redux/slices/themeModeSlice';
+import { RootState } from './redux/store/configureStore';
 
 function App() {
-  const darkMode = useSelector((state: any) => state.themeMode.darkMode);
+  const darkMode = useSelector((state: RootState) => state.themeMode.darkMode);
   const [isLoggedIn, setIsLoggedIn] = useState(true);
 
   const dispatch = useDispatch();

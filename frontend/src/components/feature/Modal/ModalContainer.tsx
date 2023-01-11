@@ -1,23 +1,19 @@
-import React, { useRef, useState } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 import { IoClose } from 'react-icons/io5';
-import useOutsideClick from '../../../hooks/useOutsideClick';
-import CreatePostModal from './CreatePostModal';
-import PostDropDownModal from './PostDropDownModal';
 
 const Container = styled.div`
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  z-index: 100;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
   z-index: 1000;
 `;
 
@@ -33,8 +29,6 @@ const ModalBlock = styled.div`
   width: fit-content;
   height: fit-content;
   overflow: hidden;
-  /* border: 1px solid red; */
-  /* padding: 10px; */
 `;
 
 const Contents = styled.div`
@@ -43,38 +37,39 @@ const Contents = styled.div`
   align-items: center;
   width: fit-content;
   height: fit-content;
-  /* border: 1px solid blue; */
 `;
 
 const CloseIcon = styled(IoClose)`
-  font-size: 30px;
-  color: #fff;
-  position: absolute;
-  right: 10px;
+  position: fixed;
   top: 10px;
+  right: 10px;
+  font-size: 30px;
+  color: ${({ theme }) => theme.whiteColor};
   cursor: pointer;
 `;
 
 type ModalContainerProps = {
   closeModal: Function;
-  createPost?: any;
-  children: any;
+  closeIcon?: boolean;
+  children: JSX.Element;
 };
 
 function ModalContainer({
   closeModal,
-  createPost,
+  closeIcon,
   children,
 }: ModalContainerProps) {
-  const outsideRef = useRef();
-
-  useOutsideClick(outsideRef, closeModal);
   return (
     <Container>
-      <Background />
-      {createPost && <CloseIcon />}
+      <Background
+        onClick={(e) => {
+          e.stopPropagation();
+          closeModal();
+        }}
+      />
+      {closeIcon && <CloseIcon />}
       <ModalBlock>
-        <Contents ref={outsideRef}>{children}</Contents>
+        <Contents>{children}</Contents>
       </ModalBlock>
     </Container>
   );

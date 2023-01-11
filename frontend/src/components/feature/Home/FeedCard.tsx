@@ -1,9 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import userAvatar from '../../../assets/image/userAvatar.png';
-import userImage from '../../../assets/image/userImage.png';
-import userImage2 from '../../../assets/image/userImage2.png';
-import userImage3 from '../../../assets/image/userImage3.png';
 import { BsHeart } from 'react-icons/bs';
 import { BsHeartFill } from 'react-icons/bs';
 import { RiChat3Line } from 'react-icons/ri';
@@ -15,91 +11,81 @@ import {
   IoIosArrowDropleftCircle,
   IoIosArrowDroprightCircle,
 } from 'react-icons/io';
-import theme from '../../../styles/theme';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import Loader from 'react-loader';
+import { useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
 import {
   bookmarkPost,
   commentPost,
   getCommentsList,
   likePost,
 } from '../../../api/api';
-import Loader from 'react-loader';
-import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { timeForToday } from '../../../utils/commons';
+import PostWrapper from '../Post/PostWrapper';
 import ModalPortal from '../Modal/ModalPortal';
 import ModalContainer from '../Modal/ModalContainer';
 import PostDropDownModal from '../Modal/PostDropDownModal';
-import DeleteConfirmModal from '../Modal/DeleteConfirmModal';
-import PostWrapper from '../Post/PostWrapper';
+import CommentsListBox from '../Post/CommentsListBox';
+import { AxiosError } from 'axios';
 
 const FeedCardContainer = styled.div`
+  display: flex;
+  flex-direction: column;
   width: 470px;
   height: fit-content;
   border: 1px solid ${({ theme }) => theme.borderColor};
   border-radius: 10px;
-  display: flex;
-  flex-direction: column;
   background: ${({ theme }) => theme.searchBarBgColor};
-  @media ${({ theme }) => theme.tablet} {
-    width: 100vw;
-    display: flex;
-    flex-direction: column;
-  }
-  @media ${({ theme }) => theme.mobile} {
-    width: 100vw;
-    display: flex;
-    flex-direction: column;
-  }
 `;
 
 const UserInformationWrapper = styled.div`
-  width: 100%;
-  height: 60px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100%;
+  height: 60px;
   padding: 5px 10px;
 `;
 
 const UserInfo = styled.div`
-  width: fit-content;
-  height: fit-content;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 0 10px;
+  width: fit-content;
+  height: fit-content;
   p {
     width: fit-content;
     font-size: 14px;
     font-weight: 600;
-    cursor: pointer;
     color: ${({ theme }) => theme.textColor};
+    cursor: pointer;
   }
 `;
 
 const ImageBoxWrapper = styled.div`
+  display: flex;
+  position: relative;
   width: 100%;
   height: fit-content;
-  display: flex;
   overflow: hidden;
-  /* background-image: url('../../../assets/image/userImage.png');
-  background-position: center;
-  background-size: contain;
-  background-repeat: no-repeat; */
-  position: relative;
 `;
 
 const ImageWrapper = styled.div`
-  width: 100%;
-  height: 100%;
   display: flex;
   align-items: center;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 4/5;
   img {
-    width: 100%;
-    height: 585px;
-    object-fit: cover;
-    background: black;
     flex: none;
+    width: 100%;
+    /* height: 585px; */
+    height: 100%;
+    background: ${({ theme }) => theme.blackColor};
+
+    object-fit: cover;
     -webkit-user-drag: none;
     -khtml-user-drag: none;
     -moz-user-drag: none;
@@ -114,14 +100,13 @@ const CommentBoxWrapper = styled.div`
 `;
 
 const UserAvatar = styled.div`
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  border: 2px solid transparent;
   display: flex;
   justify-content: center;
   align-items: center;
-  cursor: pointer;
+  width: 42px;
+  height: 42px;
+  border: 2px solid transparent;
+  border-radius: 50%;
   background-image: linear-gradient(
       ${({ theme }) => theme.searchBarBgColor},
       ${({ theme }) => theme.searchBarBgColor}
@@ -129,6 +114,7 @@ const UserAvatar = styled.div`
     linear-gradient(to right, red 0%, orange 100%);
   background-origin: border-box;
   background-clip: content-box, border-box;
+  cursor: pointer;
   img {
     width: 32px;
     height: 32px;
@@ -138,28 +124,27 @@ const UserAvatar = styled.div`
 `;
 
 const IconBox = styled.div`
-  width: 100%;
-  height: 46px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100%;
+  height: 46px;
   padding: 0 10px;
-  /* border: 1px solid red; */
 `;
 
 const LeftIconBox = styled.div`
-  width: 100px;
-  height: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100px;
+  height: 100%;
 `;
 
 const HeartIcon = styled(BsHeart)`
   width: 23px;
   height: 23px;
-  cursor: pointer;
   color: ${({ theme }) => theme.textColor};
+  cursor: pointer;
   &:hover {
     color: ${({ theme }) => theme.greyTextColor};
   }
@@ -168,35 +153,32 @@ const HeartIcon = styled(BsHeart)`
 const ColoredHeartIcon = styled(BsHeartFill)<{ likebuttonclicked: string }>`
   width: 23px;
   height: 23px;
-  color: #ed4956;
+  color: ${({ theme }) => theme.errorColor};
   cursor: pointer;
   animation: ${({ likebuttonclicked }) =>
-    likebuttonclicked === 'Y' ? 'pop 0.2s linear' : ''};
-  @keyframes pop {
+    likebuttonclicked === 'Y' ? 'feedLike 1s ease-in-out' : ''};
+  @keyframes feedLike {
     0% {
       transform: scale(1);
     }
-    100% {
+    15% {
       transform: scale(1.2);
     }
-  }
-`;
-
-const SmallHeartIcon = styled(BsHeart)`
-  width: 10px;
-  height: 10px;
-  cursor: pointer;
-  color: ${({ theme }) => theme.textColor};
-  &:hover {
-    color: ${({ theme }) => theme.greyTextColor};
+    30% {
+      transform: scale(0.95);
+    }
+    45%,
+    80% {
+      transform: scale(1);
+    }
   }
 `;
 
 const ChatIcon = styled(RiChat3Line)`
   width: 23px;
   height: 23px;
-  cursor: pointer;
   color: ${({ theme }) => theme.textColor};
+  cursor: pointer;
   &:hover {
     color: ${({ theme }) => theme.greyTextColor};
   }
@@ -205,8 +187,8 @@ const ChatIcon = styled(RiChat3Line)`
 const LocationIcon = styled(TbLocation)`
   width: 23px;
   height: 23px;
-  cursor: pointer;
   color: ${({ theme }) => theme.textColor};
+  cursor: pointer;
   &:hover {
     color: ${({ theme }) => theme.greyTextColor};
   }
@@ -215,8 +197,8 @@ const LocationIcon = styled(TbLocation)`
 const BookmarkIcon = styled(FaRegBookmark)`
   width: 23px;
   height: 23px;
-  cursor: pointer;
   color: ${({ theme }) => theme.textColor};
+  cursor: pointer;
   &:hover {
     color: ${({ theme }) => theme.greyTextColor};
   }
@@ -225,8 +207,8 @@ const BookmarkIcon = styled(FaRegBookmark)`
 const BookmarkFilledIcon = styled(FaBookmark)`
   width: 23px;
   height: 23px;
-  cursor: pointer;
   color: ${({ theme }) => theme.textColor};
+  cursor: pointer;
   &:hover {
     color: ${({ theme }) => theme.greyTextColor};
   }
@@ -235,129 +217,93 @@ const BookmarkFilledIcon = styled(FaBookmark)`
 const LikedMemberBox = styled.div`
   width: fit-content;
   height: fit-content;
+  margin: 0 10px 10px 10px;
   font-size: 14px;
   font-weight: 600;
-  margin: 0 10px 10px 10px;
   color: ${({ theme }) => theme.textColor};
   cursor: pointer;
 `;
 const FeedDescriptionBox = styled.div`
   width: 100%;
   height: fit-content;
-  font-size: 14px;
-  font-weight: 600;
-  margin: 0 10px 10px 10px;
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  gap: 0 5px;
-  div {
-    font-size: 14px;
-    font-weight: 600;
-    color: ${({ theme }) => theme.textColor};
-    cursor: pointer;
-  }
-  span {
-    font-size: 14px;
-    font-weight: 400;
-    color: ${({ theme }) => theme.textColor};
-  }
-  button {
-    font-size: 14px;
-    font-weight: 400;
-    color: ${({ theme }) => theme.greyTextColor};
-    border: none;
-    background: transparent;
-  }
-`;
-const ViewAllCommentsBox = styled.div`
-  width: fit-content;
-  height: fit-content;
-  font-size: 14px;
-  font-weight: 400;
-  color: ${({ theme }) => theme.greyTextColor};
-  margin: 0 10px 10px 10px;
-  cursor: pointer;
-`;
-const CommentsListBox = styled.div`
-  width: 90%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: fit-content;
-  height: fit-content;
-  font-size: 14px;
-  font-weight: 400;
-  margin: 0 10px 10px 10px;
-  /* border: 1px solid red; */
-`;
-
-const CommentText = styled.div`
-  display: flex;
-  gap: 0 5px;
-  justify-content: flex-start;
-  align-items: center;
-  /* border: 1px solid blue; */
-  div {
-    width: fit-content;
-    height: fit-content;
+  padding: 0 10px 10px 10px;
+  line-height: 18px;
+  word-break: break-all;
+  white-space: pre-wrap;
+  span:first-child {
+    float: left;
+    margin-right: 5px;
     font-size: 14px;
     font-weight: 600;
     color: ${({ theme }) => theme.textColor};
     cursor: pointer;
   }
   p {
-    width: 340px;
-    height: fit-content;
+    display: inline;
     font-size: 14px;
     font-weight: 400;
     color: ${({ theme }) => theme.textColor};
-    span {
-      width: fit-content;
-      height: fit-content;
-      margin-right: 5px;
-      color: ${({ theme }) => theme.hashTagColor};
-      cursor: pointer;
-    }
+  }
+  button {
+    display: inline-block;
+    border: none;
+    background: transparent;
+    font-size: 14px;
+    font-weight: 400;
+    color: ${({ theme }) => theme.greyTextColor};
+    cursor: pointer;
   }
 `;
+const ViewAllCommentsBox = styled.div`
+  width: fit-content;
+  height: fit-content;
+  margin: 0 10px 10px 10px;
+  font-size: 14px;
+  font-weight: 400;
+  color: ${({ theme }) => theme.greyTextColor};
+  cursor: pointer;
+`;
+
 const DateBox = styled.div`
   width: 100%;
   height: fit-content;
+  padding: 0 10px 10px 10px;
   font-size: 10px;
   font-weight: 400;
   color: ${({ theme }) => theme.greyTextColor};
-  padding: 0 10px 10px 10px;
 `;
 
 const AddCommentBox = styled.form`
-  width: 100%;
-  height: fit-content;
-  border-top: 1px solid ${({ theme }) => theme.borderColor};
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px;
   position: relative;
+  width: 100%;
+  height: fit-content;
+  padding: 10px;
+  border-top: 1px solid ${({ theme }) => theme.borderColor};
   textarea {
     width: 375px;
     height: 20px;
-    border: none;
-    resize: none;
-    outline: none;
+    max-height: 100px;
     margin-left: 10px;
+    border: none;
     background: transparent;
     font-family: 'RobotoFont';
+    color: ${({ theme }) => theme.textColor};
+    outline: none;
+    resize: none;
+    overflow-y: auto;
   }
   button {
+    border: none;
+    background: transparent;
     font-size: 14px;
     font-weight: 600;
-    color: #0095f6;
-    background: transparent;
-    border: none;
+    color: ${({ theme }) => theme.buttonColor};
     &:disabled {
-      pointer-events: none;
       opacity: 0.4;
+      pointer-events: none;
     }
   }
 `;
@@ -365,31 +311,31 @@ const AddCommentBox = styled.form`
 const SmileIcon = styled(HiOutlineEmojiHappy)`
   width: 30px;
   height: 30px;
-  cursor: pointer;
   color: ${({ theme }) => theme.textColor};
+  cursor: pointer;
 `;
 
 const KebabMenuIcon = styled(GoKebabHorizontal)`
   width: 20px;
   height: 20px;
-  cursor: pointer;
   color: ${({ theme }) => theme.textColor};
+  cursor: pointer;
 `;
 
-const BigLikedIcon = styled(BsHeartFill)<{ likebuttonclicked: boolean }>`
-  width: 80px;
-  height: 80px;
-  color: #fff;
+const BigLikedIcon = styled(BsHeartFill)<{ likebuttonclicked: string }>`
   position: absolute;
   top: 50%;
   left: 50%;
+  width: 80px;
+  height: 80px;
+  color: ${({ theme }) => theme.whiteColor};
   transform: translate(-50%, -50%);
   transform-origin: center center;
   filter: drop-shadow(5px 5px 30px rgba(0, 0, 0, 0.7));
   opacity: 0;
   animation: ${({ likebuttonclicked }) =>
-    likebuttonclicked && 'like-heart-animation 2s ease-in-out'};
-  @keyframes like-heart-animation {
+    likebuttonclicked === 'true' && 'bigFeedLike 2s ease-in-out'};
+  @keyframes bigFeedLike {
     0%,
     to {
       opacity: 0;
@@ -413,70 +359,56 @@ const BigLikedIcon = styled(BsHeartFill)<{ likebuttonclicked: boolean }>`
 const LeftArrowIcon = styled(IoIosArrowDropleftCircle)<{
   currentslide: number;
 }>`
-  width: 30px;
-  height: 30px;
-  color: #fff;
+  display: ${({ currentslide }) => currentslide === 0 && 'none'};
   position: absolute;
-  z-index: 200;
   top: 50%;
   left: 15px;
-  opacity: 0.6;
+  width: 30px;
+  height: 30px;
+  color: ${({ theme }) => theme.whiteColor};
+  opacity: 0.7;
+  filter: drop-shadow(0px 0px 3px rgba(0, 0, 0, 0.3));
+  transform: translate3d(0, -50%, 0);
   cursor: pointer;
-  ${({ currentslide }) => currentslide === 0 && 'display: none'};
+  z-index: 200;
 `;
 
 const RightArrowIcon = styled(IoIosArrowDroprightCircle)<{
   currentslide: number;
   totalslide: number;
 }>`
-  width: 30px;
-  height: 30px;
-  color: #fff;
+  display: ${({ currentslide, totalslide }) =>
+    currentslide === totalslide - 1 && 'none'};
   position: absolute;
-  z-index: 200;
   top: 50%;
   right: 15px;
-  opacity: 0.6;
+  width: 30px;
+  height: 30px;
+  color: ${({ theme }) => theme.whiteColor};
+  opacity: 0.7;
+  filter: drop-shadow(0px 0px 3px rgba(0, 0, 0, 0.3));
+  transform: translate3d(0, -50%, 0);
   cursor: pointer;
-  ${({ currentslide, totalslide }) =>
-    currentslide === totalslide - 1 && 'display: none'};
+  z-index: 200;
 `;
 
 const MeatballIconBox = styled.div`
-  width: fit-content;
-  height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 0 3px;
-  padding: 0 10px;
+  width: fit-content;
+  height: 100%;
   margin-right: 80px;
+  padding: 0 10px;
 `;
 
 const MeatballIcon = styled(FaCircle)<{ index: number; currentslide: number }>`
   width: 6px;
   height: 6px;
-  /* color: ${({ theme }) => theme.greyTextColor}; */
   color: ${({ theme, index, currentslide }) =>
-    index === currentslide ? '#0095f6' : theme.greyTextColor};
+    index === currentslide ? theme.buttonColor : theme.greyTextColor};
 `;
-
-interface FeedCardProps {
-  postId: number;
-  username: string;
-  profileImage: string;
-  likeYn: string;
-  likeCount: number;
-  createdAt: string;
-  commentCount: number;
-  bookmarkYn: string;
-  content: string;
-  postImageList: string[];
-  userId: number;
-  refetchPage: (pageIndex: number) => void;
-  pageIndex: number;
-  refetch: any;
-}
 
 const FeedCard = ({
   userId,
@@ -490,14 +422,13 @@ const FeedCard = ({
   bookmarkYn,
   content,
   postImageList,
-  refetchPage,
-  pageIndex,
-  refetch,
-}: FeedCardProps) => {
+}: FeedCardType) => {
   const [likeButtonClicked, setLikeButtonClicked] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showPostDropdown, setShowPostDropdown] = useState(false);
   const [showPostModal, setShowPostModal] = useState(false);
+  const [showMoreText, setShowMoreText] = useState(false);
+
   const slideRef = useRef(null);
   const circleRef = useRef(null);
   const textareaRef = useRef(null);
@@ -505,9 +436,14 @@ const FeedCard = ({
 
   const navigate = useNavigate();
 
-  const location = useLocation();
+  const queryClient = useQueryClient();
 
   const TOTAL_SLIDES = postImageList.length;
+
+  const handleResizeHeight = useCallback(() => {
+    textareaRef.current.style.height = '20px';
+    textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
+  }, []);
 
   const openModal = () => {
     setShowPostDropdown(true);
@@ -530,21 +466,18 @@ const FeedCard = ({
     navigate(-1);
   };
 
-  const NextSlide = () => {
+  const nextSlide = (e: any) => {
+    e.stopPropagation();
     if (currentSlide >= TOTAL_SLIDES) {
-      // setCurrentSlide(0);
       return;
-      // rightArrowRef.current.style.display = 'none';
     } else {
       setCurrentSlide(currentSlide + 1);
     }
   };
 
-  const PrevSlide = () => {
+  const prevSlide = () => {
     if (currentSlide === 0) {
-      // setCurrentSlide(TOTAL_SLIDES);
       return;
-      // leftArrowRef.current.style.display = 'none';
     } else {
       setCurrentSlide(currentSlide - 1);
     }
@@ -562,77 +495,88 @@ const FeedCard = ({
     slideRef.current.style.transform = `translateX(-${currentSlide}00%)`;
   }, [currentSlide]);
 
-  const { mutate, data, error, reset, isLoading } = useMutation(commentPost, {
-    onError: (err: any) => {
-      console.log(err.response.data);
+  const { mutate, isLoading } = useMutation<
+    ResponseData,
+    AxiosError,
+    CommentPostType
+  >(commentPost, {
+    onError: (err) => {
+      console.log('댓글 등록 실패!', err.response.data);
     },
-    onSuccess: (e: any) => {
+    onSuccess: () => {
       console.log('댓글 등록 성공!');
-      console.log(e);
+      queryClient.invalidateQueries(['getPosts']);
+      queryClient.invalidateQueries(['getCommentsList']);
       textareaRef.current.value = '';
       textareaRef.current.focus();
     },
   });
 
-  const mutateLikePost = useMutation(likePost, {
-    onError: (err: any) => {
-      console.log(err.response.data);
-    },
-    onSuccess: (e: any) => {
-      console.log('포스트 좋아요 성공!');
-    },
-  });
-
-  const mutateBookmarkPost = useMutation(bookmarkPost, {
-    onError: (err: any) => {
-      console.log(err.response.data);
-    },
-    onSuccess: (e: any) => {
-      console.log('북마크 성공!');
-    },
-  });
-
-  const getCommentsListQuery = useQuery(['getCommentsList'], () =>
+  const { data: getCommentsListData } = useQuery<
+    GetCommentsListQueryType,
+    AxiosError
+  >(['getCommentsList', postId], () =>
     getCommentsList({ page: 1, postId: postId }),
   );
 
-  const registerComment = (e: any) => {
-    e.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    formState: { isValid },
+  } = useForm<CommentPostFormValues>({ mode: 'onChange' });
+
+  const { ref: commentRef, ...rest } = register('commentInput', {
+    required: true,
+  });
+
+  const onSubmit = (dataInput: CommentPostFormValues) => {
     mutate({
       postId: postId,
       parentCommentId: '',
-      content: textareaRef.current.value,
+      content: dataInput.commentInput,
     });
-    if (isLoading) {
-      postButtonRef.current.disabled = true;
-    }
   };
 
-  const likePostFunction = (pageIndex: number) => (e: any) => {
-    e.preventDefault();
+  const mutateLikePost = useMutation<ResponseData, AxiosError, LikePostType>(
+    likePost,
+    {
+      onError: (err) => {
+        console.log('포스트 좋아요 실패!', err.response.data);
+      },
+      onSuccess: () => {
+        console.log('포스트 좋아요 성공!');
+        queryClient.invalidateQueries(['getPosts']);
+      },
+    },
+  );
+
+  const likePostFunction = () => {
     if (likeYn === 'Y') {
       mutateLikePost.mutate({ postId: postId, likeYn: 'N' });
     } else {
       mutateLikePost.mutate({ postId: postId, likeYn: 'Y' });
     }
-
-    refetchPage(pageIndex);
   };
 
-  const bookmarkPostFunction = (e: any) => {
-    e.preventDefault();
+  const mutateBookmarkPost = useMutation<
+    ResponseData,
+    AxiosError,
+    BookmarkPostType
+  >(bookmarkPost, {
+    onError: (err) => {
+      console.log('북마크 실패!', err.response.data);
+    },
+    onSuccess: () => {
+      console.log('북마크 성공!');
+      queryClient.invalidateQueries(['getPosts']);
+    },
+  });
+
+  const bookmarkPostFunction = () => {
     if (bookmarkYn === 'Y') {
       mutateBookmarkPost.mutate({ postId: postId, bookmarkYn: 'N' });
     } else {
       mutateBookmarkPost.mutate({ postId: postId, bookmarkYn: 'Y' });
-    }
-  };
-
-  const isDisabled = (e: any) => {
-    if (e.target.value === '') {
-      postButtonRef.current.disabled = true;
-    } else {
-      postButtonRef.current.disabled = false;
     }
   };
 
@@ -651,19 +595,26 @@ const FeedCard = ({
         </UserInfo>
         <KebabMenuIcon onClick={openModal} />
       </UserInformationWrapper>
-      <ImageBoxWrapper onDoubleClick={doubleClickImage}>
-        <LeftArrowIcon currentslide={currentSlide} onClick={PrevSlide} />
+      <ImageBoxWrapper
+        onDoubleClick={(e) => {
+          e.stopPropagation();
+          doubleClickImage();
+          mutateLikePost.mutate({ postId: postId, likeYn: 'Y' });
+        }}>
+        <LeftArrowIcon currentslide={currentSlide} onClick={prevSlide} />
         <ImageWrapper ref={slideRef}>
-          {postImageList.map((list: any) => (
+          {postImageList.map((list: string) => (
             <img src={list} key={list} alt="유저이미지" />
           ))}
         </ImageWrapper>
         <RightArrowIcon
           totalslide={TOTAL_SLIDES}
           currentslide={currentSlide}
-          onClick={NextSlide}
+          onClick={(e) => {
+            nextSlide(e);
+          }}
         />
-        <BigLikedIcon likebuttonclicked={likeButtonClicked} />
+        <BigLikedIcon likebuttonclicked={likeButtonClicked.toString()} />
       </ImageBoxWrapper>
       <CommentBoxWrapper>
         <IconBox>
@@ -671,26 +622,28 @@ const FeedCard = ({
             {likeYn === 'Y' ? (
               <ColoredHeartIcon
                 likebuttonclicked={likeYn}
-                onClick={likePostFunction(pageIndex)}
+                onClick={likePostFunction}
               />
             ) : (
-              <HeartIcon onClick={likePostFunction(pageIndex)} />
+              <HeartIcon onClick={likePostFunction} />
             )}
-            {/* <Link to={`/post/${postId}`} state={{ background: location }}> */}
             <ChatIcon
               onClick={() => {
                 window.history.pushState('', '', `/post/${postId}`);
                 openPost();
               }}
             />
-            {/* <Outlet /> */}
-            {/* </Link> */}
             <LocationIcon />
           </LeftIconBox>
           <MeatballIconBox ref={circleRef}>
-            {postImageList.map((list: any, i) => (
-              <MeatballIcon key={list} currentslide={currentSlide} index={i} />
-            ))}
+            {postImageList.length > 1 &&
+              postImageList.map((list: string, i: number) => (
+                <MeatballIcon
+                  key={list}
+                  currentslide={currentSlide}
+                  index={i}
+                />
+              ))}
           </MeatballIconBox>
           {bookmarkYn === 'Y' ? (
             <BookmarkFilledIcon onClick={bookmarkPostFunction} />
@@ -700,49 +653,52 @@ const FeedCard = ({
         </IconBox>
         <LikedMemberBox>{likeCount} likes</LikedMemberBox>
         <FeedDescriptionBox>
-          <div>{username}</div>
-          <span> {content}</span>
-          <button>more</button>
+          <span>{username}</span>
+          <p>{showMoreText ? content : content.substring(0, 30)}</p>
+          {content.length > 30 && !showMoreText && (
+            <span>
+              ...
+              <button onClick={() => setShowMoreText(true)}>more</button>
+            </span>
+          )}
         </FeedDescriptionBox>
-        <ViewAllCommentsBox>
-          View all {commentCount} comments
-        </ViewAllCommentsBox>
-        <CommentsListBox>
-          <CommentText>
-            <div>
-              {getCommentsListQuery.data?.data.commentList[0]?.username}
-            </div>
-            <p>
-              <span>@minimal__0</span>
-              {getCommentsListQuery.data?.data.commentList[0]?.content}
-            </p>
-          </CommentText>
-          <SmallHeartIcon />
-        </CommentsListBox>
+        {commentCount > 0 && (
+          <ViewAllCommentsBox
+            onClick={() => {
+              window.history.pushState('', '', `/post/${postId}`);
+              openPost();
+            }}>
+            {commentCount === 1
+              ? `View ${commentCount} comment`
+              : `View all ${commentCount} comments`}
+          </ViewAllCommentsBox>
+        )}
+        <CommentsListBox getCommentsListData={getCommentsListData} />
         <DateBox>{timeForToday(createdAt)}</DateBox>
       </CommentBoxWrapper>
-      <AddCommentBox>
+      <AddCommentBox onSubmit={handleSubmit(onSubmit)}>
         <SmileIcon />
         <textarea
-          name=""
-          id=""
-          onChange={(e: any) => isDisabled(e)}
-          ref={textareaRef}
-          placeholder="Add a comment..."></textarea>
+          name="commentInput"
+          id="commentInput"
+          {...rest}
+          ref={(e) => {
+            commentRef(e);
+            textareaRef.current = e;
+          }}
+          placeholder="Add a comment..."
+          onInput={handleResizeHeight}
+        />
         {isLoading && (
           <Loader
-            loaded={false}
+            loaded={!isLoading}
             color="#8e8e8e"
             scale={0.7}
             top="50%"
             left="50%"
           />
         )}
-        <button
-          type="submit"
-          ref={postButtonRef}
-          disabled
-          onClick={(e: any) => registerComment(e)}>
+        <button type="submit" ref={postButtonRef} disabled={!isValid}>
           Post
         </button>
       </AddCommentBox>
@@ -753,14 +709,15 @@ const FeedCard = ({
               isMyPost={isMyPost}
               postId={postId}
               userId={userId}
+              closeModal={closeModal}
             />
           </ModalContainer>
         </ModalPortal>
       )}
       {showPostModal && (
         <ModalPortal>
-          <ModalContainer closeModal={closePost}>
-            <PostWrapper postId={postId} />
+          <ModalContainer closeIcon closeModal={closePost}>
+            <PostWrapper postId={postId} setShowPostModal={setShowPostModal} />
           </ModalContainer>
         </ModalPortal>
       )}
