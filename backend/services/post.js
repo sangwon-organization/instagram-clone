@@ -15,7 +15,7 @@ const PostImage = require('../models/postImage')
 const PostLike = require('../models/postLike')
 const PostBookmark = require('../models/postBookmark')
 const { dateFormat } = require('../utils/regex')
-const { Op, where } = require('sequelize')
+const { Op, where, QueryTypes } = require('sequelize')
 const fs = require('fs')
 const { UserFollow, sequelize } = require('../models')
 
@@ -395,10 +395,100 @@ const getPostList = async (req, data) => {
       limit: pageSize,
       order: [['createdAt', 'desc']],
     })
+
+    postList = await Promise.all(
+      postList.map(async (post) => {
+        return {
+          userId: post.user_id,
+          username: post.username,
+          name: post.name,
+          postId: post.post_id,
+          content: post.content,
+          createdAt: dateFormat(post.created_at),
+          updatedAt: dateFormat(post.updated_at),
+          bookmarkYn: post.bookmark_yn,
+          followYn: post.follow_yn,
+          likeYn: post.like_yn,
+          likeCount: post.like_count,
+          commentCount: post.comment_count,
+          profileImage: post.profile_image ? serviceUrl + profileImagePath + post.profile_image : serviceUrl + commonImagePath + 'profile.png',
+          postImageList: [],
+          /*
+          postImageList: post.PostImages.map((postImage) => {
+            return serviceUrl + postImagePath + postImage.Image.imageName + '.' + postImage.Image.imageExt
+          }),
+          */
+        }
+      })
+    )
   } else {
-    // 팔로우 유저들 포스트 목록 조회
+    // 팔로우 유저들 & 로그인한 유저의 포스트 목록 조회
     let pageSize = 10
     let offset = (page - 1) * pageSize
+
+    let query = `
+    SELECT *
+      FROM (SELECT tp.user_id,
+                   tu.username,
+                   tu.name,
+                   tp.post_id,
+                   tp.content,
+                   tp.created_at,
+                   tp.updated_at,
+                   'N' follow_y,
+                   if((select count(1) from tb_post_bookmark tpb where tpb.post_id = tp.post_id and tpb.user_id = ${data.userId}) = 1, 'Y', 'N') bookmark_yn,
+                   if((select count(1) from tb_post_like tpl where tpl.post_id = tp.post_id and tpl.user_id = ${data.userId}) = 1, 'Y', 'N') like_yn,
+                   (select count(1) from tb_post_like tpl where tpl.post_id = tp.post_id) like_count,
+                   (select count(1) from tb_comment tc where tc.post_id = tp.post_id) comment_count,
+                   concat(ti.image_name, '.', ti.image_ext) profile_image
+              FROM tb_post tp
+             INNER JOIN tb_user tu ON tp.user_id = tu.user_id
+              LEFT JOIN tb_image ti ON ti.image_id = tu.profile_image_id
+             WHERE tu.user_id = ${data.userId}
+             UNION ALL
+            SELECT tp.user_id,
+                   tu.username,
+                   tu.name,
+                   tp.post_id,
+                   tp.content,
+                   tp.created_at,
+                   tp.updated_at,
+                   if(tuf.from_user_id is null, 'N', 'Y') follow_y,
+                   if((select count(1) from tb_post_bookmark tpb where tpb.post_id = tp.post_id and tpb.user_id = ${data.userId}) = 1, 'Y', 'N') bookmark_yn,
+                   if((select count(1) from tb_post_like tpl where tpl.post_id = tp.post_id and tpl.user_id = ${data.userId}) = 1, 'Y', 'N') like_yn,
+                   (select count(1) from tb_post_like tpl where tpl.post_id = tp.post_id) like_count,
+                   (select count(1) from tb_comment tc where tc.post_id = tp.post_id) comment_count,
+                   concat(ti.image_name, '.', ti.image_ext) profile_image
+              FROM tb_post tp
+             INNER JOIN tb_user tu ON tp.user_id = tu.user_id
+             INNER JOIN tb_user_follow tuf ON tuf.to_user_id = tu.user_id
+              LEFT JOIN tb_image ti ON ti.image_id = tu.profile_image_id
+             WHERE tuf.from_user_id = ${data.userId}) tp
+     ORDER BY tp.created_at DESC
+     LIMIT ${pageSize} OFFSET ${offset}`
+
+    postList = await sequelize.query(query, {
+      type: QueryTypes.SELECT,
+    })
+
+    // 포스트 이미지 조회
+    let postIdList = postList.map((post) => {
+      return post.post_id
+    })
+
+    let selectPostImageQuery = `
+    select tpi.post_id, concat(ti.image_name, '.', ti.image_ext) post_image
+      from tb_post_image tpi
+     inner join tb_image ti on tpi.image_id = ti.image_id
+     where tpi.post_id in (${postIdList});
+    `
+
+    let postImageList = await sequelize.query(selectPostImageQuery, {
+      type: QueryTypes.SELECT,
+    })
+    console.log(postImageList)
+
+    /*
     postList = await Post.findAll({
       include: [
         {
@@ -406,7 +496,7 @@ const getPostList = async (req, data) => {
           required: true,
           include: [
             { model: Image, required: false },
-            { model: UserFollow, as: 'ToUserFollow', required: true, where: { fromUserId: data.userId } },
+            { model: UserFollow, as: 'ToUserFollow', required: false, where: { fromUserId: data.userId } },
           ],
         },
         { model: PostImage, required: false, include: [{ model: Image, require: false }] },
@@ -419,30 +509,42 @@ const getPostList = async (req, data) => {
       limit: pageSize,
       order: [['createdAt', 'desc']],
     })
-  }
+    */
 
-  postList = await Promise.all(
-    postList.map(async (post) => {
-      return {
-        userId: post.userId,
-        username: post.User.username,
-        name: post.User.name,
-        postId: post.postId,
-        content: post.content,
-        createdAt: dateFormat(post.createdAt),
-        updatedAt: dateFormat(post.updatedAt),
-        bookmarkYn: post.PostBookmarks.length > 0 ? 'Y' : 'N',
-        followYn: post.User.ToUserFollow.length > 0 ? 'Y' : 'N',
-        likeYn: post.LoginUserPostLike.length > 0 ? 'Y' : 'N',
-        likeCount: post.PostLikes.length,
-        commentCount: post.Comments.length,
-        profileImage: post.User.Image ? serviceUrl + profileImagePath + post.User.Image.imageName + '.' + post.User.Image.imageExt : serviceUrl + commonImagePath + 'profile.png',
-        postImageList: post.PostImages.map((postImage) => {
-          return serviceUrl + postImagePath + postImage.Image.imageName + '.' + postImage.Image.imageExt
-        }),
-      }
-    })
-  )
+    postList = await Promise.all(
+      postList.map(async (post) => {
+        return {
+          userId: post.user_id,
+          username: post.username,
+          name: post.name,
+          postId: post.post_id,
+          content: post.content,
+          createdAt: dateFormat(post.created_at),
+          updatedAt: dateFormat(post.updated_at),
+          bookmarkYn: post.bookmark_yn,
+          followYn: post.follow_yn,
+          likeYn: post.like_yn,
+          likeCount: post.like_count,
+          commentCount: post.comment_count,
+          profileImage: post.profile_image ? serviceUrl + profileImagePath + post.profile_image : serviceUrl + commonImagePath + 'profile.png',
+          postImageList: postImageList
+            .filter((postImage) => {
+              if (postImage.post_id == post.post_id) {
+                return postImage.post_image
+              }
+            })
+            .map((postImage) => {
+              return serviceUrl + postImagePath + postImage.postImage
+            }),
+          /*
+          postImageList: post.PostImages.map((postImage) => {
+            return serviceUrl + postImagePath + postImage.Image.imageName + '.' + postImage.Image.imageExt
+          }),
+          */
+        }
+      })
+    )
+  }
 
   return { page: page, postList: postList }
 }
