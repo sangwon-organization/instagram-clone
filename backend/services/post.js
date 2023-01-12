@@ -696,7 +696,7 @@ const getCommentList = async (req, data) => {
       if (!comment.User.Image) {
         profileImage = serviceUrl + config.commonImagePath.split('public')[1] + 'profile.png'
       } else {
-        let imagePath = config.commonImagePath.split('public')[1]
+        let imagePath = config.profileImagePath.split('public')[1]
         let imageName = comment.User.Image.imageName
         let imageExt = comment.User.Image.imageExt
         profileImage = serviceUrl + imagePath + imageName + '.' + imageExt
