@@ -530,11 +530,11 @@ const getPostList = async (req, data) => {
           postImageList: postImageList
             .filter((postImage) => {
               if (postImage.post_id == post.post_id) {
-                return postImage.post_image
+                return postImage
               }
             })
             .map((postImage) => {
-              return serviceUrl + postImagePath + postImage.postImage
+              return serviceUrl + postImagePath + postImage.post_image
             }),
           /*
           postImageList: post.PostImages.map((postImage) => {
