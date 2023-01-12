@@ -16,6 +16,7 @@ const { Op } = require('sequelize')
 const { UserSearchLog, sequelize } = require('../models')
 const Sequelize = require('sequelize')
 const postService = require('../services/post')
+const { dateFormat } = require('../utils/regex')
 
 const createUser = async (body) => {
   return await User.create(body)
@@ -324,6 +325,7 @@ const getUserSearchLogs = async (req, data) => {
         { model: UserFollow, as: 'ToUserFollow', required: false, where: { fromUserId: data.userId } },
       ],
     },
+    where: { fromUserId: data.userId },
     order: [['updatedAt', 'desc']],
     offset: offset,
     limit: pageSize,
@@ -338,6 +340,7 @@ const getUserSearchLogs = async (req, data) => {
         ? serviceUrl + profileImagePath + userSearchLog.User.Image.imageName + '.' + userSearchLog.User.Image.imageExt
         : serviceUrl + commonImagePath + 'profile.png',
       followYn: userSearchLog.User.ToUserFollow.length > 0 ? 'Y' : 'N',
+      updatedAt: dateFormat(userSearchLog.updatedAt),
     }
   })
 
