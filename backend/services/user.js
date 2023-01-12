@@ -96,16 +96,12 @@ const getNotFollowingList = async (req, data) => {
   let commonImagePath = config.commonImagePath.split('public')[1]
   let profileImagePath = config.profileImagePath.split('public')[1]
 
-  let pageSize = 5
-
   let followingList = await User.findAll({
     include: [
       { model: UserFollow, as: 'ToUserFollow', required: false, where: { fromUserId: data.userId } },
       { model: Image, required: false },
     ],
     where: { userId: { [Op.ne]: data.userId }, '$ToUserFollow.from_user_id$': null },
-    order: Sequelize.literal('rand()'),
-    limit: pageSize,
     subQuery: false,
   })
 
