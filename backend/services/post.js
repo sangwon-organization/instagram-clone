@@ -399,25 +399,22 @@ const getPostList = async (req, data) => {
     postList = await Promise.all(
       postList.map(async (post) => {
         return {
-          userId: post.user_id,
-          username: post.username,
-          name: post.name,
-          postId: post.post_id,
+          userId: post.userId,
+          username: post.User.username,
+          name: post.User.name,
+          postId: post.postId,
           content: post.content,
-          createdAt: dateFormat(post.created_at),
-          updatedAt: dateFormat(post.updated_at),
-          bookmarkYn: post.bookmark_yn,
-          followYn: post.follow_yn,
-          likeYn: post.like_yn,
-          likeCount: post.like_count,
-          commentCount: post.comment_count,
-          profileImage: post.profile_image ? serviceUrl + profileImagePath + post.profile_image : serviceUrl + commonImagePath + 'profile.png',
-          postImageList: [],
-          /*
+          createdAt: dateFormat(post.createdAt),
+          updatedAt: dateFormat(post.updatedAt),
+          bookmarkYn: post.PostBookmarks.length > 0 ? 'Y' : 'N',
+          followYn: post.User.ToUserFollow.length > 0 ? 'Y' : 'N',
+          likeYn: post.LoginUserPostLike.length > 0 ? 'Y' : 'N',
+          likeCount: post.PostLikes.length,
+          commentCount: post.Comments.length,
+          profileImage: post.User.Image ? serviceUrl + profileImagePath + post.User.Image.imageName + '.' + post.User.Image.imageExt : serviceUrl + commonImagePath + 'profile.png',
           postImageList: post.PostImages.map((postImage) => {
             return serviceUrl + postImagePath + postImage.Image.imageName + '.' + postImage.Image.imageExt
           }),
-          */
         }
       })
     )
