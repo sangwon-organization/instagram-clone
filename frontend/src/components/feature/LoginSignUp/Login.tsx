@@ -224,6 +224,7 @@ const Login = () => {
     },
     onSuccess: () => {
       console.log('로그인 성공!');
+      window.location.reload();
     },
   });
 
