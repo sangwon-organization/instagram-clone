@@ -149,7 +149,7 @@ const createPostImage = async (data) => {
 
 const getPost = async (req, data) => {
   await commonService.checkValueIsEmpty(data.postId, 'postId')
-  let serviceUrl = env != 'production' ? req.protocol + '://' + req.get('host') : ''
+  let serviceUrl = config.fileHost
   let commonImagePath = config.commonImagePath.split('public')[1]
   let postImagePath = config.postImagePath.split('public')[1]
   let profileImagePath = config.profileImagePath.split('public')[1]
@@ -362,7 +362,7 @@ const bookmarkPost = async (userId, postId, bookmarkYn) => {
 
 const getPostList = async (req, data) => {
   await commonService.checkValueIsEmpty(data.page, 'page')
-  let serviceUrl = env != 'production' ? req.protocol + '://' + req.get('host') : ''
+  let serviceUrl = config.fileHost
   let commonImagePath = config.commonImagePath.split('public')[1]
   let postImagePath = config.postImagePath.split('public')[1]
   let profileImagePath = config.profileImagePath.split('public')[1]
@@ -678,7 +678,7 @@ const getCommentList = async (req, data) => {
 
   commentList = await Promise.all(
     commentList.map(async (comment) => {
-      let serviceUrl = env != 'production' ? req.protocol + '://' + req.get('host') : ''
+      let serviceUrl = config.fileHost
 
       let postId = comment.postId
       let commentId = comment.commentId

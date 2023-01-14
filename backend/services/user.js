@@ -92,7 +92,7 @@ const followUser = async (data) => {
 }
 
 const getNotFollowingList = async (req, data) => {
-  let serviceUrl = env != 'production' ? req.protocol + '://' + req.get('host') : ''
+  let serviceUrl = config.fileHost
   let commonImagePath = config.commonImagePath.split('public')[1]
   let profileImagePath = config.profileImagePath.split('public')[1]
 
@@ -119,7 +119,7 @@ const getNotFollowingList = async (req, data) => {
 }
 
 const getFollowingList = async (req, data) => {
-  let serviceUrl = env != 'production' ? req.protocol + '://' + req.get('host') : ''
+  let serviceUrl = config.fileHost
   let commonImagePath = config.commonImagePath.split('public')[1]
   let profileImagePath = config.profileImagePath.split('public')[1]
 
@@ -155,7 +155,7 @@ const getFollowingList = async (req, data) => {
 }
 
 const getFollowerList = async (req, data) => {
-  let serviceUrl = env != 'production' ? req.protocol + '://' + req.get('host') : ''
+  let serviceUrl = config.fileHost
   let commonImagePath = config.commonImagePath.split('public')[1]
   let profileImagePath = config.profileImagePath.split('public')[1]
 
@@ -259,7 +259,7 @@ const searchUsers = async (req, data) => {
   if (!data.keyword) {
     throw new ApiError(httpStatus.BAD_REQUEST, '검색어를 입력해 주세요.')
   }
-  let serviceUrl = env != 'production' ? req.protocol + '://' + req.get('host') : ''
+  let serviceUrl = config.fileHost
   let commonImagePath = config.commonImagePath.split('public')[1]
   let profileImagePath = config.profileImagePath.split('public')[1]
 
@@ -304,7 +304,7 @@ const deleteUserSearchLog = async (data) => {
 }
 
 const getUserSearchLogs = async (req, data) => {
-  let serviceUrl = env != 'production' ? req.protocol + '://' + req.get('host') : ''
+  let serviceUrl = config.fileHost
   let commonImagePath = config.commonImagePath.split('public')[1]
   let profileImagePath = config.profileImagePath.split('public')[1]
 
@@ -344,7 +344,7 @@ const getUserSearchLogs = async (req, data) => {
 }
 
 const getUserInfo = async (req, data) => {
-  let serviceUrl = env != 'production' ? req.protocol + '://' + req.get('host') : ''
+  let serviceUrl = config.fileHost
   let commonImagePath = config.commonImagePath.split('public')[1]
   let postImagePath = config.postImagePath.split('public')[1]
   let profileImagePath = config.profileImagePath.split('public')[1]
