@@ -73,13 +73,14 @@ const GetStartedButton = styled.button<{ followbuttonclicked?: boolean }>`
 
 const AllSugesstionsList = () => {
   const [showGetStarted, setShowGetStarted] = useState(false);
+
   const { data: getNotFollowingData } = useQuery<
     getNotFollowingListType,
     AxiosError
   >(['getNotFollowing'], () => getNotFollowingList(), {
     refetchOnWindowFocus: false,
-    refetchOnMount: false,
   });
+
   return (
     <Container>
       <h4>Suggestions For You</h4>

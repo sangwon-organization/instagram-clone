@@ -75,7 +75,13 @@ const ImagesIcon = styled(IoIosPhotos)`
   z-index: 100;
 `;
 
-const Post = ({ postImageList, postId, likeCount, commentCount }: PostType) => {
+const Post = ({
+  postImageList,
+  postId,
+  likeCount,
+  commentCount,
+  userId,
+}: PostType) => {
   const [postHover, setPostHover] = useState(false);
   const [showPostModal, setShowPostModal] = useState(false);
 
@@ -89,7 +95,7 @@ const Post = ({ postImageList, postId, likeCount, commentCount }: PostType) => {
   const closePost = () => {
     setShowPostModal(false);
     document.body.style.overflow = 'unset';
-    navigate(-1);
+    navigate(`/user/${userId}`);
   };
 
   return (

@@ -7,15 +7,25 @@
   </p>
 </div>
 
+<br/>
+
+## Demo
+
+https://instagram-clone-sangwon.com/
+
+<br/>
+
 ## Quick Start
+
 ```javascript
 cd frontend
 yarn install
 yarn start
 ```
 
+<br/>
 
-## 핵심기능
+## 주요기능
 
 #### 로그인
 <div align="center">

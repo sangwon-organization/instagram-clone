@@ -26,6 +26,7 @@ const HomeContainer = () => {
           return false;
         }
       },
+      refetchOnWindowFocus: false,
     },
   );
 

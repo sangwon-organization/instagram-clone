@@ -136,7 +136,7 @@ interface ProfilePresenterType {
   getUserInformationData: GetUserInformationDataType;
   onImageInputButtonClick: (event: React.MouseEvent<HTMLElement>) => void;
   imageInputRef: React.MutableRefObject<any>;
-  postImageRest: Partial;
+  postImageRest: any;
   imageRef: RefCallBack;
   onSubmit: () => void;
   handleSubmit: UseFormHandleSubmit<PostUserProfileImageFormValues>;
@@ -190,6 +190,7 @@ interface PostType {
   postId: number;
   likeCount: number;
   commentCount: number;
+  userId: number;
 }
 
 interface PostWrapperType {
