@@ -453,6 +453,7 @@ const ProfilePresenter = ({
                   key={post.postId}
                   postImageList={post.postImageList}
                   postId={post.postId}
+                  userId={post.userId}
                   likeCount={post.likeCount}
                   commentCount={post.commentCount}
                 />

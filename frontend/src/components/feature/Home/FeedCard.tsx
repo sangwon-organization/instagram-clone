@@ -438,7 +438,7 @@ const FeedCard = ({
 
   const queryClient = useQueryClient();
 
-  const TOTAL_SLIDES = postImageList.length;
+  const totalSlide = postImageList.length;
 
   const handleResizeHeight = useCallback(() => {
     textareaRef.current.style.height = '20px';
@@ -468,7 +468,7 @@ const FeedCard = ({
 
   const nextSlide = (e: any) => {
     e.stopPropagation();
-    if (currentSlide >= TOTAL_SLIDES) {
+    if (currentSlide >= totalSlide) {
       return;
     } else {
       setCurrentSlide(currentSlide + 1);
@@ -608,7 +608,7 @@ const FeedCard = ({
           ))}
         </ImageWrapper>
         <RightArrowIcon
-          totalslide={TOTAL_SLIDES}
+          totalslide={totalSlide}
           currentslide={currentSlide}
           onClick={(e) => {
             nextSlide(e);

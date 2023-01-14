@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://59.187.205.70:3000',
+  baseURL: 'https://blacksw.site',
   headers: {
     'Content-Type': 'application/json; charset=UTF-8',
     accept: 'application/json',
@@ -9,7 +9,7 @@ const api = axios.create({
 });
 
 const bearerTokenApi = axios.create({
-  baseURL: 'http://59.187.205.70:3000',
+  baseURL: 'https://blacksw.site',
   headers: {
     'Content-Type': 'application/json; charset=UTF-8',
     accept: 'application/json',
@@ -18,7 +18,7 @@ const bearerTokenApi = axios.create({
 });
 
 const multipartFormDataApi = axios.create({
-  baseURL: 'http://59.187.205.70:3000',
+  baseURL: 'https://blacksw.site',
   headers: {
     'Content-Type': 'multipart/form-data',
     'Access-Control-Allow-Origin': '*',

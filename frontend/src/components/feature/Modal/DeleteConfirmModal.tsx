@@ -1,7 +1,7 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import { deletePost } from '../../../api/api';
 
@@ -58,6 +58,10 @@ const DeleteConfirmModal = ({
 }: DeleteConfirmModalType) => {
   const navigate = useNavigate();
 
+  const location = useLocation();
+
+  const queryClient = useQueryClient();
+
   const { mutate: deletePostMutate } = useMutation<
     ResponseData,
     AxiosError,
@@ -68,8 +72,17 @@ const DeleteConfirmModal = ({
     },
     onSuccess: () => {
       console.log('포스트 삭제 성공!');
-      navigate(-1);
-      window.location.reload();
+      if (location.pathname === '/') {
+        closeModal();
+        queryClient.invalidateQueries(['getPosts']);
+      } else if (location.pathname === `/post/${postId}`) {
+        navigate(-1);
+        document.body.style.overflow = 'unset';
+        queryClient.invalidateQueries(['getUserInformation']);
+      } else if (location.pathname === `/user/${userId}`) {
+        document.body.style.overflow = 'unset';
+        queryClient.invalidateQueries(['getUserInformation']);
+      }
     },
   });
 

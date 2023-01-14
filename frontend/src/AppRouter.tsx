@@ -21,7 +21,7 @@ const LoggedInRoutes = () => (
     <Route path="/post/:postId" element={<Post />} />
   </Routes>
 );
-
+// 로그인 전과 후의 라우터를 다르게 설정
 const AppRouter = ({ isLoggedIn }: AppRouterType) => {
   return <>{isLoggedIn ? <LoggedInRoutes /> : <LoggedOutRoutes />}</>;
 };
