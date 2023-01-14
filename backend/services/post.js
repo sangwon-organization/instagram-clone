@@ -477,13 +477,14 @@ const getPostList = async (req, data) => {
     select tpi.post_id, concat(ti.image_name, '.', ti.image_ext) post_image
       from tb_post_image tpi
      inner join tb_image ti on tpi.image_id = ti.image_id
-     where tpi.post_id in (${postIdList});
-    `
+     `
+    if (postIdList.length > 0) {
+      selectPostImageQuery += `where tpi.post_id in (${postIdList})`
+    }
 
     let postImageList = await sequelize.query(selectPostImageQuery, {
       type: QueryTypes.SELECT,
     })
-    console.log(postImageList)
 
     /*
     postList = await Post.findAll({
