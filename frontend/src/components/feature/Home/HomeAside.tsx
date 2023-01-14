@@ -133,9 +133,11 @@ const HomeAside = () => {
 
   const { data: getNotFollowingListData } = useQuery<
     getNotFollowingListType,
-    AxiosError
+    AxiosError,
+    followerImFollowingListType[]
   >(['getNotFollowingList'], () => getNotFollowingList(), {
     refetchOnWindowFocus: false,
+    select: (data) => data.followingList.slice(0, 5),
   });
 
   const { data: getUserInformData } = useQuery<
@@ -167,11 +169,9 @@ const HomeAside = () => {
           <p>Suggestions For You</p>
           <button>See All</button>
         </SuggestionsHeader>
-        {getNotFollowingListData?.followingList.map(
-          (list: followerImFollowingListType) => (
-            <SugesstionItem key={list.userId} list={list} />
-          ),
-        )}
+        {getNotFollowingListData?.map((list: followerImFollowingListType) => (
+          <SugesstionItem key={list.userId} list={list} />
+        ))}
       </SuggestionsWrapper>
       <AsideFooter>
         <FooterItems>
