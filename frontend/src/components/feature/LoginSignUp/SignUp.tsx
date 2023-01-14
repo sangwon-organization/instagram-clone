@@ -12,6 +12,7 @@ import Loader from 'react-loader';
 import { useMutation } from '@tanstack/react-query';
 import {
   emailDuplicationCheck,
+  loginUser,
   signUpUser,
   usernameDuplicationCheck,
 } from '../../../api/api';
@@ -262,6 +263,20 @@ const SignUp = () => {
     resolver: yupResolver(schema),
   });
 
+  const { mutate: loginMutate } = useMutation<
+    LoginResponseData,
+    AxiosError,
+    LoginType
+  >(loginUser, {
+    onError: (err: AxiosError) => {
+      console.log('로그인 실패 ', err.response.data);
+    },
+    onSuccess: () => {
+      console.log('로그인 성공!');
+      window.location.reload();
+    },
+  });
+
   const { mutate, error, isLoading } = useMutation<
     ResponseData,
     AxiosError<Error>,
@@ -270,8 +285,11 @@ const SignUp = () => {
     onError: (err) => {
       console.log('회원가입 실패!', err.response.data);
     },
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
       console.log('회원가입 성공!');
+      if (variables !== undefined) {
+        loginMutate({ email: variables.email, password: variables.password });
+      }
     },
   });
 

@@ -31,7 +31,6 @@ export const loginUser = async (userInfo: LoginType) => {
   localStorage.setItem('accessToken', data.accessToken);
   localStorage.setItem('refreshToken', data.refreshToken);
   localStorage.setItem('userId', data.userId);
-  window.location.reload();
   return data;
 };
 
@@ -47,7 +46,6 @@ export const signUpUser = async ({
     name,
     username,
   });
-  window.location.reload();
   return data;
 };
 
