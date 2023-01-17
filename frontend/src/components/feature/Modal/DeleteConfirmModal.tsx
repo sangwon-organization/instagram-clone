@@ -75,11 +75,11 @@ const DeleteConfirmModal = ({
       if (location.pathname === '/') {
         closeModal();
         queryClient.invalidateQueries(['getPosts']);
-      } else if (location.pathname === `/post/${postId}`) {
+      } else if (
+        location.pathname === `/post/${postId}` ||
+        location.pathname === `/user/${userId}`
+      ) {
         navigate(-1);
-        document.body.style.overflow = 'unset';
-        queryClient.invalidateQueries(['getUserInformation']);
-      } else if (location.pathname === `/user/${userId}`) {
         document.body.style.overflow = 'unset';
         queryClient.invalidateQueries(['getUserInformation']);
       }
