@@ -11,7 +11,7 @@
 
 ## Demo
 
-https://instagram-clone-sangwon.com/
+https://instagram-clone-sangwon.com
 
 <br/>
 
@@ -29,38 +29,49 @@ yarn start
 
 #### 로그인
 <div align="center">
-<img src="https://user-images.githubusercontent.com/68457677/210969086-07ce19b7-ef66-483a-9ae8-0d28ae560cfe.gif" alt="로그인" width="80%"  />
+<img src="https://user-images.githubusercontent.com/68457677/213658212-975f5ea5-aeda-4a5e-91a4-5aa985790faa.gif" alt="로그인"  />
 </div>
 
 #### 회원가입
 <div align="center">
-<img src="https://user-images.githubusercontent.com/68457677/210982168-80d88d5c-5b4b-4e3b-b013-e1e72b2c15e5.gif" alt="회원가입" width="80%"  />
+<img src="https://user-images.githubusercontent.com/68457677/213658285-41e50d34-65ea-4388-9b79-3c7609d7e461.gif" alt="회원가입"   />
 </div>
 
 #### 유저검색
 <div align="center">
-<img src="https://user-images.githubusercontent.com/68457677/210982416-93807e7c-77a0-4843-a44d-55b1f72b682e.gif" alt="유저검색" height="300" />
+<img src="https://user-images.githubusercontent.com/68457677/213658545-59d86a36-3f55-4ca9-9681-6622a510a16e.gif" alt="유저검색"  />
 </div>
 
 #### 유저 팔로우
 <div align="center">
-<img src="https://user-images.githubusercontent.com/68457677/210985087-61f24624-acf3-4cf7-a1d3-7ca6627959bb.gif" alt="유저팔로우" height="300"/>
+<img src="https://user-images.githubusercontent.com/68457677/213658388-71b66a36-3f22-4fd6-b0d7-5ee7376211bb.gif" alt="유저팔로우"/>
 </div>
 
 #### 포스트 조회
+<div align="center">
+<img src="https://user-images.githubusercontent.com/68457677/213658554-0b0a7b92-cac7-4f0a-8f6f-414addd963ff.gif" alt="유저팔로우"  width='100%'/>
+</div>
 
 #### 포스트 올리기
 <div align="center">
-<img src="https://user-images.githubusercontent.com/68457677/210994778-16719a36-a3d5-4f7b-b032-565a0c7f3d31.gif" alt="포스트좋아요" height=300/>
+<img src="https://user-images.githubusercontent.com/68457677/213658550-18826754-d31c-4013-864a-a1a949dbbd0b.gif" alt="포스트좋아요" width='100%' />
+</div>
+
+#### 포스트 좋아요
+<div align="center">
+<img src="https://user-images.githubusercontent.com/68457677/213658488-524f1d4b-df44-4e85-96fd-99163a1c612e.gif" alt="포스트좋아요"/>
+</div>
+
+#### 댓글 달기
+<div align="center">
+<img src="https://user-images.githubusercontent.com/68457677/213658482-0b18ef4b-7299-499c-a1e2-c2abccf5c898.gif" alt="포스트좋아요" />
 </div>
 
 
-
-| 포스트 좋아요 |댓글 달기|
-|:---:|:---:|
-|<img src="https://user-images.githubusercontent.com/68457677/210975945-56126ec8-6b5a-42ec-a626-9cea8735c5b3.gif" alt="포스트좋아요" />|<img src="https://user-images.githubusercontent.com/68457677/210982953-8d4f412f-0b49-4dfb-8681-d964d43889f5.gif" alt="댓글달기"   />|
-
-
+#### 다크모드
+<div align="center">
+<img src="https://user-images.githubusercontent.com/68457677/213658557-b2fc7e14-257f-4c54-b042-2248e9f00d55.gif" alt="포스트좋아요"/>
+</div>
 
 <br><br>
 
