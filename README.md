@@ -49,22 +49,22 @@ yarn start
 
 #### 포스트 조회
 <div align="center">
-<img src="https://user-images.githubusercontent.com/68457677/213658554-0b0a7b92-cac7-4f0a-8f6f-414addd963ff.gif" alt="유저팔로우"  width='80%'/>
+<img src="https://user-images.githubusercontent.com/68457677/213658554-0b0a7b92-cac7-4f0a-8f6f-414addd963ff.gif" alt="유저팔로우"  width="640px"/>
 </div>
 
 #### 포스트 올리기
 <div align="center">
-<img src="https://user-images.githubusercontent.com/68457677/213658550-18826754-d31c-4013-864a-a1a949dbbd0b.gif" alt="포스트좋아요" width='80%' />
+<img src="https://user-images.githubusercontent.com/68457677/213658550-18826754-d31c-4013-864a-a1a949dbbd0b.gif" alt="포스트좋아요" width="640px" />
 </div>
 
 #### 포스트 좋아요
 <div align="center">
-<img src="https://user-images.githubusercontent.com/68457677/213658488-524f1d4b-df44-4e85-96fd-99163a1c612e.gif" alt="포스트좋아요" width='60%' />
+<img src="https://user-images.githubusercontent.com/68457677/213658488-524f1d4b-df44-4e85-96fd-99163a1c612e.gif" alt="포스트좋아요" width='500px' height="750px"/>
 </div>
 
 #### 댓글 달기
 <div align="center">
-<img src="https://user-images.githubusercontent.com/68457677/213658482-0b18ef4b-7299-499c-a1e2-c2abccf5c898.gif" alt="포스트좋아요" width='60%'/>
+<img src="https://user-images.githubusercontent.com/68457677/213658482-0b18ef4b-7299-499c-a1e2-c2abccf5c898.gif" alt="포스트좋아요" width='500px' height="750px"/>
 </div>
 
 
