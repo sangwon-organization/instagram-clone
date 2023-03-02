@@ -541,6 +541,7 @@ const PostWrapper = ({ postId, setShowPostModal }: PostWrapperType) => {
         console.log('댓글 등록 성공!');
         Promise.all([
           queryClient.invalidateQueries(['getCommentsList']),
+          queryClient.invalidateQueries(['getPosts']),
           queryClient.invalidateQueries(['getUserInformation']),
         ]);
         textareaRef.current.value = '';
