@@ -26,6 +26,7 @@ const queryClient = new QueryClient({
           }
         }
       },
+      enabled: !!localStorage.getItem('accessToken'),
     },
   },
 });

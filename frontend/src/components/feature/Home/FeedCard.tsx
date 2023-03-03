@@ -81,7 +81,6 @@ const ImageWrapper = styled.div`
   img {
     flex: none;
     width: 100%;
-    /* height: 585px; */
     height: 100%;
     background: ${({ theme }) => theme.blackColor};
 
@@ -589,7 +588,7 @@ const FeedCard = ({
       <UserInformationWrapper>
         <UserInfo>
           <UserAvatar>
-            <img src={profileImage} alt="유저아바타" />
+            <img src={profileImage} alt="유저아바타" loading="lazy" />
           </UserAvatar>
           <p onClick={() => navigate(`/user/${userId}`)}>{username}</p>
         </UserInfo>
