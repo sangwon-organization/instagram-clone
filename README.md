@@ -11,7 +11,12 @@
 
 ## Demo
 
-https://instagram-clone-sangwon.com
+[➡️ 데모사이트 바로가기](https://d317rrnl7xcgph.cloudfront.net)
+
+웹 사이트 방문 후 회원가입을 새로 하셔도 되지만 </br>
+이메일 `Jimin_Ahn@google.com` </br>
+비밀번호 `Qwer1234@` </br>
+입력하신 후 로그인을 하면 더 편리하게 프로젝트를 감상하실 수 있습니다. </br>
 
 <br/>
 
