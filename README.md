@@ -11,7 +11,7 @@
 
 ## Demo
 
-[➡️ 데모사이트 바로가기](https://d317rrnl7xcgph.cloudfront.net)
+[➡️ 데모사이트 바로가기](https://instagram-clone-sangwon.com)
 
 웹 사이트 방문 후 회원가입을 새로 하셔도 되지만 </br>
 이메일 `Jimin_Ahn@google.com` </br>
